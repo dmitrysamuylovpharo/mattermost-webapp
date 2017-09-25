@@ -174,6 +174,9 @@ export default class PostMessageView extends React.PureComponent {
     }
 
     render() {
+        let fontSizeClass = Utils.getSizeClassForUser(this.props.currentUser);
+        let classNames = 'post-message__text ' + fontSizeClass;
+                
         if (this.props.post.state === Posts.POST_DELETED) {
             return this.renderDeletedPost();
         }
@@ -231,7 +234,7 @@ export default class PostMessageView extends React.PureComponent {
             <div>
                 <span
                     id={postId}
-                    className='post-message__text'
+                    className={classNames}
                     onClick={Utils.handleFormattedTextClick}
                 >
                     {postMessageComponent}

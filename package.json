@@ -40,6 +40,7 @@
     "react-redux": "5.0.6",
     "react-router": "2.8.1",
     "react-select": "1.0.0-rc.5",
+    "react-select-plus": "1.0.0-rc.5",
     "redux-batched-actions": "0.2.0",
     "redux-persist": "4.8.3",
     "redux-persist-transform-filter": "0.0.15",

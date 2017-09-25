@@ -3,15 +3,17 @@
 
 import * as GlobalActions from 'actions/global_actions.jsx';
 import SearchStore from 'stores/search_store.jsx';
+import ChannelStore from 'stores/channel_store.jsx';
 import UserStore from 'stores/user_store.jsx';
 import AppDispatcher from '../dispatcher/app_dispatcher.jsx';
 import SuggestionBox from './suggestion/suggestion_box.jsx';
 import SearchChannelProvider from './suggestion/search_channel_provider.jsx';
 import SearchSuggestionList from './suggestion/search_suggestion_list.jsx';
 import SearchUserProvider from './suggestion/search_user_provider.jsx';
+import SearchDateProvider from './suggestion/search_date_provider.jsx';
 import * as Utils from 'utils/utils.jsx';
 import Constants from 'utils/constants.jsx';
-import {getFlaggedPosts, performSearch} from 'actions/post_actions.jsx';
+import {getFlaggedPosts, performSearch, performSearchSinceDate} from 'actions/post_actions.jsx';
 
 import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
 
@@ -47,7 +49,7 @@ export default class SearchBar extends React.Component {
         state.isPristine = true;
         this.state = state;
 
-        this.suggestionProviders = [new SearchChannelProvider(), new SearchUserProvider()];
+        this.suggestionProviders = [new SearchChannelProvider(), new SearchUserProvider(), new SearchDateProvider()];
     }
 
     getSearchTermStateFromStores() {
@@ -145,16 +147,49 @@ export default class SearchBar extends React.Component {
                 isPristine: false
             });
 
-            performSearch(
-                terms,
-                isMentionSearch,
-                () => {
-                    this.handleSearchOnSuccess();
-                },
-                () => {
-                    this.handleSearchOnError();
+            let sinceDate = "";
+            let termsArray = terms.split(" ");
+            let isDateSearch = termsArray.some(x => {
+                if(x.indexOf("since:") > -1)
+                {
+                    sinceDate = x.replace("since:","");
+                    return true;
                 }
-            );
+                else
+                {
+                    return false;
+                }
+            });
+            
+            if(isDateSearch)
+            {
+                // test date search
+                performSearchSinceDate(
+                    ChannelStore.getCurrentId(),
+                    Utils.getUnixTicksForStringDate(sinceDate),
+                    //'1499355662632',//'7-24-2017',                    
+                    () => {
+                        this.handleSearchOnSuccess();
+                    },
+                    () => {
+                        this.handleSearchOnError();
+                    }
+                );
+            }
+            else
+            {
+                // normal search
+                performSearch(
+                    terms,
+                    isMentionSearch,
+                    () => {
+                        this.handleSearchOnSuccess();
+                    },
+                    () => {
+                        this.handleSearchOnError();
+                    }
+                );
+            }
         }
     }
 
@@ -225,7 +260,7 @@ export default class SearchBar extends React.Component {
             >
                 <FormattedHTMLMessage
                     id='search_bar.usage'
-                    defaultMessage='<h4>Search Options</h4><ul><li><span>Use </span><b>"quotation marks"</b><span> to search for phrases</span></li><li><span>Use </span><b>from:</b><span> to find posts from specific users and </span><b>in:</b><span> to find posts in specific channels</span></li></ul>'
+                    defaultMessage='<h4>Search Options</h4><ul><li><span>Use </span><b>"quotation marks"</b><span> to search for phrases</span></li><li><span>Use </span><b>from:</b><span> to find posts from specific users and </span><b>in:</b><span> to find posts in specific channels</span></li><li><span>Use </span><b>since:</b><span> to find posts from a specific date in current channel, using date format <i>mm/dd/yyyy</i></span></li></ul>'
                 />
             </Popover>
         );

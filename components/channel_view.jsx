@@ -10,6 +10,7 @@ import * as UserAgent from 'utils/user_agent.jsx';
 import ChannelHeader from 'components/channel_header';
 import FileUploadOverlay from 'components/file_upload_overlay.jsx';
 import CreatePost from 'components/create_post.jsx';
+import CreatePostPharo from 'components/create_post_pharo.jsx';
 import PostView from 'components/post_view';
 import TutorialView from 'components/tutorial/tutorial_view.jsx';
 const TutorialSteps = Constants.TutorialSteps;
@@ -30,6 +31,10 @@ export default class ChannelView extends React.Component {
         this.updateState = this.updateState.bind(this);
 
         this.state = this.getStateFromStores(props);
+
+        this.postUI = (<CreatePost getChannelView={this.getChannelView}/>);
+        this.postUIPharo = (<CreatePostPharo getChannelView={this.getChannelView}/>);
+        this.isPharoPostUI = false;         
     }
 
     getStateFromStores() {
@@ -56,6 +61,10 @@ export default class ChannelView extends React.Component {
         if (UserAgent.isInternetExplorer() || UserAgent.isEdge()) {
             $('body').addClass('browser--ie');
         }
+
+        // pharo custom ui injection
+        if(this.props.params.channel === 'market-commentary')
+            this.isPharoPostUI = true;        
     }
 
     componentWillUnmount() {
@@ -69,7 +78,17 @@ export default class ChannelView extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        // pharo custom ui injection on channel change
         if (!Utils.areObjectsEqual(nextProps.params, this.props.params)) {
+            if(nextProps.params.channel === 'market-commentary')
+                this.isPharoPostUI = true;
+            else
+                this.isPharoPostUI = false;
+
+            return true;
+        }
+        if(nextProps.params.channel === 'market-commentary') {
+            this.isPharoPostUI = true;
             return true;
         }
 
@@ -85,6 +104,8 @@ export default class ChannelView extends React.Component {
     }
 
     render() {
+        let postUI = this.isPharoPostUI ? this.postUIPharo : this.postUI;
+
         if (this.state.tutorialStep <= TutorialSteps.INTRO_SCREENS) {
             return (
                 <TutorialView
@@ -110,7 +131,7 @@ export default class ChannelView extends React.Component {
                     className='post-create__container'
                     id='post-create'
                 >
-                    <CreatePost getChannelView={this.getChannelView}/>
+                    {postUI}
                 </div>
             </div>
         );
