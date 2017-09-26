@@ -110,6 +110,20 @@ export default class PostBody extends React.PureComponent {
                 );
             }
 
+            // strip pharo market commentary markdown out of the message
+            message = message.replace('##### ', '').replace('### ', '').replace('## ', '').trim();
+            let messageParts = message.split('\r\n')
+            let subject = '';
+            if(messageParts.length > 1)
+            {
+                if(messageParts[0].trim().length > 0)
+                    subject = messageParts[0];
+                else if (messageParts[1].trim().length > 0)
+                    subject = messageParts[1];
+
+                message = message.replace(subject, '');
+            }
+
             comment = (
                 <div className='post__link'>
                     <span>

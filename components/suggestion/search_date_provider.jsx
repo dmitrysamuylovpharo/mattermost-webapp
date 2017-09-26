@@ -53,10 +53,11 @@ export default class SearchDateProvider extends Provider {
                     }
 
                     const today = new Date();
+                    const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1); 
                     const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
                     const last2Weeks = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
                     const lastMonth = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
-                    const dates = Object.assign([], [{ label:'Last Week', date:Utils.getSearchDate(lastWeek) },{ label:'Last 2 Weeks', date:Utils.getSearchDate(last2Weeks) },{ label:'Last Month', date:Utils.getSearchDate(lastMonth) },]);
+                    const dates = Object.assign([], [{ label:'Yesterday', date:Utils.getSearchDate(yesterday) },{ label:'Last Week', date:Utils.getSearchDate(lastWeek) },{ label:'Last 2 Weeks', date:Utils.getSearchDate(last2Weeks) },{ label:'Last Month', date:Utils.getSearchDate(lastMonth) },]);
                     const mentions = [];//users.map((user) => user.username);
                     const dateLabels = dates.map((date) => date.date);
 

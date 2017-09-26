@@ -22,7 +22,7 @@
 - webapp/i18n/en.json 													<<< ??? come back to look at this (no changes)
 - webapp/package.json
 - webapp/yarn.lock
-- webapp/components/search_results.jsx 									<<< ??? come back to look at this (no changes)
+- webapp/components/search_results.jsx 									
 - webapp/components/search_results_item.jsx
 
 

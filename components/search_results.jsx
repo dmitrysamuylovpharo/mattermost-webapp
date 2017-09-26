@@ -186,6 +186,8 @@ export default class SearchResults extends React.Component {
 
         var ctls = null;
 
+        var isSince = searchTerm.indexOf("since:") > -1;
+
         if (this.state.loading) {
             ctls =
             (
@@ -329,6 +331,7 @@ export default class SearchResults extends React.Component {
                         isFlagged={isFlagged}
                         isBusy={this.state.isBusy}
                         status={status}
+                        isSince={isSince}
                     />
                 );
             }, this);
