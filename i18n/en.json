@@ -2140,7 +2140,7 @@
   "rhs_root.pin": "Pin to channel",
   "rhs_root.unpin": "Un-pin from channel",
   "search_bar.search": "Search",
-  "search_bar.usage": "<h4>Search Options</h4><ul><li><span>Use </span><b>\"quotation marks\"</b><span> to search for phrases</span></li><li><span>Use </span><b>from:</b><span> to find posts from specific users and </span><b>in:</b><span> to find posts in specific channels</span></li></ul>",
+  "search_bar.usage": "<h4>Search Options</h4><ul><li><span>Use </span><b>\"quotation marks\"</b><span> to search for phrases</span></li><li><span>Use </span><b>from:</b><span> to find posts from specific users and </span><b>in:</b><span> to find posts in specific channels</span></li><li><span>Use </span><b>since:</b><span> to find posts from a specific date in current channel, using date format <i>mm/dd/yyyy</i></span></li></ul>",
   "search_header.results": "Search Results",
   "search_header.title2": "Recent Mentions",
   "search_header.title3": "Flagged Posts",

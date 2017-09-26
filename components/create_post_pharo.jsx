@@ -9,6 +9,7 @@ import FilePreview from './file_preview.jsx';
 import PostDeletedModal from './post_deleted_modal.jsx';
 import TutorialTip from './tutorial/tutorial_tip.jsx';
 import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
+import * as EmojiPicker from 'components/emoji_picker/emoji_picker.jsx';
 
 import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
@@ -26,6 +27,7 @@ import PreferenceStore from 'stores/preference_store.jsx';
 import ConfirmModal from './confirm_modal.jsx';
 
 import Constants from 'utils/constants.jsx';
+import * as FileUtils from 'utils/file_utils';
 
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 import {browserHistory} from 'react-router/es6';
@@ -36,12 +38,10 @@ const ActionTypes = Constants.ActionTypes;
 const KeyCodes = Constants.KeyCodes;
 
 import React from 'react';
-// import ReactSelect from 'react-select';
 import ReactSelect from 'react-select-plus';
 import PropTypes from 'prop-types';
 
 export const REACTION_PATTERN = /^(\+|-):([^:\s]+):\s*$/;
-export const EMOJI_PATTERN = /:[A-Za-z-_0-9]*:/g;
 
 export default class CreatePostPharo extends React.Component {
     constructor(props) {
@@ -443,14 +443,6 @@ export default class CreatePostPharo extends React.Component {
         post.parent_id = this.state.parentId;
 
         GlobalActions.emitUserPostedEvent(post);
-
-        // parse message and emit emoji event
-        const emojiResult = post.message.match(EMOJI_PATTERN);
-        if (emojiResult) {
-            emojiResult.forEach((emoji) => {
-                PostActions.emitEmojiPosted(emoji);
-            });
-        }
 
         PostActions.createPost(post, this.state.fileInfos,
             () => GlobalActions.postListScrollChange(true),
@@ -1003,7 +995,7 @@ export default class CreatePostPharo extends React.Component {
         }
 
         let attachmentsDisabled = '';
-        if (global.window.mm_config.EnableFileAttachments === 'false') {
+        if (!FileUtils.canUploadFiles()) {
             attachmentsDisabled = ' post-create--attachment-disabled';
         }
 
@@ -1024,7 +1016,7 @@ export default class CreatePostPharo extends React.Component {
         let emojiPicker = null;
         if (window.mm_config.EnableEmojiPicker === 'true') {
             emojiPicker = (
-                <span>
+                <span className='emoji-picker__container'>
                     <EmojiPickerOverlay
                         show={this.state.showEmojiPicker}
                         container={this.props.getChannelView}
@@ -1035,35 +1027,14 @@ export default class CreatePostPharo extends React.Component {
                         topOffset={-7}
                     />
                     <span
-                        className={'fa fa-smile-o icon--emoji-picker emoji-main'}
+                        className='icon icon--emoji'
+                        dangerouslySetInnerHTML={{__html: Constants.EMOJI_ICON_SVG}}
                         onClick={this.toggleEmojiPicker}
+                        onMouseOver={EmojiPicker.beginPreloading}
                     />
                 </span>
             );
-        }
-
-        // sort drop down contents
-        // this.state.topicTagsList.sort(function(a, b) {
-        //     var nameA = a.label.toLowerCase();
-        //     var nameB = b.label.toLowerCase();
-        //     if (nameA < nameB) { return -1; }
-        //     if (nameA > nameB) { return 1; }
-        //     return 0;
-        // });
-        // this.state.sourceTagsList.sort(function(a, b) {
-        //     var nameA = a.label.toLowerCase();
-        //     var nameB = b.label.toLowerCase();
-        //     if (nameA < nameB) { return -1; }
-        //     if (nameA > nameB) { return 1; }
-        //     return 0;
-        // });
-        // this.state.otherSelectedTagsList.sort(function(a, b) {
-        //     var nameA = a.label.toLowerCase();
-        //     var nameB = b.label.toLowerCase();
-        //     if (nameA < nameB) { return -1; }
-        //     if (nameA > nameB) { return 1; }
-        //     return 0;
-        // }); 
+        }        
 
         return (
             <form
@@ -1115,32 +1086,33 @@ export default class CreatePostPharo extends React.Component {
                                 />
                             </div>                             
                             <Textbox
-                                onChange={this.handleChange}
-                                onKeyPress={this.postMsgKeyPress}
-                                onKeyDown={this.handleKeyDown}
-                                handlePostError={this.handlePostError}
-                                value={this.state.message}
-                                onBlur={this.handleBlur}
-                                emojiEnabled={window.mm_config.EnableEmojiPicker === 'true'}
-                                createMessage={Utils.localizeMessage('create_post.write', 'Write a message...')}
-                                channelId={this.state.channelId}
-                                id='post_textbox'
-                                ref='textbox'
+                            onChange={this.handleChange}
+                            onKeyPress={this.postMsgKeyPress}
+                            onKeyDown={this.handleKeyDown}
+                            handlePostError={this.handlePostError}
+                            value={this.state.message}
+                            onBlur={this.handleBlur}
+                            emojiEnabled={window.mm_config.EnableEmojiPicker === 'true'}
+                            createMessage={Utils.localizeMessage('create_post.write', 'Write a message...')}
+                            channelId={this.state.channelId}
+                            popoverMentionKeyClick={true}
+                            id='post_textbox'
+                            ref='textbox'
                             />
                             <span
                                 ref='createPostControls'
-                                className='btn btn-file'
+                                className='post-body__actions'
                             >
                                 {fileUpload}
                                 {emojiPicker}
+                                <a
+                                    className={sendButtonClass}
+                                    onClick={this.handleSubmit}
+                                >
+                                    <i className='fa fa-paper-plane'/>
+                                </a>
                             </span>
                         </div>
-                        <a
-                            className={sendButtonClass}
-                            onClick={this.handleSubmit}
-                        >
-                            <i className='fa fa-paper-plane'/>
-                        </a>
                         {tutorialTip}
                     </div>
                     <div className={postFooterClassName}>

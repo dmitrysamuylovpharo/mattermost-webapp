@@ -1662,9 +1662,10 @@
 
 
 /* pharo styles */
-div#post-create  {
-    border: solid 1px lightgray;
-}
+
+// div#post-create  {
+//     border: solid 1px lightgray;
+// }
 
 h1#pharo-post-title {
     margin-top: 0px;
@@ -1706,6 +1707,11 @@ div#post-create div.Select.Select--multi {
 
 .post-create__container .pharo-create-post-form .post-create-body .btn-file {
     top: 125px;
+}
+
+.post-create__container .pharo-create-post-form .post-body__actions {
+    top: 125px;
+    height: 48px;
 }
 
 .post .post__link a span {
