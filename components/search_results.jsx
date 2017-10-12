@@ -186,7 +186,7 @@ export default class SearchResults extends React.Component {
 
         var ctls = null;
 
-        var isSince = searchTerm.indexOf("since:") > -1;
+        var isSince = searchTerm != null ? searchTerm.indexOf("since:") > -1 : false;
 
         if (this.state.loading) {
             ctls =
