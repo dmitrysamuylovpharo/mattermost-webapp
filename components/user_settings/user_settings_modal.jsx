@@ -2,19 +2,22 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
+
+import React from 'react';
+import {Modal} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
-import ConfirmModal from '../confirm_modal.jsx';
-import UserSettings from './user_settings.jsx';
-import SettingsSidebar from '../settings_sidebar.jsx';
+import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 
 import ModalStore from 'stores/modal_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-import * as Utils from 'utils/utils.jsx';
+
 import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
 
-import {Modal} from 'react-bootstrap';
+import ConfirmModal from '../confirm_modal.jsx';
+import SettingsSidebar from '../settings_sidebar.jsx';
 
-import {intlShape, injectIntl, defineMessages, FormattedMessage} from 'react-intl';
+import UserSettings from './user_settings.jsx';
 
 const holders = defineMessages({
     general: {
@@ -50,8 +53,6 @@ const holders = defineMessages({
         defaultMessage: 'Yes, Discard'
     }
 });
-
-import React from 'react';
 
 class UserSettingsModal extends React.Component {
     constructor(props) {
@@ -107,7 +108,7 @@ class UserSettingsModal extends React.Component {
     componentDidUpdate() {
         UserStore.removeChangeListener(this.onUserChanged);
         if (!Utils.isMobile()) {
-            $('.settings-modal .modal-body').perfectScrollbar();
+            $('.settings-content .minimize-settings').perfectScrollbar('update');
         }
     }
 
@@ -218,10 +219,6 @@ class UserSettingsModal extends React.Component {
                 active_section: ''
             });
         }
-
-        if (!Utils.isMobile()) {
-            $('.settings-modal .modal-body').scrollTop(0).perfectScrollbar('update');
-        }
     }
 
     updateSection(section, skipConfirm) {
@@ -247,14 +244,18 @@ class UserSettingsModal extends React.Component {
 
         return (
             <Modal
+                id='accountSettingsModal'
                 dialogClassName='settings-modal'
                 show={this.state.show}
                 onHide={this.handleHide}
                 onExited={this.handleHidden}
                 enforceFocus={this.state.enforceFocus}
             >
-                <Modal.Header closeButton={true}>
-                    <Modal.Title>
+                <Modal.Header
+                    id='accountSettingsHeader'
+                    closeButton={true}
+                >
+                    <Modal.Title id='accountSettingsTitle'>
                         <FormattedMessage
                             id='user.settings.modal.title'
                             defaultMessage='Account Settings'

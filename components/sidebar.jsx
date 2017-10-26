@@ -2,50 +2,49 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
+
+import React from 'react';
+import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
-import NewChannelFlow from './new_channel_flow.jsx';
-import MoreDirectChannels from 'components/more_direct_channels';
-import MoreChannels from 'components/more_channels';
-import SidebarHeader from './sidebar_header.jsx';
-import UnreadChannelIndicator from './unread_channel_indicator.jsx';
-import TutorialTip from './tutorial/tutorial_tip.jsx';
-import StatusIcon from './status_icon.jsx';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
+import {browserHistory, Link} from 'react-router/es6';
 
-import ChannelStore from 'stores/channel_store.jsx';
-import UserStore from 'stores/user_store.jsx';
-import TeamStore from 'stores/team_store.jsx';
-import PreferenceStore from 'stores/preference_store.jsx';
-import ModalStore from 'stores/modal_store.jsx';
+import {savePreferences} from 'mattermost-redux/actions/preferences';
+import {getChannelsByCategory} from 'mattermost-redux/selectors/entities/channels';
 
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
-import * as Utils from 'utils/utils.jsx';
-import * as ChannelUtils from 'utils/channel_utils.jsx';
 import * as ChannelActions from 'actions/channel_actions.jsx';
-import * as GlobalActions from 'actions/global_actions.jsx';
-
 import {trackEvent} from 'actions/diagnostics_actions.jsx';
-import {ActionTypes, Constants} from 'utils/constants.jsx';
+import * as GlobalActions from 'actions/global_actions.jsx';
+import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
+import ChannelStore from 'stores/channel_store.jsx';
+import ModalStore from 'stores/modal_store.jsx';
+import PreferenceStore from 'stores/preference_store.jsx';
+import store from 'stores/redux_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
 
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
+import * as ChannelUtils from 'utils/channel_utils.jsx';
+import {ActionTypes, Constants} from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
+
+import favicon from 'images/favicon/favicon-16x16.png';
+import redFavicon from 'images/favicon/redfavicon-16x16.png';
+import loadingGif from 'images/load.gif';
+
+import MoreChannels from 'components/more_channels';
+import MoreDirectChannels from 'components/more_direct_channels';
+
+import NewChannelFlow from './new_channel_flow.jsx';
+import SidebarHeader from './sidebar_header.jsx';
+import StatusIcon from './status_icon.jsx';
+import TutorialTip from './tutorial/tutorial_tip.jsx';
+import UnreadChannelIndicator from './unread_channel_indicator.jsx';
 
 const Preferences = Constants.Preferences;
 const TutorialSteps = Constants.TutorialSteps;
 
-import {Tooltip, OverlayTrigger} from 'react-bootstrap';
-import loadingGif from 'images/load.gif';
-
-import React from 'react';
-import {browserHistory, Link} from 'react-router/es6';
-
-import favicon from 'images/favicon/favicon-16x16.png';
-import redFavicon from 'images/favicon/redfavicon-16x16.png';
-
-import store from 'stores/redux_store.jsx';
 const dispatch = store.dispatch;
 const getState = store.getState;
-
-import {getChannelsByCategory} from 'mattermost-redux/selectors/entities/channels';
-import {savePreferences} from 'mattermost-redux/actions/preferences';
 
 export default class Sidebar extends React.Component {
     constructor(props) {
@@ -725,16 +724,16 @@ export default class Sidebar extends React.Component {
 
         var directMessageMore = (
             <li key='more'>
-                <a
+                <button
                     id='moreDirectMessage'
-                    href='#'
+                    className='nav-more cursor--pointer style--none btn--block'
                     onClick={this.handleOpenMoreDirectChannelsModal}
                 >
                     <FormattedMessage
                         id='sidebar.moreElips'
                         defaultMessage='More...'
                     />
-                </a>
+                </button>
             </li>
         );
 
@@ -796,14 +795,13 @@ export default class Sidebar extends React.Component {
                 placement='top'
                 overlay={createChannelTootlip}
             >
-                <a
+                <button
                     id='createPublicChannel'
-                    className='add-channel-btn'
-                    href='#'
+                    className='add-channel-btn cursor--pointer style--none'
                     onClick={this.showNewChannelModal.bind(this, Constants.OPEN_CHANNEL)}
                 >
                     {'+'}
-                </a>
+                </button>
             </OverlayTrigger>
         );
 
@@ -814,14 +812,13 @@ export default class Sidebar extends React.Component {
                 placement='top'
                 overlay={createGroupTootlip}
             >
-                <a
+                <button
                     id='createPrivateChannel'
-                    className='add-channel-btn'
-                    href='#'
+                    className='add-channel-btn cursor--pointer style--none'
                     onClick={this.showNewChannelModal.bind(this, Constants.PRIVATE_CHANNEL)}
                 >
                     {'+'}
-                </a>
+                </button>
             </OverlayTrigger>
         );
 
@@ -836,13 +833,12 @@ export default class Sidebar extends React.Component {
                 placement='top'
                 overlay={createDirectMessageTooltip}
             >
-                <a
-                    className='add-channel-btn'
-                    href='#'
+                <button
+                    className='add-channel-btn cursor--pointer style--none'
                     onClick={this.handleOpenMoreDirectChannelsModal}
                 >
                     {'+'}
-                </a>
+                </button>
             </OverlayTrigger>
         );
 
@@ -912,12 +908,14 @@ export default class Sidebar extends React.Component {
                 />
 
                 <UnreadChannelIndicator
+                    name='Top'
                     show={this.state.showTopUnread}
                     onClick={this.scrollToFirstUnreadChannel}
                     extraClass='nav-pills__unread-indicator-top'
                     text={above}
                 />
                 <UnreadChannelIndicator
+                    name='Bottom'
                     show={this.state.showBottomUnread}
                     onClick={this.scrollToLastUnreadChannel}
                     extraClass='nav-pills__unread-indicator-bottom'
@@ -925,13 +923,14 @@ export default class Sidebar extends React.Component {
                 />
 
                 <div
+                    id='sidebarChannelContainer'
                     ref='container'
                     className='nav-pills__container'
                     onScroll={this.onScroll}
                 >
                     {favoriteItems.length !== 0 && <ul className='nav nav-pills nav-stacked'>
                         <li>
-                            <h4>
+                            <h4 id='favoriteChannel'>
                                 <FormattedMessage
                                     id='sidebar.favorite'
                                     defaultMessage='FAVORITE CHANNELS'
@@ -942,7 +941,7 @@ export default class Sidebar extends React.Component {
                     </ul>}
                     <ul className='nav nav-pills nav-stacked'>
                         <li>
-                            <h4>
+                            <h4 id='publicChannel'>
                                 <FormattedMessage
                                     id='sidebar.channels'
                                     defaultMessage='PUBLIC CHANNELS'
@@ -952,23 +951,22 @@ export default class Sidebar extends React.Component {
                         </li>
                         {publicChannelItems}
                         <li>
-                            <a
+                            <button
                                 id='sidebarChannelsMore'
-                                href='#'
-                                className='nav-more'
+                                className='nav-more cursor--pointer style--none btn--block'
                                 onClick={this.showMoreChannelsModal}
                             >
                                 <FormattedMessage
                                     id='sidebar.moreElips'
                                     defaultMessage='More...'
                                 />
-                            </a>
+                            </button>
                         </li>
                     </ul>
 
                     <ul className='nav nav-pills nav-stacked'>
                         <li>
-                            <h4>
+                            <h4 id='privateChannel'>
                                 <FormattedMessage
                                     id='sidebar.pg'
                                     defaultMessage='PRIVATE CHANNELS'
@@ -980,7 +978,7 @@ export default class Sidebar extends React.Component {
                     </ul>
                     <ul className='nav nav-pills nav-stacked'>
                         <li>
-                            <h4>
+                            <h4 id='directChannel'>
                                 <FormattedMessage
                                     id='sidebar.direct'
                                     defaultMessage='DIRECT MESSAGES'
@@ -994,6 +992,7 @@ export default class Sidebar extends React.Component {
                 </div>
                 <div className='sidebar__switcher'>
                     <button
+                        id='sidebarSwitcherButton'
                         className='btn btn-link'
                         onClick={this.openQuickSwitcher}
                     >

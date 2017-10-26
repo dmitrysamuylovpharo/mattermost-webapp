@@ -2,14 +2,14 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
-import * as Utils from 'utils/utils.jsx';
 import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 import AdminSettings from './admin_settings.jsx';
 import BooleanSetting from './boolean_setting.jsx';
 import DropdownSetting from './dropdown_setting.jsx';
-import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 import SettingsGroup from './settings_group.jsx';
 import TextSetting from './text_setting.jsx';
 
@@ -34,6 +34,7 @@ export default class UsersAndTeamsSettings extends AdminSettings {
         config.TeamSettings.TeammateNameDisplay = this.state.teammateNameDisplay;
         config.TeamSettings.MaxChannelsPerTeam = this.parseIntNonZero(this.state.maxChannelsPerTeam, Constants.DEFAULT_MAX_CHANNELS_PER_TEAM);
         config.TeamSettings.MaxNotificationsPerChannel = this.parseIntNonZero(this.state.maxNotificationsPerChannel, Constants.DEFAULT_MAX_NOTIFICATIONS_PER_CHANNEL);
+        config.TeamSettings.EnableConfirmNotificationsToChannel = this.state.enableConfirmNotificationsToChannel;
 
         return config;
     }
@@ -47,7 +48,8 @@ export default class UsersAndTeamsSettings extends AdminSettings {
             restrictDirectMessage: config.TeamSettings.RestrictDirectMessage,
             teammateNameDisplay: config.TeamSettings.TeammateNameDisplay,
             maxChannelsPerTeam: config.TeamSettings.MaxChannelsPerTeam,
-            maxNotificationsPerChannel: config.TeamSettings.MaxNotificationsPerChannel
+            maxNotificationsPerChannel: config.TeamSettings.MaxNotificationsPerChannel,
+            enableConfirmNotificationsToChannel: config.TeamSettings.EnableConfirmNotificationsToChannel
         };
     }
 
@@ -149,6 +151,23 @@ export default class UsersAndTeamsSettings extends AdminSettings {
                         />
                     }
                     value={this.state.maxNotificationsPerChannel}
+                    onChange={this.handleChange}
+                />
+                <BooleanSetting
+                    id='enableConfirmNotificationsToChannel'
+                    label={
+                        <FormattedMessage
+                            id='admin.team.enableConfirmNotificationsToChannelTitle'
+                            defaultMessage='Show @channel and @all confirmation dialog: '
+                        />
+                    }
+                    helpText={
+                        <FormattedMessage
+                            id='admin.team.enableConfirmNotificationsToChannelDescription'
+                            defaultMessage='When true, users will be prompted to confirm when posting @channel and @all in channels with over five members. When false, no confirmation is required.'
+                        />
+                    }
+                    value={this.state.enableConfirmNotificationsToChannel}
                     onChange={this.handleChange}
                 />
                 <TextSetting

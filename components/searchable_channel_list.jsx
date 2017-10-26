@@ -1,18 +1,19 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import LoadingScreen from './loading_screen.jsx';
-
-import * as UserAgent from 'utils/user_agent.jsx';
-
 import $ from 'jquery';
+
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {localizeMessage} from 'utils/utils.jsx';
 import {FormattedMessage} from 'react-intl';
 
+import * as UserAgent from 'utils/user_agent.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
+
 import loadingGif from 'images/load.gif';
+
+import LoadingScreen from './loading_screen.jsx';
 
 const NEXT_BUTTON_TIMEOUT_MILLISECONDS = 500;
 
@@ -47,6 +48,12 @@ export default class SearchableChannelList extends React.Component {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.isSearch && !this.props.isSearch) {
+            this.setState({page: 0});
+        }
+    }
+
     handleJoin(channel) {
         this.setState({joiningChannel: channel.id});
         this.props.handleJoin(
@@ -71,6 +78,7 @@ export default class SearchableChannelList extends React.Component {
                 <button
                     onClick={this.handleJoin.bind(this, channel)}
                     className='btn btn-primary'
+                    disabled={this.state.joiningChannel !== '' && this.state.joiningChannel !== channel.id}
                 >
                     <FormattedMessage
                         id='more_channels.join'
@@ -144,7 +152,7 @@ export default class SearchableChannelList extends React.Component {
             const channelsToDisplay = this.props.channels.slice(pageStart, pageEnd);
             listContent = channelsToDisplay.map(this.createChannelRow);
 
-            if (channelsToDisplay.length >= this.props.channelsPerPage) {
+            if (channelsToDisplay.length >= this.props.channelsPerPage && pageEnd < this.props.channels.length) {
                 nextButton = (
                     <button
                         className='btn btn-default filter-control filter-control__next'
@@ -205,13 +213,15 @@ export default class SearchableChannelList extends React.Component {
 }
 
 SearchableChannelList.defaultProps = {
-    channels: []
+    channels: [],
+    isSearch: false
 };
 
 SearchableChannelList.propTypes = {
     channels: PropTypes.arrayOf(PropTypes.object),
     channelsPerPage: PropTypes.number,
     nextPage: PropTypes.func.isRequired,
+    isSearch: PropTypes.bool,
     search: PropTypes.func.isRequired,
     handleJoin: PropTypes.func.isRequired,
     noResultsText: PropTypes.object

@@ -218,6 +218,7 @@
                 .post__header {
                     float: left;
                     height: 21px;
+                    padding-right: 0;
                     padding-top: 2px;
 
                     .col__name {
@@ -338,7 +339,6 @@
 
                 .post__header {
                     float: left;
-                    padding-top: 3px;
 
                     .col__reply {
                         top: -21px;
@@ -349,7 +349,24 @@
                     }
                 }
 
+                &.post--pinned {
+                    .post__body {
+                        &:before {
+                            content: '';
+                            display: block;
+                            height: 21px;
+                            width: 1px;
+                        }
+                    }
+                }
+
                 &:not(.post--compact) {
+                    .post__header {
+                        .post__pinned-badge {
+                            top: 3px;
+                        }
+                    }
+
                     .post__time {
                         display: inline-block;
                         font-size: 11px;

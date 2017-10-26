@@ -2,19 +2,20 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
+
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 
+import {getFilePreviewUrl, getFileUrl} from 'mattermost-redux/utils/file_utils';
+
 import * as GlobalActions from 'actions/global_actions.jsx';
 
+import Constants from 'utils/constants.jsx';
 import * as FileUtils from 'utils/file_utils';
 import * as Utils from 'utils/utils.jsx';
 
-import Constants from 'utils/constants.jsx';
-const KeyCodes = Constants.KeyCodes;
-
-import {getFileUrl, getFilePreviewUrl} from 'mattermost-redux/utils/file_utils';
+import loadingGif from 'images/load.gif';
 
 import AudioVideoPreview from './audio_video_preview.jsx';
 import CodePreview from './code_preview.jsx';
@@ -22,7 +23,7 @@ import FileInfoPreview from './file_info_preview.jsx';
 import PDFPreview from './pdf_preview.jsx';
 import ViewImagePopoverBar from './view_image_popover_bar.jsx';
 
-import loadingGif from 'images/load.gif';
+const KeyCodes = Constants.KeyCodes;
 
 export default class ViewImageModal extends React.Component {
     constructor(props) {
@@ -43,8 +44,8 @@ export default class ViewImageModal extends React.Component {
         this.onMouseLeaveImage = this.onMouseLeaveImage.bind(this);
 
         this.state = {
-            imgId: this.props.startId,
-            imgHeight: '100%',
+            imageIndex: this.props.startIndex,
+            imageHeight: '100%',
             loaded: Utils.fillArray(false, this.props.fileInfos.length),
             progress: Utils.fillArray(0, this.props.fileInfos.length),
             showFooter: false
@@ -55,7 +56,7 @@ export default class ViewImageModal extends React.Component {
         if (e) {
             e.stopPropagation();
         }
-        let id = this.state.imgId + 1;
+        let id = this.state.imageIndex + 1;
         if (id > this.props.fileInfos.length - 1) {
             id = 0;
         }
@@ -66,7 +67,7 @@ export default class ViewImageModal extends React.Component {
         if (e) {
             e.stopPropagation();
         }
-        let id = this.state.imgId - 1;
+        let id = this.state.imageIndex - 1;
         if (id < 0) {
             id = this.props.fileInfos.length - 1;
         }
@@ -84,7 +85,7 @@ export default class ViewImageModal extends React.Component {
     onModalShown(nextProps) {
         $(window).on('keyup', this.handleKeyPress);
 
-        this.showImage(nextProps.startId);
+        this.showImage(nextProps.startIndex);
     }
 
     onModalHidden() {
@@ -111,10 +112,10 @@ export default class ViewImageModal extends React.Component {
     }
 
     showImage(id) {
-        this.setState({imgId: id});
+        this.setState({imageIndex: id});
 
-        const imgHeight = $(window).height() - 100;
-        this.setState({imgHeight});
+        const imageHeight = $(window).height() - 100;
+        this.setState({imageHeight});
 
         if (!this.state.loaded[id]) {
             this.loadImage(id);
@@ -170,7 +171,7 @@ export default class ViewImageModal extends React.Component {
     handleGetPublicLink() {
         this.props.onModalDismissed();
 
-        GlobalActions.showGetPublicLinkModal(this.props.fileInfos[this.state.imgId].id);
+        GlobalActions.showGetPublicLinkModal(this.props.fileInfos[this.state.imageIndex].id);
     }
 
     onMouseEnterImage() {
@@ -182,15 +183,15 @@ export default class ViewImageModal extends React.Component {
     }
 
     render() {
-        if (this.props.fileInfos.length < 1 || this.props.fileInfos.length - 1 < this.state.imgId) {
+        if (this.props.fileInfos.length < 1 || this.props.fileInfos.length - 1 < this.state.imageIndex) {
             return null;
         }
 
-        const fileInfo = this.props.fileInfos[this.state.imgId];
+        const fileInfo = this.props.fileInfos[this.state.imageIndex];
         const fileUrl = getFileUrl(fileInfo.id);
 
         let content;
-        if (this.state.loaded[this.state.imgId]) {
+        if (this.state.loaded[this.state.imageIndex]) {
             const fileType = Utils.getFileType(fileInfo.extension);
 
             if (fileType === 'image' || fileType === 'svg') {
@@ -231,7 +232,7 @@ export default class ViewImageModal extends React.Component {
             }
         } else {
             // display a progress indicator when the preview for an image is still loading
-            const progress = Math.floor(this.state.progress[this.state.imgId]);
+            const progress = Math.floor(this.state.progress[this.state.imageIndex]);
 
             content = (
                 <LoadingImagePreview
@@ -301,7 +302,7 @@ export default class ViewImageModal extends React.Component {
                             </div>
                             <ViewImagePopoverBar
                                 show={this.state.showFooter}
-                                fileId={this.state.imgId}
+                                fileIndex={this.state.imageIndex}
                                 totalFiles={this.props.fileInfos.length}
                                 filename={fileInfo.name}
                                 fileURL={fileUrl}
@@ -320,13 +321,13 @@ export default class ViewImageModal extends React.Component {
 ViewImageModal.defaultProps = {
     show: false,
     fileInfos: [],
-    startId: 0
+    startIndex: 0
 };
 ViewImageModal.propTypes = {
     show: PropTypes.bool.isRequired,
     onModalDismissed: PropTypes.func.isRequired,
     fileInfos: PropTypes.arrayOf(PropTypes.object).isRequired,
-    startId: PropTypes.number
+    startIndex: PropTypes.number
 };
 
 function LoadingImagePreview({progress, loading}) {

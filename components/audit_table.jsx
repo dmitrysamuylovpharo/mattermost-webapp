@@ -1,11 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import UserStore from 'stores/user_store.jsx';
-import ChannelStore from 'stores/channel_store.jsx';
-import * as Utils from 'utils/utils.jsx';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {defineMessages, FormattedDate, FormattedMessage, FormattedTime, injectIntl, intlShape} from 'react-intl';
 
-import {intlShape, injectIntl, defineMessages, FormattedMessage, FormattedDate, FormattedTime} from 'react-intl';
+import ChannelStore from 'stores/channel_store.jsx';
+import UserStore from 'stores/user_store.jsx';
+
+import * as Utils from 'utils/utils.jsx';
 
 const holders = defineMessages({
     sessionRevoked: {
@@ -206,10 +209,6 @@ const holders = defineMessages({
     }
 });
 
-import PropTypes from 'prop-types';
-
-import React from 'react';
-
 function AuditTable(props) {
     var accessList = [];
 
@@ -238,9 +237,9 @@ function AuditTable(props) {
             sContent = <td className='whitespace--nowrap word-break--all'>{auditInfo.sessionId}</td>;
         }
 
-        const descStyle = {};
+        let descStyle = '';
         if (auditInfo.desc.toLowerCase().indexOf('fail') !== -1) {
-            descStyle.color = 'red';
+            descStyle = ' color--error';
         }
 
         accessList[i] = (
@@ -248,8 +247,7 @@ function AuditTable(props) {
                 <td className='whitespace--nowrap word-break--all'>{auditInfo.timestamp}</td>
                 {uContent}
                 <td
-                    className='word-break--all'
-                    style={descStyle}
+                    className={'word-break--all' + descStyle}
                 >
                     {auditInfo.desc}
                 </td>

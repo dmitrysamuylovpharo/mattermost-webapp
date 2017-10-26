@@ -1,14 +1,14 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import LoadingScreen from 'components/loading_screen.jsx';
-import Banner from 'components/admin_console/banner.jsx';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
 import * as Utils from 'utils/utils.jsx';
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
+import Banner from 'components/admin_console/banner.jsx';
+import LoadingScreen from 'components/loading_screen.jsx';
 
 export default class PluginSettings extends React.Component {
     static propTypes = {
@@ -78,7 +78,7 @@ export default class PluginSettings extends React.Component {
         this.setState({uploading: true});
 
         const {error} = await this.props.actions.uploadPlugin(file);
-        this.setState({fileSelected: false, fileName: null, uploading: false});
+        this.setState({fileSelected: false, fileName: null, uploading: false, serverError: null});
         Utils.clearFileInput(element);
 
         if (error) {

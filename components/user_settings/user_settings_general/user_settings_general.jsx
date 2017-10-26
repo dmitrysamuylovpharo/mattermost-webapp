@@ -1,20 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import $ from 'jquery';
-import SettingItemMin from 'components/setting_item_min.jsx';
-import SettingItemMax from 'components/setting_item_max.jsx';
-import SettingPicture from 'components/setting_picture.jsx';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {defineMessages, FormattedDate, FormattedHTMLMessage, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 
-import UserStore from 'stores/user_store.jsx';
+import {trackEvent} from 'actions/diagnostics_actions.jsx';
+import {updateUser, uploadProfileImage} from 'actions/user_actions.jsx';
 import ErrorStore from 'stores/error_store.jsx';
+import UserStore from 'stores/user_store.jsx';
 
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 
-import {intlShape, injectIntl, defineMessages, FormattedMessage, FormattedHTMLMessage, FormattedDate} from 'react-intl';
-import {updateUser, uploadProfileImage} from 'actions/user_actions.jsx';
-import {trackEvent} from 'actions/diagnostics_actions.jsx';
+import SettingItemMax from 'components/setting_item_max.jsx';
+import SettingItemMin from 'components/setting_item_min.jsx';
+import SettingPicture from 'components/setting_picture.jsx';
 
 const holders = defineMessages({
     usernameReserved: {
@@ -78,10 +79,6 @@ const holders = defineMessages({
         defaultMessage: 'Position'
     }
 });
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
 
 class UserSettingsGeneralTab extends React.Component {
     static propTypes = {
@@ -218,6 +215,8 @@ class UserSettingsGeneralTab extends React.Component {
     }
 
     submitUser(user, type, emailUpdated) {
+        this.setState({sectionIsSaving: true});
+
         updateUser(user, type,
             () => {
                 this.updateSection('');
@@ -237,7 +236,7 @@ class UserSettingsGeneralTab extends React.Component {
                 } else {
                     serverError = err;
                 }
-                this.setState({serverError, emailError: '', clientError: ''});
+                this.setState({serverError, emailError: '', clientError: '', sectionIsSaving: false});
             }
         );
     }
@@ -340,11 +339,8 @@ class UserSettingsGeneralTab extends React.Component {
     }
 
     updateSection(section) {
-        if ($('.section-max').length) {
-            $('.settings-modal .modal-body').scrollTop(0).perfectScrollbar('update');
-        }
         const emailChangeInProgress = this.state.emailChangeInProgress;
-        this.setState(Object.assign({}, this.setupInitialState(this.props), {emailChangeInProgress, clientError: '', serverError: '', emailError: ''}));
+        this.setState(Object.assign({}, this.setupInitialState(this.props), {emailChangeInProgress, clientError: '', serverError: '', emailError: '', sectionIsSaving: false}));
         this.submitActive = false;
         this.props.updateSection(section);
     }
@@ -364,7 +360,8 @@ class UserSettingsGeneralTab extends React.Component {
             pictureFile: null,
             loadingPicture: false,
             emailChangeInProgress: false,
-            maxFileSize: global.window.mm_config.MaxFileSize
+            maxFileSize: global.window.mm_config.MaxFileSize,
+            sectionIsSaving: false
         };
     }
 
@@ -580,6 +577,7 @@ class UserSettingsGeneralTab extends React.Component {
                     }
                     inputs={inputs}
                     submit={submit}
+                    saving={this.state.sectionIsSaving}
                     server_error={this.state.serverError}
                     client_error={this.state.emailError}
                     updateSection={(e) => {
@@ -704,9 +702,21 @@ class UserSettingsGeneralTab extends React.Component {
         if (this.props.activeSection === 'name') {
             let extraInfo;
             let submit = null;
-            if (this.props.user.auth_service === '' ||
-                 ((this.props.user.auth_service === 'ldap' || this.props.user.auth_service === Constants.SAML_SERVICE) &&
-                  (global.window.mm_config.FirstNameAttributeSet === 'false' || global.window.mm_config.LastNameAttributeSet === 'false'))) {
+            if (
+                (this.props.user.auth_service === 'ldap' &&
+                    (global.window.mm_config.LdapFristNameAttributeSet === 'true' || global.window.mm_config.LdapLastNameAttributeSet === 'true')) ||
+                (this.props.user.auth_service === Constants.SAML_SERVICE &&
+                    (global.window.mm_config.SamlFirstNameAttributeSet === 'true' || global.window.mm_config.SamlLastNameAttributeSet === 'true'))
+            ) {
+                extraInfo = (
+                    <span>
+                        <FormattedMessage
+                            id='user.settings.general.field_handled_externally'
+                            defaultMessage='This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
+                        />
+                    </span>
+                );
+            } else {
                 inputs.push(
                     <div
                         key='firstNameSetting'
@@ -784,15 +794,6 @@ class UserSettingsGeneralTab extends React.Component {
                 );
 
                 submit = this.submitName;
-            } else {
-                extraInfo = (
-                    <span>
-                        <FormattedMessage
-                            id='user.settings.general.field_handled_externally'
-                            defaultMessage='This field is handled through your login provider. If you want to change it, you need to do so through your login provider.'
-                        />
-                    </span>
-                );
             }
 
             nameSection = (
@@ -800,6 +801,7 @@ class UserSettingsGeneralTab extends React.Component {
                     title={formatMessage(holders.fullName)}
                     inputs={inputs}
                     submit={submit}
+                    saving={this.state.sectionIsSaving}
                     server_error={serverError}
                     client_error={clientError}
                     updateSection={(e) => {
@@ -850,7 +852,7 @@ class UserSettingsGeneralTab extends React.Component {
         if (this.props.activeSection === 'nickname') {
             let extraInfo;
             let submit = null;
-            if ((this.props.user.auth_service === 'ldap' || this.props.user.auth_service === Constants.SAML_SERVICE) && global.window.mm_config.NicknameAttributeSet === 'true') {
+            if ((this.props.user.auth_service === 'ldap' && global.window.mm_config.LdapNicknameAttributeSet) || (this.props.user.auth_service === Constants.SAML_SERVICE && global.window.mm_config.LdapNicknameAttributeSet)) {
                 extraInfo = (
                     <span>
                         <FormattedMessage
@@ -907,6 +909,7 @@ class UserSettingsGeneralTab extends React.Component {
                     title={formatMessage(holders.nickname)}
                     inputs={inputs}
                     submit={submit}
+                    saving={this.state.sectionIsSaving}
                     server_error={serverError}
                     client_error={clientError}
                     updateSection={(e) => {
@@ -1009,6 +1012,7 @@ class UserSettingsGeneralTab extends React.Component {
                     title={formatMessage(holders.username)}
                     inputs={inputs}
                     submit={submit}
+                    saving={this.state.sectionIsSaving}
                     server_error={serverError}
                     client_error={clientError}
                     updateSection={(e) => {
@@ -1091,6 +1095,7 @@ class UserSettingsGeneralTab extends React.Component {
                     title={formatMessage(holders.position)}
                     inputs={inputs}
                     submit={submit}
+                    saving={this.state.sectionIsSaving}
                     server_error={serverError}
                     client_error={clientError}
                     updateSection={(e) => {

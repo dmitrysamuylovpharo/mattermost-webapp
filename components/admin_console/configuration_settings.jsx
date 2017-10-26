@@ -2,19 +2,19 @@
 // See License.txt for license information.
 
 import React from 'react';
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
+import {invalidateAllCaches, reloadConfig} from 'actions/admin_actions.jsx';
 import ErrorStore from 'stores/error_store.jsx';
 
 import {ErrorBarTypes} from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 
-import {invalidateAllCaches, reloadConfig} from 'actions/admin_actions.jsx';
 import AdminSettings from './admin_settings.jsx';
 import BooleanSetting from './boolean_setting.jsx';
 import {ConnectionSecurityDropdownSettingWebserver} from './connection_security_dropdown_setting.jsx';
-import SettingsGroup from './settings_group.jsx';
 import RequestButton from './request_button/request_button';
+import SettingsGroup from './settings_group.jsx';
 import TextSetting from './text_setting.jsx';
 import WebserverModeDropdownSetting from './webserver_mode_dropdown_setting.jsx';
 
@@ -26,6 +26,8 @@ export default class ConfigurationSettings extends AdminSettings {
 
         this.handleSaved = this.handleSaved.bind(this);
 
+        this.handleSamlUrlChange = this.handleSamlUrlChange.bind(this);
+
         this.renderSettings = this.renderSettings.bind(this);
     }
 
@@ -36,6 +38,8 @@ export default class ConfigurationSettings extends AdminSettings {
     }
 
     getConfigFromState(config) {
+        this.handleSamlUrlChange(config, this.state.siteURL);
+
         config.ServiceSettings.SiteURL = this.state.siteURL;
         config.ServiceSettings.ListenAddress = this.state.listenAddress;
         config.ServiceSettings.WebserverMode = this.state.webserverMode;
@@ -72,6 +76,12 @@ export default class ConfigurationSettings extends AdminSettings {
     handleSaved(newConfig) {
         if (newConfig.ServiceSettings.SiteURL) {
             ErrorStore.clearError(ErrorBarTypes.SITE_URL);
+        }
+    }
+
+    handleSamlUrlChange(config, siteURL) {
+        if (config.SamlSettings.AssertionConsumerServiceURL.length > 0 && siteURL.length > 0) {
+            config.SamlSettings.AssertionConsumerServiceURL = this.state.siteURL + '/login/sso/saml';
         }
     }
 

@@ -1,25 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import UserStore from 'stores/user_store.jsx';
-import TeamStore from 'stores/team_store.jsx';
-import PreferenceStore from 'stores/preference_store.jsx';
-import {savePreference} from 'actions/user_actions.jsx';
-import * as GlobalActions from 'actions/global_actions.jsx';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
+import {browserHistory} from 'react-router/es6';
+
 import {trackEvent} from 'actions/diagnostics_actions.jsx';
+import * as GlobalActions from 'actions/global_actions.jsx';
+import {savePreference} from 'actions/user_actions.jsx';
+import PreferenceStore from 'stores/preference_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
 
 import {Constants, Preferences} from 'utils/constants.jsx';
-
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
-import {browserHistory} from 'react-router/es6';
+import {useSafeUrl} from 'utils/url.jsx';
 
 import AppIcons from 'images/appIcons.png';
 
 const NUM_SCREENS = 3;
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
 
 export default class TutorialIntroScreens extends React.Component {
     static get propTypes() {
@@ -121,7 +120,9 @@ export default class TutorialIntroScreens extends React.Component {
 
         let appDownloadLink = null;
         let appDownloadImage = null;
-        if (global.window.mm_config.AppDownloadLink) {
+        if (global.mm_config.AppDownloadLink) {
+            const link = useSafeUrl(global.mm_config.AppDownloadLink);
+
             // not using a FormattedHTMLMessage here since mm_config.AppDownloadLink is configurable and could be used
             // to inject HTML if we're not careful
             appDownloadLink = (
@@ -131,7 +132,7 @@ export default class TutorialIntroScreens extends React.Component {
                     values={{
                         link: (
                             <a
-                                href={global.window.mm_config.AppDownloadLink}
+                                href={link}
                                 target='_blank'
                                 rel='noopener noreferrer'
                             >
@@ -147,7 +148,7 @@ export default class TutorialIntroScreens extends React.Component {
 
             appDownloadImage = (
                 <a
-                    href={global.window.mm_config.AppDownloadLink}
+                    href={link}
                     target='_blank'
                     rel='noopener noreferrer'
                 >
@@ -181,29 +182,27 @@ export default class TutorialIntroScreens extends React.Component {
         if (global.window.mm_license.IsLicensed !== 'true' || global.window.mm_config.RestrictTeamInvite === Constants.PERMISSIONS_ALL) {
             if (team.type === Constants.INVITE_TEAM) {
                 inviteModalLink = (
-                    <a
-                        className='intro-links'
-                        href='#'
+                    <button
+                        className='intro-links color--link style--none'
                         onClick={GlobalActions.showInviteMemberModal}
                     >
                         <FormattedMessage
                             id='tutorial_intro.invite'
                             defaultMessage='Invite teammates'
                         />
-                    </a>
+                    </button>
                 );
             } else {
                 inviteModalLink = (
-                    <a
-                        className='intro-links'
-                        href='#'
+                    <button
+                        className='intro-links color--link style--none'
                         onClick={GlobalActions.showGetTeamInviteLinkModal}
                     >
                         <FormattedMessage
                             id='tutorial_intro.teamInvite'
                             defaultMessage='Invite teammates'
                         />
-                    </a>
+                    </button>
                 );
             }
 
@@ -303,6 +302,7 @@ export default class TutorialIntroScreens extends React.Component {
                         {screen}
                         <div className='tutorial__footer'>
                             <button
+                                id='tutorialNextButton'
                                 className='btn btn-primary'
                                 tabIndex='1'
                                 onClick={this.handleNext}
@@ -313,6 +313,7 @@ export default class TutorialIntroScreens extends React.Component {
                                 />
                             </button>
                             <a
+                                id='tutorialSkipLink'
                                 className='tutorial-skip'
                                 href='#'
                                 onClick={this.skipTutorial}

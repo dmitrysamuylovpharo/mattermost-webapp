@@ -12,6 +12,10 @@
     overflow: auto;
     padding: 0 20px;
 
+    .table {
+        margin-bottom: 0;
+    }
+
     .color-picker__popover {
         position: absolute;
         right: 0;
@@ -344,6 +348,37 @@
     }
 }
 
+.job-table__cancel-button {
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 0;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.job-table__table {
+    background-color: $white;
+    border: 1px solid $border-gray;
+    margin-top: 10px;
+    max-height: 240px;
+    min-height: 100px;
+    overflow: auto;
+    padding: 5px;
+    width: 100%;
+}
+
+.job-table__panel {
+    margin: 10px;
+    margin-bottom: 50px;
+    margin-left: 20px;
+}
+
+.job-table__create-button {
+    margin-left: 15px;
+}
+
 .brand-img {
     margin-bottom: 1.5em;
     max-width: 150px;
@@ -570,6 +605,10 @@
 }
 
 .manage-teams {
+    .modal-body {
+        padding: 15px 15px 0;
+    }
+
     .manage-teams__user {
         align-items: center;
         display: flex;

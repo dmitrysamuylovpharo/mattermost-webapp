@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {createPost} from 'actions/post_actions.jsx';
-
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 import {FormattedMessage} from 'react-intl';
+
+import {createPost} from 'actions/post_actions.jsx';
 
 export default class FailedPostOptions extends React.Component {
     static propTypes = {
@@ -50,7 +50,7 @@ export default class FailedPostOptions extends React.Component {
                 this.submitting = false;
             },
             (err) => {
-                if (err.id === 'api.post.create_post.root_id.app_error') {
+                if (err && err.id && err.id === 'api.post.create_post.root_id.app_error') {
                     this.showPostDeletedModal();
                 } else {
                     this.forceUpdate();

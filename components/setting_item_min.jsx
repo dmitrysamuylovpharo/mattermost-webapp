@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {FormattedMessage} from 'react-intl';
-import * as Utils from 'utils/utils.jsx';
-
 import PropTypes from 'prop-types';
-
 import React from 'react';
+import {FormattedMessage} from 'react-intl';
+
+import * as Utils from 'utils/utils.jsx';
 
 export default function SettingItemMin(props) {
     let editButton = null;
@@ -14,24 +13,22 @@ export default function SettingItemMin(props) {
     if (!props.disableOpen && Utils.isMobile()) {
         editButton = (
             <li className='col-xs-12 col-sm-3 section-edit'>
-                <a
+                <button
                     id={Utils.createSafeId(props.title) + 'Edit'}
-                    className='theme'
-                    href='#'
+                    className='color--link cursor--pointer style--none'
                     onClick={props.updateSection}
                 >
                     <i className='fa fa-pencil'/>
                     {props.describe}
-                </a>
+                </button>
             </li>
         );
     } else if (!props.disableOpen) {
         editButton = (
             <li className='col-xs-12 col-sm-3 section-edit'>
-                <a
+                <button
                     id={Utils.createSafeId(props.title) + 'Edit'}
-                    className='theme'
-                    href='#'
+                    className='color--link cursor--pointer style--none'
                     onClick={props.updateSection}
                 >
                     <i className='fa fa-pencil'/>
@@ -39,7 +36,7 @@ export default function SettingItemMin(props) {
                         id='setting_item_min.edit'
                         defaultMessage='Edit'
                     />
-                </a>
+                </button>
             </li>
         );
 
@@ -58,7 +55,12 @@ export default function SettingItemMin(props) {
             className='section-min'
             onClick={props.updateSection}
         >
-            <li className='col-xs-12 col-sm-9 section-title'>{props.title}</li>
+            <li
+                id={Utils.createSafeId(props.title) + 'Title'}
+                className='col-xs-12 col-sm-9 section-title'
+            >
+                {props.title}
+            </li>
             {editButton}
             {describeSection}
         </ul>

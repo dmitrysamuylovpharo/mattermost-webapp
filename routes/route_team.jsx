@@ -2,35 +2,35 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-import * as RouteUtils from 'routes/route_utils.jsx';
+
 import {browserHistory} from 'react-router/es6';
-
-import TeamStore from 'stores/team_store.jsx';
-import UserStore from 'stores/user_store.jsx';
-import * as GlobalActions from 'actions/global_actions.jsx';
-import {loadStatusesForChannelAndSidebar} from 'actions/status_actions.jsx';
-import {openDirectChannelToUser} from 'actions/channel_actions.jsx';
-import {reconnect} from 'actions/websocket_actions.jsx';
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
-import Constants from 'utils/constants.jsx';
-const ActionTypes = Constants.ActionTypes;
-import ChannelStore from 'stores/channel_store.jsx';
-import BrowserStore from 'stores/browser_store.jsx';
-import * as Utils from 'utils/utils.jsx';
-
-import emojiRoute from 'routes/route_emoji.jsx';
-import integrationsRoute from 'routes/route_integrations.jsx';
-
-import {loadNewDMIfNeeded, loadNewGMIfNeeded, loadProfilesForSidebar} from 'actions/user_actions.jsx';
-
-// Redux actions
-import store from 'stores/redux_store.jsx';
-const dispatch = store.dispatch;
-const getState = store.getState;
 
 import {fetchMyChannelsAndMembers, joinChannel} from 'mattermost-redux/actions/channels';
 import {getMyTeamUnreads} from 'mattermost-redux/actions/teams';
-import {getUser, getUserByUsername, getUserByEmail} from 'mattermost-redux/actions/users';
+import {getUser, getUserByEmail, getUserByUsername} from 'mattermost-redux/actions/users';
+
+import {openDirectChannelToUser} from 'actions/channel_actions.jsx';
+import * as GlobalActions from 'actions/global_actions.jsx';
+import {loadStatusesForChannelAndSidebar} from 'actions/status_actions.jsx';
+import {loadNewDMIfNeeded, loadNewGMIfNeeded, loadProfilesForSidebar} from 'actions/user_actions.jsx';
+import {reconnect} from 'actions/websocket_actions.jsx';
+import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
+import BrowserStore from 'stores/browser_store.jsx';
+import ChannelStore from 'stores/channel_store.jsx';
+import store from 'stores/redux_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
+
+import emojiRoute from 'routes/route_emoji.jsx';
+import integrationsRoute from 'routes/route_integrations.jsx';
+import * as RouteUtils from 'routes/route_utils.jsx';
+
+import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
+
+const ActionTypes = Constants.ActionTypes;
+const dispatch = store.dispatch;
+const getState = store.getState;
 
 function onChannelEnter(nextState, replace, callback) {
     doChannelChange(nextState, replace, callback);
@@ -172,7 +172,7 @@ function onChannelByIdentifierEnter(state, replace, callback) {
                 callback();
             } else {
                 getUser(userId)(dispatch, getState).then(
-                    (profile) => {
+                    ({data: profile}) => {
                         if (profile) {
                             replace(`/${state.params.team}/messages/@${profile.username}`);
                             callback();
@@ -225,12 +225,11 @@ function onChannelByIdentifierEnter(state, replace, callback) {
                 directChannelToUser(teammate, state, replace, callback);
             } else {
                 getUserByUsername(username)(dispatch, getState).then(
-                    (data) => {
+                    ({data, error: err}) => {
                         if (data && success) {
                             success(data);
-                        } else if (data == null && error) {
-                            const serverError = getState().requests.users.getUserByUsername.error;
-                            error({id: serverError.server_error_id, ...serverError});
+                        } else if (err && error) {
+                            error({id: err.server_error_id, ...err});
                         }
                     }
                 );
@@ -242,12 +241,11 @@ function onChannelByIdentifierEnter(state, replace, callback) {
                 directChannelToUser(teammate, state, replace, callback);
             } else {
                 getUserByEmail(email)(dispatch, getState).then(
-                    (data) => {
+                    ({data, error: err}) => {
                         if (data && success) {
                             success(data);
-                        } else if (data == null && error) {
-                            const serverError = getState().requests.users.getUser.error;
-                            error({id: serverError.server_error_id, ...serverError});
+                        } else if (err && error) {
+                            error({id: err.server_error_id, ...err});
                         }
                     }
                 );

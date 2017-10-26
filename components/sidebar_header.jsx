@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
+import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 import PreferenceStore from 'stores/preference_store.jsx';
+
+import {Constants, Preferences, TutorialSteps} from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 
-import SidebarHeaderDropdown from './sidebar_header_dropdown.jsx';
-import {Tooltip, OverlayTrigger} from 'react-bootstrap';
-
-import {Preferences, TutorialSteps, Constants} from 'utils/constants.jsx';
-import {createMenuTip} from 'components/tutorial/tutorial_tip.jsx';
 import StatusDropdown from 'components/status_dropdown/index.jsx';
+import {createMenuTip} from 'components/tutorial/tutorial_tip.jsx';
+
+import SidebarHeaderDropdown from './sidebar_header_dropdown.jsx';
 
 export default class SidebarHeader extends React.Component {
     constructor(props) {
@@ -82,7 +83,12 @@ export default class SidebarHeader extends React.Component {
         let teamNameWithToolTip = null;
         if (this.props.teamDescription === '') {
             teamNameWithToolTip = (
-                <div className='team__name'>{this.props.teamDisplayName}</div>
+                <div
+                    id='headerTeamName'
+                    className='team__name'
+                >
+                    {this.props.teamDisplayName}
+                </div>
             );
         } else {
             teamNameWithToolTip = (
@@ -93,25 +99,43 @@ export default class SidebarHeader extends React.Component {
                     overlay={<Tooltip id='team-name__tooltip'>{this.props.teamDescription}</Tooltip>}
                     ref='descriptionOverlay'
                 >
-                    <div className='team__name'>{this.props.teamDisplayName}</div>
+                    <div
+                        id='headerTeamName'
+                        className='team__name'
+                    >
+                        {this.props.teamDisplayName}
+                    </div>
                 </OverlayTrigger>
             );
         }
 
         return (
-            <div className='team__header theme'>
+            <div
+                id='teamHeader'
+                className='team__header theme'
+            >
                 {tutorialTip}
-                <div className='header__info'>
+                <div
+                    id='headerInfo'
+                    className='header__info'
+                >
                     {teamNameWithToolTip}
-                    <div className='user__name'>{'@' + this.props.currentUser.username}</div>
+                    <div
+                        id='headerUsername'
+                        className='user__name'
+                    >
+                        {'@' + this.props.currentUser.username}
+                    </div>
                 </div>
-                <SidebarHeaderDropdown
-                    ref='dropdown'
-                    teamType={this.props.teamType}
-                    teamDisplayName={this.props.teamDisplayName}
-                    teamName={this.props.teamName}
-                    currentUser={this.props.currentUser}
-                />
+                <div id='sidebarDropdownMenuContainer'>
+                    <SidebarHeaderDropdown
+                        ref='dropdown'
+                        teamType={this.props.teamType}
+                        teamDisplayName={this.props.teamDisplayName}
+                        teamName={this.props.teamName}
+                        currentUser={this.props.currentUser}
+                    />
+                </div>
                 {statusDropdown}
             </div>
         );

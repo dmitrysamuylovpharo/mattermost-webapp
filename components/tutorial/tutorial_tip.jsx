@@ -1,26 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import UserStore from 'stores/user_store.jsx';
-import PreferenceStore from 'stores/preference_store.jsx';
-import {savePreference} from 'actions/user_actions.jsx';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {Overlay} from 'react-bootstrap';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
+
 import {trackEvent} from 'actions/diagnostics_actions.jsx';
+import {savePreference} from 'actions/user_actions.jsx';
+import PreferenceStore from 'stores/preference_store.jsx';
+import UserStore from 'stores/user_store.jsx';
 
 import Constants from 'utils/constants.jsx';
-
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
-
-const Preferences = Constants.Preferences;
 import * as Utils from 'utils/utils.jsx';
-
-import {Overlay} from 'react-bootstrap';
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
 
 import tutorialGif from 'images/tutorialTip.gif';
 import tutorialGifWhite from 'images/tutorialTipWhite.gif';
+
+const Preferences = Constants.Preferences;
 
 export default class TutorialTip extends React.Component {
     constructor(props) {
@@ -139,6 +136,7 @@ export default class TutorialTip extends React.Component {
 
         return (
             <div
+                id='tipButton'
                 className={'tip-div ' + this.props.overlayClass}
                 onClick={this.toggle}
             >
@@ -170,6 +168,7 @@ export default class TutorialTip extends React.Component {
                             <div className='tutorial__circles'>{dots}</div>
                             <div className='text-right'>
                                 <button
+                                    id='tipNextButton'
                                     className='btn btn-primary'
                                     onClick={this.handleNext}
                                 >

@@ -1,17 +1,17 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
+import React from 'react';
+import {FormattedMessage} from 'react-intl';
+import ReactSelect from 'react-select';
+
+import Constants from 'utils/constants.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
+
 import MultiSelectList from './multiselect_list.jsx';
 
-import {localizeMessage} from 'utils/utils.jsx';
-import Constants from 'utils/constants.jsx';
 const KeyCodes = Constants.KeyCodes;
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
-import ReactSelect from 'react-select';
-import {FormattedMessage} from 'react-intl';
 
 export default class MultiSelect extends React.Component {
     constructor(props) {
@@ -67,7 +67,7 @@ export default class MultiSelect extends React.Component {
         }
 
         for (let i = 0; i < this.props.values.length; i++) {
-            if (this.props.values[i].value === value.value) {
+            if (this.props.values[i].id === value.id) {
                 return;
             }
         }
@@ -88,6 +88,14 @@ export default class MultiSelect extends React.Component {
         this.selected = null;
 
         this.props.handleInput(input);
+    }
+
+    onInputKeyDown = (e) => {
+        switch (e.keyCode) {
+        case KeyCodes.ENTER:
+            e.preventDefault();
+            break;
+        }
     }
 
     handleEnterPress = (e) => {
@@ -212,6 +220,7 @@ export default class MultiSelect extends React.Component {
                             clearable={false}
                             openOnFocus={true}
                             onInputChange={this.onInput}
+                            onInputKeyDown={this.onInputKeyDown}
                             onBlurResetsInput={false}
                             onCloseResetsInput={false}
                             onChange={this.onChange}

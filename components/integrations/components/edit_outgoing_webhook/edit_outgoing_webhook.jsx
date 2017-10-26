@@ -1,14 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import AbstractOutgoingWebhook from 'components/integrations/components/abstract_outgoing_webhook.jsx';
-import ConfirmModal from 'components/confirm_modal.jsx';
-import LoadingScreen from 'components/loading_screen.jsx';
-
-import React from 'react';
 import PropTypes from 'prop-types';
-import {browserHistory} from 'react-router/es6';
+import React from 'react';
 import {FormattedMessage} from 'react-intl';
+import {browserHistory} from 'react-router/es6';
+
+import ConfirmModal from 'components/confirm_modal.jsx';
+import AbstractOutgoingWebhook from 'components/integrations/components/abstract_outgoing_webhook.jsx';
+import LoadingScreen from 'components/loading_screen.jsx';
 
 const HEADER = {id: 'integrations.edit', defaultMessage: 'Edit'};
 const FOOTER = {id: 'update_outgoing_webhook.update', defaultMessage: 'Update'};
@@ -101,7 +101,7 @@ export default class EditOutgoingWebhook extends React.PureComponent {
     submitHook = async () => {
         this.setState({serverError: ''});
 
-        const data = await this.props.actions.updateOutgoingHook(this.newHook);
+        const {data} = await this.props.actions.updateOutgoingHook(this.newHook);
 
         if (data) {
             browserHistory.push(`/${this.props.team.name}/integrations/outgoing_webhooks`);

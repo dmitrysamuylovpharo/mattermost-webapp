@@ -2,10 +2,10 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import AdminSettings from './admin_settings.jsx';
 import BooleanSetting from './boolean_setting.jsx';
-import {FormattedMessage} from 'react-intl';
 import GeneratedSetting from './generated_setting.jsx';
 import SettingsGroup from './settings_group.jsx';
 
@@ -57,7 +57,7 @@ export default class SignupSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.email.requireVerificationDescription'
-                            defaultMessage='Typically set to true in production. When true, Mattermost requires email verification after account creation prior to allowing login. Developers may set this field to false so skip sending verification emails for faster development.'
+                            defaultMessage='Typically set to true in production. When true, Mattermost requires email verification after account creation prior to allowing login. Developers may set this field to false to skip sending verification emails for faster development.'
                         />
                     }
                     value={this.state.requireEmailVerification}

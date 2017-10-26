@@ -1,11 +1,11 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import AbstractOutgoingWebhook from 'components/integrations/components/abstract_outgoing_webhook.jsx';
-
+import PropTypes from 'prop-types';
 import React from 'react';
 import {browserHistory} from 'react-router/es6';
-import PropTypes from 'prop-types';
+
+import AbstractOutgoingWebhook from 'components/integrations/components/abstract_outgoing_webhook.jsx';
 
 const HEADER = {id: 'integrations.add', defaultMessage: 'Add'};
 const FOOTER = {id: 'add_outgoing_webhook.save', defaultMessage: 'Save'};
@@ -43,7 +43,7 @@ export default class AddOutgoingWebhook extends React.PureComponent {
     addOutgoingHook = async (hook) => {
         this.setState({serverError: ''});
 
-        const data = await this.props.actions.createOutgoingHook(hook);
+        const {data} = await this.props.actions.createOutgoingHook(hook);
         if (data) {
             browserHistory.push(`/${this.props.team.name}/integrations/confirm?type=outgoing_webhooks&id=${data.id}`);
             return;

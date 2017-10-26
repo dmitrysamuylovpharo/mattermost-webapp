@@ -1,19 +1,22 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
-import Constants from 'utils/constants.jsx';
 import EventEmitter from 'events';
-import * as Emoji from 'utils/emoji.jsx';
 
-import store from 'stores/redux_store.jsx';
-import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
 import {Client4} from 'mattermost-redux/client';
+import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
+
+import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
+import store from 'stores/redux_store.jsx';
+
+import Constants from 'utils/constants.jsx';
+import * as Emoji from 'utils/emoji.jsx';
 
 const ActionTypes = Constants.ActionTypes;
 
 const CHANGE_EVENT = 'changed';
 const MAXIMUM_RECENT_EMOJI = 27;
+const LOADED_EMOJI_ITEMS = 'loadedEmojiItems';
 
 // Wrap the contents of the store so that we don't need to construct an ES6 map where most of the content
 // (the system emojis) will never change. It provides the get/has functions of a map and an iterator so
@@ -171,6 +174,28 @@ class EmojiStore extends EventEmitter {
         }
 
         return recentEmojis;
+    }
+
+    saveEmojiItems(emojiItems) {
+        const loadedEmojis = this.getEmojiItems();
+        if (loadedEmojis.length < emojiItems.length) {
+            localStorage.setItem(LOADED_EMOJI_ITEMS, JSON.stringify(emojiItems));
+        }
+    }
+
+    getEmojiItems() {
+        let emojiItems;
+        try {
+            emojiItems = JSON.parse(localStorage.getItem(LOADED_EMOJI_ITEMS));
+        } catch (e) {
+            // Error is handled below
+        }
+
+        if (!emojiItems) {
+            return [];
+        }
+
+        return emojiItems;
     }
 
     hasUnicode(codepoint) {

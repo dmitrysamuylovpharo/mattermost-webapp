@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import PropTypes from 'prop-types';
 
-import {showGetPostLinkModal, showDeletePostModal} from 'actions/global_actions.jsx';
-import * as Utils from 'utils/utils.jsx';
+import {showDeletePostModal, showGetPostLinkModal} from 'actions/global_actions.jsx';
+
 import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 export default function DotMenuItem(props) {
     function handlePermalink(e) {
@@ -77,8 +78,8 @@ export default function DotMenuItem(props) {
             key={attrib.idPrefix}
             role='presentation'
         >
-            <a
-                href='#'
+            <button
+                className='style--none'
                 role='menuitem'
                 onClick={attrib.onClick}
             >
@@ -86,7 +87,7 @@ export default function DotMenuItem(props) {
                     id={attrib.formattedMessageId}
                     defaultMessage={attrib.formattedDefaultMessage}
                 />
-            </a>
+            </button>
         </li>
     );
 }

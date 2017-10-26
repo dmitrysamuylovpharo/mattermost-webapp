@@ -6,34 +6,29 @@
 import keyMirror from 'key-mirror';
 
 import audioIcon from 'images/icons/audio.png';
-import videoIcon from 'images/icons/video.png';
-import excelIcon from 'images/icons/excel.png';
-import pptIcon from 'images/icons/ppt.png';
-import pdfIcon from 'images/icons/pdf.png';
 import codeIcon from 'images/icons/code.png';
-import wordIcon from 'images/icons/word.png';
-import patchIcon from 'images/icons/patch.png';
+import excelIcon from 'images/icons/excel.png';
 import genericIcon from 'images/icons/generic.png';
-
+import patchIcon from 'images/icons/patch.png';
+import pdfIcon from 'images/icons/pdf.png';
+import pptIcon from 'images/icons/ppt.png';
+import videoIcon from 'images/icons/video.png';
+import wordIcon from 'images/icons/word.png';
 import logoImage from 'images/logo_compact.png';
+import githubIcon from 'images/themes/code_themes/github.png';
+import monokaiIcon from 'images/themes/code_themes/monokai.png';
+import solarizedDarkIcon from 'images/themes/code_themes/solarized-dark.png';
+import solarizedLightIcon from 'images/themes/code_themes/solarized-light.png';
+import mattermostThemeImage from 'images/themes/mattermost.png';
+import mattermostDarkThemeImage from 'images/themes/mattermost_dark.png';
+import defaultThemeImage from 'images/themes/organization.png';
+import windows10ThemeImage from 'images/themes/windows_dark.png';
 import logoWebhook from 'images/webhook_icon.jpg';
 
-import solarizedDarkCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/solarized-dark.css';
-import solarizedDarkIcon from 'images/themes/code_themes/solarized-dark.png';
-
-import solarizedLightCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/solarized-light.css';
-import solarizedLightIcon from 'images/themes/code_themes/solarized-light.png';
-
-import githubCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/github.css';
-import githubIcon from 'images/themes/code_themes/github.png';
-
-import monokaiCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/monokai.css';
-import monokaiIcon from 'images/themes/code_themes/monokai.png';
-
-import defaultThemeImage from 'images/themes/organization.png';
-import mattermostDarkThemeImage from 'images/themes/mattermost_dark.png';
-import mattermostThemeImage from 'images/themes/mattermost.png';
-import windows10ThemeImage from 'images/themes/windows_dark.png';
+import githubCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/github.css';                   // eslint-disable-line import/order
+import monokaiCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/monokai.css';                 // eslint-disable-line import/order
+import solarizedDarkCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/solarized-dark.css';    // eslint-disable-line import/order
+import solarizedLightCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/solarized-light.css';  // eslint-disable-line import/order
 
 export const Preferences = {
     CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
@@ -49,6 +44,8 @@ export const Preferences = {
     MESSAGE_DISPLAY_CLEAN: 'clean',
     MESSAGE_DISPLAY_COMPACT: 'compact',
     MESSAGE_DISPLAY_DEFAULT: 'clean',
+    LINK_PREVIEW_DISPLAY: 'link_previews',
+    LINK_PREVIEW_DISPLAY_DEFAULT: 'true',
     COLLAPSE_DISPLAY: 'collapse_previews',
     COLLAPSE_DISPLAY_DEFAULT: 'false',
     USE_MILITARY_TIME: 'use_military_time',
@@ -281,6 +278,7 @@ export const PostTypes = {
     DISPLAYNAME_CHANGE: 'system_displayname_change',
     PURPOSE_CHANGE: 'system_purpose_change',
     CHANNEL_DELETED: 'system_channel_deleted',
+    FAKE_PARENT_DELETED: 'system_fake_parent_deleted',
     EPHEMERAL: 'system_ephemeral',
     REMOVE_LINK_PREVIEW: 'remove_link_preview'
 };
@@ -317,7 +315,8 @@ export const ErrorPageTypes = {
 
 export const JobTypes = {
     DATA_RETENTION: 'data_retention',
-    ELASTICSEARCH_POST_INDEXING: 'elasticsearch_post_indexing'
+    ELASTICSEARCH_POST_INDEXING: 'elasticsearch_post_indexing',
+    LDAP_SYNC: 'ldap_sync'
 };
 
 export const JobStatuses = {
@@ -398,7 +397,7 @@ export const Constants = {
     NOTIFY_ALL_MEMBERS: 5,
     CHARACTER_LIMIT: 4000,
     IMAGE_TYPES: ['jpg', 'gif', 'bmp', 'png', 'jpeg'],
-    AUDIO_TYPES: ['mp3', 'wav', 'wma', 'm4a', 'flac', 'aac', 'ogg'],
+    AUDIO_TYPES: ['mp3', 'wav', 'wma', 'm4a', 'flac', 'aac', 'ogg', 'm4r'],
     VIDEO_TYPES: ['mp4', 'avi', 'webm', 'mkv', 'wmv', 'mpg', 'mov', 'flv'],
     PRESENTATION_TYPES: ['ppt', 'pptx'],
     SPREADSHEET_TYPES: ['xlsx', 'csv'],
@@ -937,6 +936,8 @@ export const Constants = {
     },
     Integrations: {
         COMMAND: 'commands',
+        PAGE_SIZE: '10000',
+        START_PAGE_NUM: 0,
         INCOMING_WEBHOOK: 'incoming_webhooks',
         OUTGOING_WEBHOOK: 'outgoing_webhooks',
         OAUTH_APP: 'oauth2-apps'
@@ -946,10 +947,6 @@ export const Constants = {
         MARKDOWN_PREVIEW: {
             label: 'markdown_preview', // github issue: https://github.com/mattermost/platform/pull/1389
             description: 'Show markdown preview option in message input box'
-        },
-        EMBED_PREVIEW: {
-            label: 'embed_preview',
-            description: 'Show preview snippet of links below message'
         },
         WEBRTC_PREVIEW: {
             label: 'webrtc_preview',
@@ -1019,7 +1016,8 @@ export const Constants = {
         SHOW_NICKNAME_FULLNAME: 'nickname_full_name',
         SHOW_FULLNAME: 'full_name'
     },
-    SEARCH_POST: 'searchpost'
+    SEARCH_POST: 'searchpost',
+    CHANNEL_ID_LENGTH: 26
 };
 
 export default Constants;

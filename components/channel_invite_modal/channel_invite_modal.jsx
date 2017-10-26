@@ -1,29 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import ChannelInviteButton from 'components/channel_invite_button.jsx';
-import SearchableUserList from 'components/searchable_user_list/searchable_user_list_container.jsx';
-import LoadingScreen from 'components/loading_screen.jsx';
-
-import ChannelStore from 'stores/channel_store.jsx';
-import UserStore from 'stores/user_store.jsx';
-import TeamStore from 'stores/team_store.jsx';
-
-import {searchUsers} from 'actions/user_actions.jsx';
-
-import * as UserAgent from 'utils/user_agent.jsx';
-import Constants from 'utils/constants.jsx';
-
 import PropTypes from 'prop-types';
-
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
-import store from 'stores/redux_store.jsx';
 import {searchProfilesNotInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
+import {Client4} from 'mattermost-redux/client';
+
+import {searchUsers} from 'actions/user_actions.jsx';
+import {addUserToChannel} from 'actions/channel_actions.jsx';
+import ChannelStore from 'stores/channel_store.jsx';
+import store from 'stores/redux_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
+
+import Constants from 'utils/constants.jsx';
+import {displayEntireNameForUser} from 'utils/utils.jsx';
+
+import LoadingScreen from 'components/loading_screen.jsx';
+import ProfilePicture from 'components/profile_picture.jsx';
+import MultiSelect from 'components/multiselect/multiselect.jsx';
 
 const USERS_PER_PAGE = 50;
+const MAX_SELECTABLE_VALUES = 20;
 
 export default class ChannelInviteModal extends React.Component {
     static propTypes = {
@@ -38,13 +39,6 @@ export default class ChannelInviteModal extends React.Component {
     constructor(props) {
         super(props);
 
-        this.onChange = this.onChange.bind(this);
-        this.onStatusChange = this.onStatusChange.bind(this);
-        this.onHide = this.onHide.bind(this);
-        this.handleInviteError = this.handleInviteError.bind(this);
-        this.nextPage = this.nextPage.bind(this);
-        this.search = this.search.bind(this);
-
         this.term = '';
         this.searchTimeoutId = 0;
 
@@ -52,11 +46,21 @@ export default class ChannelInviteModal extends React.Component {
         const teamStats = TeamStore.getCurrentStats();
 
         this.state = {
-            users: UserStore.getProfileListNotInChannel(props.channel.id, true),
+            users: Object.assign([], UserStore.getProfileListNotInChannel(props.channel.id, true)),
             total: teamStats.active_member_count - channelStats.member_count,
+            values: [],
             show: true,
             statusChange: false
         };
+    }
+
+    addValue = (value) => {
+        const values = Object.assign([], this.state.values);
+        if (values.indexOf(value) === -1) {
+            values.push(value);
+        }
+
+        this.setState({values});
     }
 
     componentDidMount() {
@@ -76,7 +80,7 @@ export default class ChannelInviteModal extends React.Component {
         UserStore.removeStatusesChangeListener(this.onStatusChange);
     }
 
-    onChange() {
+    onChange = () => {
         let users;
         if (this.term) {
             users = searchProfilesNotInCurrentChannel(store.getState(), this.term, true);
@@ -93,18 +97,18 @@ export default class ChannelInviteModal extends React.Component {
         });
     }
 
-    onStatusChange() {
+    onStatusChange = () => {
         // Initiate a render to pick up on new statuses
         this.setState({
             statusChange: !this.state.statusChange
         });
     }
 
-    onHide() {
+    onHide = () => {
         this.setState({show: false});
     }
 
-    handleInviteError(err) {
+    handleInviteError = (err) => {
         if (err) {
             this.setState({
                 inviteError: err.message
@@ -116,11 +120,43 @@ export default class ChannelInviteModal extends React.Component {
         }
     }
 
-    nextPage(page) {
-        this.props.actions.getProfilesNotInChannel(TeamStore.getCurrentId(), this.props.channel.id, (page + 1) * USERS_PER_PAGE, USERS_PER_PAGE);
+    handleDelete = (values) => {
+        this.setState({values});
     }
 
-    search(term) {
+    handlePageChange = (page, prevPage) => {
+        if (page > prevPage) {
+            this.props.actions.getProfilesNotInChannel(TeamStore.getCurrentId(), this.props.channel.id, page + 1, USERS_PER_PAGE);
+        }
+    }
+
+    handleSubmit = (e) => {
+        if (e) {
+            e.preventDefault();
+        }
+
+        const userIds = this.state.values.map((v) => v.id);
+        if (userIds.length === 0) {
+            return;
+        }
+
+        userIds.forEach((userId) => {
+            addUserToChannel(
+                this.props.channel.id,
+                userId,
+                () => {
+                    this.handleInviteError(null);
+                },
+                (err) => {
+                    this.handleInviteError(err);
+                }
+            );
+        });
+
+        this.onHide();
+    }
+
+    search = (term) => {
         clearTimeout(this.searchTimeoutId);
         this.term = term;
 
@@ -137,11 +173,64 @@ export default class ChannelInviteModal extends React.Component {
         );
     }
 
+    renderOption = (option, isSelected, onAdd) => {
+        var rowSelected = '';
+        if (isSelected) {
+            rowSelected = 'more-modal__row--selected';
+        }
+
+        return (
+            <div
+                key={option.id}
+                ref={isSelected ? 'selected' : option.id}
+                className={'more-modal__row clickable ' + rowSelected}
+                onClick={() => onAdd(option)}
+            >
+                <ProfilePicture
+                    src={Client4.getProfilePictureUrl(option.id, option.last_picture_update)}
+                    width='32'
+                    height='32'
+                />
+                <div className='more-modal__details'>
+                    <div className='more-modal__name'>
+                        {displayEntireNameForUser(option)}
+                    </div>
+                </div>
+                <div className='more-modal__actions'>
+                    <div className='more-modal__actions--round'>
+                        <i className='fa fa-plus'/>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    renderValue = (user) => {
+        return user.username;
+    }
+
     render() {
         let inviteError = null;
         if (this.state.inviteError) {
             inviteError = (<label className='has-error control-label'>{this.state.inviteError}</label>);
         }
+
+        const numRemainingText = (
+            <FormattedMessage
+                id='multiselect.numPeopleRemaining'
+                defaultMessage='Use ↑↓ to browse, ↵ to select. You can add {num, number} more {num, plural, one {person} other {people}}. '
+                values={{
+                    num: MAX_SELECTABLE_VALUES - this.state.values.length
+                }}
+            />
+        );
+
+        const buttonSubmitText = (
+            <FormattedMessage
+                id='multiselect.add'
+                defaultMessage='Add'
+            />
+        );
 
         let users = [];
         if (this.state.users) {
@@ -153,18 +242,21 @@ export default class ChannelInviteModal extends React.Component {
             content = (<LoadingScreen/>);
         } else {
             content = (
-                <SearchableUserList
-                    users={users}
-                    usersPerPage={USERS_PER_PAGE}
-                    total={this.state.total}
-                    nextPage={this.nextPage}
-                    search={this.search}
-                    actions={[ChannelInviteButton]}
-                    focusOnMount={!UserAgent.isMobile()}
-                    actionProps={{
-                        channel: this.props.channel,
-                        onInviteError: this.handleInviteError
-                    }}
+                <MultiSelect
+                    key='addUsersToChannelKey'
+                    options={users}
+                    optionRenderer={this.renderOption}
+                    values={this.state.values}
+                    valueRenderer={this.renderValue}
+                    perPage={USERS_PER_PAGE}
+                    handlePageChange={this.handlePageChange}
+                    handleInput={this.search}
+                    handleDelete={this.handleDelete}
+                    handleAdd={this.addValue}
+                    handleSubmit={this.handleSubmit}
+                    maxValues={MAX_SELECTABLE_VALUES}
+                    numRemainingText={numRemainingText}
+                    buttonSubmitText={buttonSubmitText}
                 />
             );
         }

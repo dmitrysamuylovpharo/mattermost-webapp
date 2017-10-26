@@ -17,6 +17,15 @@ a {
     }
 }
 
+.color--link {
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+        text-decoration: underline;
+    }
+}
+
 body {
     @include font-smoothing;
     font-family: 'Open Sans', sans-serif;
@@ -53,6 +62,10 @@ body {
     font-weight: normal;
 }
 
+.cursor--pointer {
+    cursor: pointer;
+}
+
 .post span.size1 p { font-size: 14px; }
 .post span.size2 p { font-size: 16px; }
 .post span.size3 p { font-size: 18px; }
@@ -76,6 +89,7 @@ body.size3 { font-size: 18px; }
 .sidebar--right.size1 .nav li > a { font-size: 14px; }
 .sidebar--right.size2 .nav li > a { font-size: 16px; }
 .sidebar--right.size3 .nav li > a { font-size: 18px; }
+
 
 /* open-sans-300 - latin-ext_latin_cyrillic-ext_greek-ext_greek_cyrillic_vietnamese */
 @font-face {

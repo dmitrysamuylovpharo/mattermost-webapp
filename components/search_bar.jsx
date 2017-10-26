@@ -1,30 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
+import React from 'react';
+import {OverlayTrigger, Popover, Tooltip} from 'react-bootstrap';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
+
 import * as GlobalActions from 'actions/global_actions.jsx';
+import {getFlaggedPosts, performSearch, performSearchSinceDate} from 'actions/post_actions.jsx';
 import SearchStore from 'stores/search_store.jsx';
 import ChannelStore from 'stores/channel_store.jsx';
 import UserStore from 'stores/user_store.jsx';
+
+import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
+
 import AppDispatcher from '../dispatcher/app_dispatcher.jsx';
-import SuggestionBox from './suggestion/suggestion_box.jsx';
+
 import SearchChannelProvider from './suggestion/search_channel_provider.jsx';
 import SearchSuggestionList from './suggestion/search_suggestion_list.jsx';
 import SearchUserProvider from './suggestion/search_user_provider.jsx';
 import SearchDateProvider from './suggestion/search_date_provider.jsx';
-import * as Utils from 'utils/utils.jsx';
-import Constants from 'utils/constants.jsx';
-import {getFlaggedPosts, performSearch, performSearchSinceDate} from 'actions/post_actions.jsx';
 
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
+import SuggestionBox from './suggestion/suggestion_box.jsx';
 
 const ActionTypes = Constants.ActionTypes;
 const KeyCodes = Constants.KeyCodes;
-
-import {Tooltip, OverlayTrigger, Popover} from 'react-bootstrap';
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
 
 export default class SearchBar extends React.Component {
     constructor() {
@@ -87,9 +88,7 @@ export default class SearchBar extends React.Component {
         }
     }
 
-    handleClose(e) {
-        e.preventDefault();
-
+    handleClose() {
         if (Utils.isMobile()) {
             setTimeout(() => {
                 document.querySelector('.app__body .sidebar--menu').classList.add('visible');
@@ -110,7 +109,8 @@ export default class SearchBar extends React.Component {
 
         AppDispatcher.handleServerAction({
             type: ActionTypes.RECEIVED_POST_SELECTED,
-            postId: null
+            postId: null,
+            channelId: null
         });
     }
 
@@ -374,7 +374,10 @@ export default class SearchBar extends React.Component {
                         <span className='fa fa-chevron-left'/>
                     </div>
                 </div>
-                <div className='search-form__container'>
+                <div
+                    id='searchFormContainer'
+                    className='search-form__container'
+                >
                     <form
                         role='form'
                         className={searchFormClass}
@@ -383,11 +386,13 @@ export default class SearchBar extends React.Component {
                         autoComplete='off'
                     >
                         <span
+                            id='searchIcon'
                             className='search__icon'
                             dangerouslySetInnerHTML={{__html: searchIcon}}
                             aria-hidden='true'
                         />
                         <SuggestionBox
+                            id='searchBox'
                             ref={(search) => {
                                 this.search = search;
                             }}
@@ -404,6 +409,7 @@ export default class SearchBar extends React.Component {
                             autoFocus={this.props.isFocus && this.state.searchTerm === ''}
                         />
                         <div
+                            id='searchClearButton'
                             className={clearClass}
                             onClick={this.handleClear}
                         >

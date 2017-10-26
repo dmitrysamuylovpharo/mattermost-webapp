@@ -2,38 +2,37 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
+
+import PropTypes from 'prop-types';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
+import {FormattedMessage} from 'react-intl';
+
 import * as ChannelActions from 'actions/channel_actions.jsx';
+import * as GlobalActions from 'actions/global_actions.jsx';
+import * as PostActions from 'actions/post_actions.jsx';
+import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
 import EmojiStore from 'stores/emoji_store.jsx';
-import UserStore from 'stores/user_store.jsx';
-import PostDeletedModal from 'components/post_deleted_modal.jsx';
+import MessageHistoryStore from 'stores/message_history_store.jsx';
 import PostStore from 'stores/post_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
-import MessageHistoryStore from 'stores/message_history_store.jsx';
-import Textbox from 'components/textbox.jsx';
-import MsgTyping from 'components/msg_typing.jsx';
-import FileUpload from 'components/file_upload.jsx';
-import FilePreview from 'components/file_preview.jsx';
-import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
-import * as EmojiPicker from 'components/emoji_picker/emoji_picker.jsx';
-import * as Utils from 'utils/utils.jsx';
-import * as UserAgent from 'utils/user_agent.jsx';
-import * as GlobalActions from 'actions/global_actions.jsx';
-import * as PostActions from 'actions/post_actions.jsx';
+import UserStore from 'stores/user_store.jsx';
 
 import Constants from 'utils/constants.jsx';
+import * as UserAgent from 'utils/user_agent.jsx';
+import * as Utils from 'utils/utils.jsx';
 
-import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router/es6';
+import {REACTION_PATTERN} from 'components/create_post.jsx';
+import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
+import FilePreview from 'components/file_preview.jsx';
+import FileUpload from 'components/file_upload.jsx';
+import MsgTyping from 'components/msg_typing.jsx';
+import PostDeletedModal from 'components/post_deleted_modal.jsx';
+import Textbox from 'components/textbox.jsx';
 
 const ActionTypes = Constants.ActionTypes;
 const KeyCodes = Constants.KeyCodes;
-
-import {REACTION_PATTERN} from 'components/create_post.jsx';
-import PropTypes from 'prop-types';
-import React from 'react';
 
 export default class CreateComment extends React.Component {
     static propTypes = {
@@ -195,15 +194,8 @@ export default class CreateComment extends React.Component {
         ChannelActions.executeCommand(
             message,
             args,
-            (data) => {
+            () => {
                 this.setState({submitting: false});
-                if (data.goto_location && data.goto_location.length > 0) {
-                    if (data.goto_location.startsWith('/') || data.goto_location.includes(window.location.hostname)) {
-                        browserHistory.push(data.goto_location);
-                    } else {
-                        window.open(data.goto_location);
-                    }
-                }
             },
             (err) => {
                 if (err.sendMessage) {
@@ -560,10 +552,9 @@ export default class CreateComment extends React.Component {
                         topOffset={55}
                     />
                     <span
-                        className='icon icon--emoji emoji-rhs'
+                        className={'icon icon--emoji emoji-rhs ' + (this.state.showEmojiPicker ? 'active' : '')}
                         dangerouslySetInnerHTML={{__html: Constants.EMOJI_ICON_SVG}}
                         onClick={this.toggleEmojiPicker}
-                        onMouseOver={EmojiPicker.beginPreloading}
                     />
                 </span>
             );

@@ -1,13 +1,11 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {Parser, ProcessNodeDefinitions} from 'html-to-react';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
-import AtMention from 'components/at_mention';
-import MarkdownImage from 'components/markdown_image';
+import {Parser, ProcessNodeDefinitions} from 'html-to-react';
 
 import store from 'stores/redux_store.jsx';
 
@@ -15,8 +13,11 @@ import * as PostUtils from 'utils/post_utils.jsx';
 import * as TextFormatting from 'utils/text_formatting.jsx';
 import * as Utils from 'utils/utils.jsx';
 
-import {getChannelsNameMapInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';
-import {Posts} from 'mattermost-redux/constants';
+import {Posts} from 'mattermost-redux/constants';   // eslint-disable-line import/order
+import {getChannelsNameMapInCurrentTeam} from 'mattermost-redux/selectors/entities/channels';   // eslint-disable-line import/order
+
+import AtMention from 'components/at_mention';
+import MarkdownImage from 'components/markdown_image';
 
 import {renderSystemMessage} from './system_message_helpers.jsx';
 
@@ -86,7 +87,12 @@ export default class PostMessageView extends React.PureComponent {
         /*
          * Post type components from plugins
          */
-        pluginPostTypes: PropTypes.object
+        pluginPostTypes: PropTypes.object,
+
+        /**
+         * The logged in user
+         */
+        currentUser: PropTypes.object.isRequired
     };
 
     static defaultProps = {
@@ -202,10 +208,12 @@ export default class PostMessageView extends React.PureComponent {
             }
         }
 
+        const mentionKeys = [...this.props.mentionKeys, this.props.currentUser.username];
+
         const options = Object.assign({}, this.props.options, {
             emojis: this.props.emojis,
             siteURL: this.props.siteUrl,
-            mentionKeys: this.props.mentionKeys,
+            mentionKeys,
             atMentions: true,
             channelNamesMap: getChannelsNameMapInCurrentTeam(store.getState()),
             team: this.props.team

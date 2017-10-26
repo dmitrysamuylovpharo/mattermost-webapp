@@ -1,12 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import Constants from 'utils/constants.jsx';
-import * as Utils from 'utils/utils.jsx';
-
+import ChannelStore from 'stores/channel_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-import ChannelStore from 'stores/channel_store.jsx';
+
+import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 export function isSystemMessage(post) {
     return Boolean(post.type && (post.type.lastIndexOf(Constants.SYSTEM_MESSAGE_PREFIX) === 0));
@@ -53,6 +53,10 @@ export function getProfilePicSrcForPost(post, user) {
 }
 
 export function canDeletePost(post) {
+    if (post.type === Constants.PostTypes.FAKE_PARENT_DELETED) {
+        return false;
+    }
+
     const isOwner = isPostOwner(post);
     const isSystemAdmin = UserStore.isSystemAdminForCurrentUser();
     const isTeamAdmin = TeamStore.isTeamAdminForCurrentTeam() || isSystemAdmin;

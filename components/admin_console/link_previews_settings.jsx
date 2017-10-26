@@ -2,10 +2,10 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import AdminSettings from './admin_settings.jsx';
 import BooleanSetting from './boolean_setting.jsx';
-import {FormattedMessage} from 'react-intl';
 import SettingsGroup from './settings_group.jsx';
 
 export default class LinkPreviewsSettings extends AdminSettings {
@@ -52,7 +52,7 @@ export default class LinkPreviewsSettings extends AdminSettings {
                     helpText={
                         <FormattedMessage
                             id='admin.customization.enableLinkPreviewsDesc'
-                            defaultMessage='Enable users to display a preview of website content below the message, if available. When true, website previews can be enabled from Account Settings > Advanced > Preview pre-release features.'
+                            defaultMessage='Display a preview of website content below messages, when available. Users can disable these previews from Account Settings > Display > Website Link Previews.'
                         />
                     }
                     value={this.state.enableLinkPreviews}

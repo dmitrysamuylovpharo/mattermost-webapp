@@ -2,25 +2,25 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
+
+import PropTypes from 'prop-types';
+import React from 'react';
+import {FormattedMessage} from 'react-intl';
+
+import ErrorStore from 'stores/error_store.jsx';
+
+import Constants from 'utils/constants.jsx';
+import * as TextFormatting from 'utils/text_formatting.jsx';
+import * as Utils from 'utils/utils.jsx';
+
 import AtMentionProvider from './suggestion/at_mention_provider.jsx';
 import ChannelMentionProvider from './suggestion/channel_mention_provider.jsx';
 import CommandProvider from './suggestion/command_provider.jsx';
 import EmoticonProvider from './suggestion/emoticon_provider.jsx';
-import SuggestionList from './suggestion/suggestion_list.jsx';
 import SuggestionBox from './suggestion/suggestion_box.jsx';
-import ErrorStore from 'stores/error_store.jsx';
-
-import * as TextFormatting from 'utils/text_formatting.jsx';
-import * as Utils from 'utils/utils.jsx';
-import Constants from 'utils/constants.jsx';
-
-import {FormattedMessage} from 'react-intl';
+import SuggestionList from './suggestion/suggestion_list.jsx';
 
 const PreReleaseFeatures = Constants.PRE_RELEASE_FEATURES;
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
 
 export default class Textbox extends React.Component {
     static propTypes = {
@@ -199,6 +199,7 @@ export default class Textbox extends React.Component {
         if (Utils.isFeatureEnabled(PreReleaseFeatures.MARKDOWN_PREVIEW)) {
             previewLink = (
                 <a
+                    id='previewLink'
                     onClick={this.togglePreview}
                     className='textbox-preview-link'
                 >
@@ -216,6 +217,7 @@ export default class Textbox extends React.Component {
 
         const helpText = (
             <div
+                id='helpText'
                 style={{visibility: hasText ? 'visible' : 'hidden', opacity: hasText ? '0.45' : '0'}}
                 className='help__format-text'
             >
@@ -303,10 +305,14 @@ export default class Textbox extends React.Component {
                     style={{display: this.state.preview ? 'block' : 'none'}}
                     dangerouslySetInnerHTML={{__html: this.state.preview ? TextFormatting.formatText(this.props.value) : ''}}
                 />
-                <div className={'help__text ' + helpTextClass}>
+                <div
+                    id='helpTextContainer'
+                    className={'help__text ' + helpTextClass}
+                >
                     {helpText}
                     {previewLink}
                     <a
+                        id='helpTextLink'
                         target='_blank'
                         rel='noopener noreferrer'
                         href='/help/messaging'

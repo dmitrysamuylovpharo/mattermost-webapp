@@ -1,23 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import SearchableChannelList from 'components/searchable_channel_list.jsx';
-
-import ChannelStore from 'stores/channel_store.jsx';
-import UserStore from 'stores/user_store.jsx';
-import TeamStore from 'stores/team_store.jsx';
-
-import Constants from 'utils/constants.jsx';
-import {joinChannel, searchMoreChannels} from 'actions/channel_actions.jsx';
-import {showCreateOption} from 'utils/channel_utils.jsx';
-
 import PropTypes from 'prop-types';
-
 import React from 'react';
 import PureRenderMixin from 'react-addons-pure-render-mixin';
 import {Modal} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 import {browserHistory} from 'react-router/es6';
+
+import {joinChannel, searchMoreChannels} from 'actions/channel_actions.jsx';
+import ChannelStore from 'stores/channel_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
+
+import {showCreateOption} from 'utils/channel_utils.jsx';
+import Constants from 'utils/constants.jsx';
+
+import SearchableChannelList from 'components/searchable_channel_list.jsx';
 
 const CHANNELS_CHUNK_SIZE = 50;
 const CHANNELS_PER_PAGE = 50;
@@ -194,6 +193,7 @@ export default class MoreChannels extends React.Component {
                         channels={this.state.channels}
                         channelsPerPage={CHANNELS_PER_PAGE}
                         nextPage={this.nextPage}
+                        isSearch={this.state.search}
                         search={this.search}
                         handleJoin={this.handleJoin}
                         noResultsText={createChannelHelpText}

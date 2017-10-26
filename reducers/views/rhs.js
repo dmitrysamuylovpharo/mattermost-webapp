@@ -2,8 +2,10 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-import {ActionTypes} from 'utils/constants.jsx';
+
 import {PostTypes} from 'mattermost-redux/action_types';
+
+import {ActionTypes} from 'utils/constants.jsx';
 
 function selectedPostId(state = '', action) {
     switch (action.type) {
@@ -14,6 +16,15 @@ function selectedPostId(state = '', action) {
             return '';
         }
         return state;
+    default:
+        return state;
+    }
+}
+
+function selectedPostChannelId(state = '', action) {
+    switch (action.type) {
+    case ActionTypes.SELECT_POST:
+        return action.channelId;
     default:
         return state;
     }
@@ -57,6 +68,7 @@ function fromPinnedPosts(state = false, action) {
 
 export default combineReducers({
     selectedPostId,
+    selectedPostChannelId,
     fromSearch,
     fromFlaggedPosts,
     fromPinnedPosts

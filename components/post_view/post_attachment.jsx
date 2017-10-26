@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import * as TextFormatting from 'utils/text_formatting.jsx';
-import {localizeMessage} from 'utils/utils.jsx';
+import $ from 'jquery';
+
+import PropTypes from 'prop-types';
+import React from 'react';
 
 import * as PostActions from 'actions/post_actions.jsx';
 
-import $ from 'jquery';
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as TextFormatting from 'utils/text_formatting.jsx';
+import {isUrlSafe} from 'utils/url.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class PostAttachment extends React.PureComponent {
     static propTypes = {
@@ -247,7 +249,7 @@ export default class PostAttachment extends React.PureComponent {
                 );
             }
         }
-        if (data.author_link) {
+        if (data.author_link && isUrlSafe(data.author_link)) {
             author = (
                 <a
                     href={data.author_link}
@@ -261,7 +263,7 @@ export default class PostAttachment extends React.PureComponent {
 
         let title;
         if (data.title) {
-            if (data.title_link) {
+            if (data.title_link && isUrlSafe(data.title_link)) {
                 title = (
                     <h1
                         className='attachment__title'

@@ -2,23 +2,21 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
 import * as I18n from 'i18n/i18n.jsx';
 
 import AdminSettings from './admin_settings.jsx';
-import {FormattedMessage, FormattedHTMLMessage} from 'react-intl';
-import SettingsGroup from './settings_group.jsx';
 import DropdownSetting from './dropdown_setting.jsx';
 import MultiSelectSetting from './multiselect_settings.jsx';
+import SettingsGroup from './settings_group.jsx';
 
 export default class LocalizationSettings extends AdminSettings {
     constructor(props) {
         super(props);
 
         this.getConfigFromState = this.getConfigFromState.bind(this);
-
         this.renderSettings = this.renderSettings.bind(this);
-        this.canSave = this.canSave.bind(this);
 
         const locales = I18n.getAllLanguages();
 
@@ -28,10 +26,6 @@ export default class LocalizationSettings extends AdminSettings {
                 return {value: locales[l].value, text: locales[l].name, order: locales[l].order};
             }).sort((a, b) => a.order - b.order)
         });
-    }
-
-    canSave() {
-        return this.state.availableLocales.join(',').indexOf(this.state.defaultClientLocale) !== -1 || this.state.availableLocales.length === 0;
     }
 
     getConfigFromState(config) {

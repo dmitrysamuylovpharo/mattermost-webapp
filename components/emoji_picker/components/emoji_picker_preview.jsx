@@ -1,13 +1,11 @@
-import PropTypes from 'prop-types';
-
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
 import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import EmojiStore from 'stores/emoji_store.jsx';
-
-import {FormattedMessage} from 'react-intl';
 
 export default class EmojiPickerPreview extends React.Component {
     static propTypes = {
@@ -22,7 +20,7 @@ export default class EmojiPickerPreview extends React.Component {
             let aliases;
             let previewImage;
 
-            if (emoji.aliases && emoji.category) {
+            if (emoji.aliases && emoji.category && emoji.batch) {
                 // This is a system emoji which only has a list of aliases
                 name = emoji.aliases[0];
                 aliases = emoji.aliases;
@@ -31,7 +29,7 @@ export default class EmojiPickerPreview extends React.Component {
                     <span className='sprite-preview'>
                         <img
                             src='/static/images/img_trans.gif'
-                            className={'emojisprite-preview emoji-category-' + emoji.category + ' emoji-' + emoji.filename}
+                            className={'emojisprite-preview emoji-category-' + emoji.category + '-' + emoji.batch + ' emoji-' + emoji.filename}
                         />
                     </span>
                 );

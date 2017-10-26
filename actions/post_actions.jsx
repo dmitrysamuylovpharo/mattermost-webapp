@@ -1,34 +1,29 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
+import {browserHistory} from 'react-router/es6';
+import {batchActions} from 'redux-batched-actions';
 
-import ChannelStore from 'stores/channel_store.jsx';
-import UserStore from 'stores/user_store.jsx';
-import PostStore from 'stores/post_store.jsx';
-import TeamStore from 'stores/team_store.jsx';
+import {PostTypes} from 'mattermost-redux/action_types';
+import {getMyChannelMember} from 'mattermost-redux/actions/channels';
+import * as PostActions from 'mattermost-redux/actions/posts';
+import {Client4} from 'mattermost-redux/client';
+import * as Selectors from 'mattermost-redux/selectors/entities/posts';
 
-import {loadNewDMIfNeeded, loadNewGMIfNeeded} from 'actions/user_actions.jsx';
 import {sendDesktopNotification} from 'actions/notification_actions.jsx';
+import {loadNewDMIfNeeded, loadNewGMIfNeeded} from 'actions/user_actions.jsx';
+import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
+import ChannelStore from 'stores/channel_store.jsx';
+import PostStore from 'stores/post_store.jsx';
+import store from 'stores/redux_store.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
 
 import {ActionTypes, Constants} from 'utils/constants.jsx';
 import {EMOJI_PATTERN} from 'utils/emoticons.jsx';
 
-import {browserHistory} from 'react-router/es6';
-
-// Redux actions
-import store from 'stores/redux_store.jsx';
 const dispatch = store.dispatch;
 const getState = store.getState;
-
-import * as PostActions from 'mattermost-redux/actions/posts';
-import {getMyChannelMember} from 'mattermost-redux/actions/channels';
-
-import {Client4} from 'mattermost-redux/client';
-
-import {PostTypes} from 'mattermost-redux/action_types';
-import * as Selectors from 'mattermost-redux/selectors/entities/posts';
-import {batchActions} from 'redux-batched-actions';
 
 export function handleNewPost(post, msg) {
     let websocketMessageProps = {};
@@ -143,7 +138,7 @@ export function getPinnedPosts(channelId = ChannelStore.getCurrentId()) {
 
             AppDispatcher.handleServerAction({
                 type: ActionTypes.RECEIVED_SEARCH,
-                results: data,
+                results: {...data, channelId},
                 is_flagged_posts: false,
                 is_pinned_posts: true
             });
@@ -163,7 +158,7 @@ export function removeReaction(channelId, postId, emojiName) {
     PostActions.removeReaction(postId, emojiName)(dispatch, getState);
 }
 
-export function createPost(post, files, success) {
+export async function createPost(post, files, success) {
     // parse message and emit emoji event
     const emojis = post.message.match(EMOJI_PATTERN);
     if (emojis) {
@@ -173,34 +168,29 @@ export function createPost(post, files, success) {
         }
     }
 
-    PostActions.createPost(post, files)(dispatch, getState).then(() => {
-        if (post.root_id) {
-            PostStore.storeCommentDraft(post.root_id, null);
-        } else {
-            PostStore.storeDraft(post.channel_id, null);
-        }
+    await PostActions.createPost(post, files)(dispatch, getState);
+    if (post.root_id) {
+        PostStore.storeCommentDraft(post.root_id, null);
+    } else {
+        PostStore.storeDraft(post.channel_id, null);
+    }
 
-        if (success) {
-            success();
-        }
-    });
+    if (success) {
+        success();
+    }
 }
 
-export function updatePost(post, success) {
-    PostActions.editPost(post)(dispatch, getState).then(
-        (data) => {
-            if (data && success) {
-                success();
-            } else {
-                const serverError = getState().requests.posts.editPost.error;
-                AppDispatcher.handleServerAction({
-                    type: ActionTypes.RECEIVED_ERROR,
-                    err: {id: serverError.server_error_id, ...serverError},
-                    method: 'editPost'
-                });
-            }
-        }
-    );
+export async function updatePost(post, success) {
+    const {data, error: err} = await PostActions.editPost(post)(dispatch, getState);
+    if (data && success) {
+        success();
+    } else if (err) {
+        AppDispatcher.handleServerAction({
+            type: ActionTypes.RECEIVED_ERROR,
+            err: {id: err.server_error_id, ...err},
+            method: 'editPost'
+        });
+    }
 }
 
 export function emitEmojiPosted(emoji) {
@@ -210,7 +200,7 @@ export function emitEmojiPosted(emoji) {
     });
 }
 
-export function deletePost(channelId, post, success) {
+export async function deletePost(channelId, post, success) {
     const {currentUserId} = getState().entities.users;
 
     let hardDelete = false;
@@ -218,37 +208,36 @@ export function deletePost(channelId, post, success) {
         hardDelete = true;
     }
 
-    PostActions.deletePost(post, hardDelete)(dispatch, getState).then(
-        () => {
-            if (post.id === getState().views.rhs.selectedPostId) {
-                dispatch({
-                    type: ActionTypes.SELECT_POST,
-                    postId: ''
-                });
-            }
+    await PostActions.deletePost(post, hardDelete)(dispatch, getState);
 
-            dispatch({
-                type: PostTypes.REMOVE_POST,
-                data: post
-            });
+    if (post.id === getState().views.rhs.selectedPostId) {
+        dispatch({
+            type: ActionTypes.SELECT_POST,
+            postId: '',
+            channelId: ''
+        });
+    }
 
-            // Needed for search store
-            AppDispatcher.handleViewAction({
-                type: Constants.ActionTypes.REMOVE_POST,
-                post
-            });
+    dispatch({
+        type: PostTypes.REMOVE_POST,
+        data: post
+    });
 
-            const {focusedPostId} = getState().views.channel;
-            const channel = getState().entities.channels.channels[post.channel_id];
-            if (post.id === focusedPostId && channel) {
-                browserHistory.push(TeamStore.getCurrentTeamRelativeUrl() + '/channels/' + channel.name);
-            }
+    // Needed for search store
+    AppDispatcher.handleViewAction({
+        type: Constants.ActionTypes.REMOVE_POST,
+        post
+    });
 
-            if (success) {
-                success();
-            }
-        }
-    );
+    const {focusedPostId} = getState().views.channel;
+    const channel = getState().entities.channels.channels[post.channel_id];
+    if (post.id === focusedPostId && channel) {
+        browserHistory.push(TeamStore.getCurrentTeamRelativeUrl() + '/channels/' + channel.name);
+    }
+
+    if (success) {
+        success();
+    }
 }
 
 export function performSearch(terms, isMentionSearch, success, error) {
@@ -339,12 +328,13 @@ export function increasePostVisibility(channelId, focusedPostId) {
 
         const page = Math.floor(currentPostVisibility / POST_INCREASE_AMOUNT);
 
-        let posts;
+        let result;
         if (focusedPostId) {
-            posts = await PostActions.getPostsBefore(channelId, focusedPostId, page, POST_INCREASE_AMOUNT)(dispatch, getState);
+            result = await PostActions.getPostsBefore(channelId, focusedPostId, page, POST_INCREASE_AMOUNT)(dispatch, getState);
         } else {
-            posts = await PostActions.getPosts(channelId, page, POST_INCREASE_AMOUNT)(doDispatch, doGetState);
+            result = await PostActions.getPosts(channelId, page, POST_INCREASE_AMOUNT)(doDispatch, doGetState);
         }
+        const posts = result.data;
 
         doDispatch({
             type: ActionTypes.LOADING_POSTS,

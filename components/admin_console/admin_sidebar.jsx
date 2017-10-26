@@ -2,6 +2,7 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
+
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -264,7 +265,7 @@ export default class AdminSidebar extends React.Component {
         );
 
         let elasticSearchSettings = null;
-        if (window.mm_license.IsLicensed === 'true') {
+        if (window.mm_license.IsLicensed === 'true' && window.mm_license.Elasticsearch === 'true') {
             elasticSearchSettings = (
                 <AdminSidebarSection
                     name='elasticsearch'
@@ -272,6 +273,21 @@ export default class AdminSidebar extends React.Component {
                         <FormattedMessage
                             id='admin.sidebar.elasticsearch'
                             defaultMessage='Elasticsearch (Beta)'
+                        />
+                    }
+                />
+            );
+        }
+
+        let dataRetentionSettings = null;
+        if (window.mm_license.IsLicensed === 'true' && window.mm_license.DataRetention === 'true') {
+            dataRetentionSettings = (
+                <AdminSidebarSection
+                    name='dataretention'
+                    title={
+                        <FormattedMessage
+                            id='admin.sidebar.data_retention'
+                            defaultMessage='Data Retention Policy (Beta)'
                         />
                     }
                 />
@@ -679,6 +695,7 @@ export default class AdminSidebar extends React.Component {
                                         />
                                     }
                                 />
+                                {dataRetentionSettings}
                                 {elasticSearchSettings}
                                 <AdminSidebarSection
                                     name='developer'

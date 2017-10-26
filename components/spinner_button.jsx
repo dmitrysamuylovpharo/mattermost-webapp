@@ -1,25 +1,32 @@
-import PropTypes from 'prop-types';
-
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 
 import loadingGif from 'images/load.gif';
 
-export default class SpinnerButton extends React.Component {
-    static get propTypes() {
-        return {
-            children: PropTypes.node,
-            spinning: PropTypes.bool.isRequired,
-            onClick: PropTypes.func
-        };
+export default class SpinnerButton extends PureComponent {
+    static defaultProps = {
+        spinning: false
     }
 
-    static get defaultProps() {
-        return {
-            spinning: false
-        };
+    static propTypes = {
+
+        /**
+         * Children to show when not spinning
+         */
+        children: PropTypes.node,
+
+        /**
+         * Set to true to spin
+         */
+        spinning: PropTypes.bool.isRequired,
+
+        /**
+         * Callback function when button is clicked
+         */
+        onClick: PropTypes.func
     }
 
     render() {

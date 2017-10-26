@@ -2,12 +2,20 @@
 // See License.txt for license information.
 
 import {browserHistory} from 'react-router/es6';
-import * as Utils from 'utils/utils.jsx';
+
+import store from 'stores/redux_store.jsx';
+
 import {Constants, ErrorPageTypes} from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 function getPrefix() {
-    if (global.mm_user) {
-        return global.mm_user.id + '_';
+    const state = store.getState();
+
+    if (state && state.entities && state.entities.users) {
+        const user = state.entities.users.profiles[state.entities.users.currentUserId];
+        if (user) {
+            return user.id + '_';
+        }
     }
 
     console.warn('BrowserStore tried to operate without user present'); //eslint-disable-line no-console

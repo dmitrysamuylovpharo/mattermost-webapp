@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
+import React from 'react';
+
+import BrowserStore from 'stores/browser_store.jsx';
+
+import * as Utils from 'utils/utils.jsx';
+
+import YoutubeVideo from 'components/youtube_video';
+
 import PostAttachmentList from './post_attachment_list.jsx';
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
 import PostImage from './post_image.jsx';
-import YoutubeVideo from 'components/youtube_video';
-
-import Constants from 'utils/constants.jsx';
-import * as Utils from 'utils/utils.jsx';
-import BrowserStore from 'stores/browser_store.jsx';
-
-import React from 'react';
-import PropTypes from 'prop-types';
 
 export default class PostBodyAdditionalContent extends React.PureComponent {
     static propTypes = {
@@ -29,11 +30,17 @@ export default class PostBodyAdditionalContent extends React.PureComponent {
         /**
          * Set to collapse image and video previews
          */
-        previewCollapsed: PropTypes.string
+        previewCollapsed: PropTypes.string,
+
+        /**
+         * User's preference to link previews
+         */
+        previewEnabled: PropTypes.bool
     }
 
     static defaultProps = {
-        previewCollapsed: ''
+        previewCollapsed: '',
+        previewEnabled: false
     }
 
     constructor(props) {
@@ -190,11 +197,12 @@ export default class PostBodyAdditionalContent extends React.PureComponent {
         }
 
         const link = Utils.extractFirstLink(this.props.post.message);
-        if (link && Utils.isFeatureEnabled(Constants.PRE_RELEASE_FEATURES.EMBED_PREVIEW) && global.window.mm_config.EnableLinkPreviews === 'true') {
+        if (link && global.window.mm_config.EnableLinkPreviews === 'true' && this.props.previewEnabled) {
             return (
                 <PostAttachmentOpenGraph
                     link={link}
                     previewCollapsed={this.props.previewCollapsed}
+                    previewEnabled={this.props.previewEnabled}
                     post={this.props.post}
                 />
             );

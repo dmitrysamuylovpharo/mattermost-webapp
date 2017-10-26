@@ -1,19 +1,20 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import WebSocketClient from 'client/web_websocket_client.jsx';
+import $ from 'jquery';
 
-import UserStore from 'stores/user_store.jsx';
-import WebrtcStore from 'stores/webrtc_store.jsx';
+import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import * as GlobalActions from 'actions/global_actions.jsx';
 import * as WebrtcActions from 'actions/webrtc_actions.jsx';
-import * as Utils from 'utils/utils.jsx';
+import UserStore from 'stores/user_store.jsx';
+import WebrtcStore from 'stores/webrtc_store.jsx';
+
+import WebSocketClient from 'client/web_websocket_client.jsx';
+
 import {Constants, WebrtcActionTypes} from 'utils/constants.jsx';
-
-import React from 'react';
-
-import {FormattedMessage} from 'react-intl';
+import * as Utils from 'utils/utils.jsx';
 
 import ring from 'images/ring.mp3';
 
@@ -81,6 +82,9 @@ export default class WebrtcNotification extends React.Component {
     closeRightHandSide(e) {
         e.preventDefault();
         GlobalActions.emitCloseRightHandSide();
+        setTimeout(() => {
+            $('.app__body .inner-wrap').addClass('move--left');
+        }, 0);
     }
 
     onIncomingCall(incoming) {

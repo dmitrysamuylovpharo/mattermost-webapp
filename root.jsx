@@ -26,8 +26,8 @@ import store from 'stores/redux_store.jsx';
 const dispatch = store.dispatch;
 const getState = store.getState;
 
-import {viewChannel} from 'mattermost-redux/actions/channels';
-import {getClientConfig, getLicenseConfig, setUrl} from 'mattermost-redux/actions/general';
+import {viewChannel} from 'mattermost-redux/actions/channels';                              // eslint-disable-line import/order
+import {getClientConfig, getLicenseConfig, setUrl} from 'mattermost-redux/actions/general';   // eslint-disable-line import/order
 
 // Import the root of our routing tree
 import rRoot from 'routes/route_root.jsx';
@@ -64,11 +64,11 @@ function preRenderSetup(callwhendone) {
         loadMeAndConfig(() => d1.resolve());
     } else {
         getClientConfig()(store.dispatch, store.getState).then(
-            (config) => {
+            ({data: config}) => {
                 global.window.mm_config = config;
 
                 getLicenseConfig()(store.dispatch, store.getState).then(
-                    (license) => {
+                    ({data: license}) => {
                         global.window.mm_license = license;
                         d1.resolve();
                     }

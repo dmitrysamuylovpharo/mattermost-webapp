@@ -2,11 +2,11 @@
 // See License.txt for license information.
 
 import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import * as Utils from 'utils/utils.jsx';
 
 import AdminSettings from './admin_settings.jsx';
-import {FormattedMessage} from 'react-intl';
 import SettingsGroup from './settings_group.jsx';
 import TextSetting from './text_setting.jsx';
 
@@ -114,7 +114,7 @@ export default class ClientVersionsSettings extends AdminSettings {
                     label={
                         <FormattedMessage
                             id='admin.client_versions.desktopMinVersion'
-                            defaultMessage='Minimum Destop Version'
+                            defaultMessage='Minimum Desktop Version'
                         />
                     }
                     placeholder={Utils.localizeMessage('admin.client_versions.desktopMinVersion', 'X.X.X')}

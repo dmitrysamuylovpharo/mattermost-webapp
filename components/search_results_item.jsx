@@ -1,26 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
+import React from 'react';
+import {FormattedDate, FormattedMessage} from 'react-intl';
+import {browserHistory, Link} from 'react-router/es6';
+
+import * as GlobalActions from 'actions/global_actions.jsx';
+
 import PostMessageContainer from 'components/post_view/post_message_view';
-import UserProfile from './user_profile.jsx';
 import FileAttachmentListContainer from 'components/file_attachment_list';
-import ProfilePicture from './profile_picture.jsx';
+
 import CommentIcon from 'components/common/comment_icon.jsx';
 import DotMenu from 'components/dot_menu';
 import PostFlagIcon from 'components/post_view/post_flag_icon.jsx';
-import PostBodyAdditionalContent from 'components/post_view/post_body_additional_content.jsx';
-
 import TeamStore from 'stores/team_store.jsx';
 
-import * as GlobalActions from 'actions/global_actions.jsx';
-import * as Utils from 'utils/utils.jsx';
-import * as PostUtils from 'utils/post_utils.jsx';
 import Constants from 'utils/constants.jsx';
+import * as PostUtils from 'utils/post_utils.jsx';
+import * as Utils from 'utils/utils.jsx';
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import {FormattedMessage, FormattedDate} from 'react-intl';
-import {browserHistory, Link} from 'react-router/es6';
+import ProfilePicture from './profile_picture.jsx';
+import UserProfile from './user_profile.jsx';
 
 export default class SearchResultsItem extends React.Component {
     constructor(props) {
@@ -94,10 +95,13 @@ export default class SearchResultsItem extends React.Component {
     }
 
     timeTag(post) {
+        const date = Utils.getDateForUnixTicks(post.create_at);
+
         return (
             <time
                 className='search-item-time'
-                dateTime={Utils.getDateForUnixTicks(post.create_at).toISOString()}
+                dateTime={date.toISOString()}
+                title={date}
             >
                 <FormattedDate
                     value={post.create_at}
@@ -255,15 +259,13 @@ export default class SearchResultsItem extends React.Component {
             );
 
             message = (
-                <PostBodyAdditionalContent post={post}>
-                    <PostMessageContainer
-                        post={post}
-                        options={{
-                            searchTerm: this.props.term,
-                            mentionHighlight: this.props.isMentionSearch
-                        }}
-                    />
-                </PostBodyAdditionalContent>
+                <PostMessageContainer
+                    post={post}
+                    options={{
+                        searchTerm: this.props.term,
+                        mentionHighlight: this.props.isMentionSearch
+                    }}
+                />
             );
         }
 

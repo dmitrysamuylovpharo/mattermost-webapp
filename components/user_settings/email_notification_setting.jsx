@@ -1,17 +1,17 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import {savePreference} from 'actions/user_actions.jsx';
-import {localizeMessage} from 'utils/utils.jsx';
-
-import {FormattedMessage} from 'react-intl';
-import SettingItemMin from 'components/setting_item_min.jsx';
-import SettingItemMax from 'components/setting_item_max.jsx';
 
 import {Preferences} from 'utils/constants.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
+
+import SettingItemMax from 'components/setting_item_max.jsx';
+import SettingItemMin from 'components/setting_item_min.jsx';
 
 export default class EmailNotificationSetting extends React.Component {
     static propTypes = {
@@ -21,7 +21,8 @@ export default class EmailNotificationSetting extends React.Component {
         emailInterval: PropTypes.number.isRequired,
         onSubmit: PropTypes.func.isRequired,
         onCancel: PropTypes.func.isRequired,
-        serverError: PropTypes.string
+        serverError: PropTypes.string,
+        saving: PropTypes.bool
     };
 
     constructor(props) {
@@ -50,11 +51,15 @@ export default class EmailNotificationSetting extends React.Component {
     }
 
     handleSubmit = () => {
-        // until the rest of the notification settings are moved to preferences, we have to do this separately
-        savePreference(Preferences.CATEGORY_NOTIFICATIONS, Preferences.EMAIL_INTERVAL, this.state.emailInterval.toString());
+        const {enableEmail, emailInterval} = this.state;
+        if (this.props.enableEmail !== enableEmail || this.props.emailInterval !== emailInterval) {
+            // until the rest of the notification settings are moved to preferences, we have to do this separately
+            savePreference(Preferences.CATEGORY_NOTIFICATIONS, Preferences.EMAIL_INTERVAL, emailInterval.toString());
 
-        const {enableEmail} = this.state;
-        this.props.onSubmit({enableEmail});
+            this.props.onSubmit({enableEmail});
+        } else {
+            this.props.updateSection('');
+        }
     }
 
     handleExpand = () => {
@@ -254,6 +259,7 @@ export default class EmailNotificationSetting extends React.Component {
                     </div>
                 ]}
                 submit={this.handleSubmit}
+                saving={this.props.saving}
                 server_error={this.props.serverError}
                 updateSection={this.handleCancel}
             />

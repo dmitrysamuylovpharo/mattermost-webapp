@@ -1,30 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import Textbox from './textbox.jsx';
-
-import BrowserStore from 'stores/browser_store.jsx';
-import PostStore from 'stores/post_store.jsx';
-import MessageHistoryStore from 'stores/message_history_store.jsx';
-import PreferenceStore from 'stores/preference_store.jsx';
-
-import * as GlobalActions from 'actions/global_actions.jsx';
-import {updatePost} from 'actions/post_actions.jsx';
-
-import * as UserAgent from 'utils/user_agent.jsx';
-import * as Utils from 'utils/utils.jsx';
-import Constants from 'utils/constants.jsx';
-const KeyCodes = Constants.KeyCodes;
-
 import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
 
-import store from 'stores/redux_store.jsx';
-const getState = store.getState;
-
 import * as Selectors from 'mattermost-redux/selectors/entities/posts';
+
+import * as GlobalActions from 'actions/global_actions.jsx';
+import {updatePost} from 'actions/post_actions.jsx';
+import BrowserStore from 'stores/browser_store.jsx';
+import MessageHistoryStore from 'stores/message_history_store.jsx';
+import PostStore from 'stores/post_store.jsx';
+import PreferenceStore from 'stores/preference_store.jsx';
+import store from 'stores/redux_store.jsx';
+
+import Constants from 'utils/constants.jsx';
+import * as UserAgent from 'utils/user_agent.jsx';
+import * as Utils from 'utils/utils.jsx';
+
+import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
+
+import Textbox from './textbox.jsx';
+
+const KeyCodes = Constants.KeyCodes;
+
+const getState = store.getState;
 
 export default class EditPostModal extends React.Component {
     constructor(props) {
@@ -52,8 +54,48 @@ export default class EditPostModal extends React.Component {
             comments: 0,
             refocusId: '',
             ctrlSend: PreferenceStore.getBool(Constants.Preferences.CATEGORY_ADVANCED_SETTINGS, 'send_on_ctrl_enter'),
-            postError: ''
+            postError: '',
+            showEmojiPicker: false
         };
+    }
+
+    getContainer = () => {
+        return this.refs.editModalBody;
+    }
+
+    toggleEmojiPicker = () => {
+        this.setState({showEmojiPicker: !this.state.showEmojiPicker});
+    }
+
+    hideEmojiPicker = () => {
+        this.setState({showEmojiPicker: false});
+    }
+
+    handleEmojiClick = (emoji) => {
+        const emojiAlias = emoji.name || emoji.aliases[0];
+
+        if (!emojiAlias) {
+            //Oops.. There went something wrong
+            return;
+        }
+
+        if (this.state.editText === '') {
+            this.setState({editText: ':' + emojiAlias + ': '});
+        } else {
+            //check whether there is already a blank at the end of the current message
+            const newMessage = (/\s+$/.test(this.state.editText)) ?
+                this.state.editText + ':' + emojiAlias + ': ' : this.state.editText + ' :' + emojiAlias + ': ';
+
+            this.setState({editText: newMessage});
+        }
+
+        this.setState({showEmojiPicker: false});
+
+        this.refs.editbox.focus();
+    }
+
+    getEditPostControls = () => {
+        return this.refs.editPostEmoji;
     }
 
     handlePostError(postError) {
@@ -234,6 +276,28 @@ export default class EditPostModal extends React.Component {
             postError = (<label className={postErrorClass}>{this.state.postError}</label>);
         }
 
+        let emojiPicker = null;
+        if (window.mm_config.EnableEmojiPicker === 'true') {
+            emojiPicker = (
+                <span className='emoji-picker__container'>
+                    <EmojiPickerOverlay
+                        show={this.state.showEmojiPicker}
+                        container={this.getContainer}
+                        target={this.getEditPostControls}
+                        onHide={this.hideEmojiPicker}
+                        onEmojiClick={this.handleEmojiClick}
+                        rightOffset={50}
+                        topOffset={-20}
+                    />
+                    <span
+                        className='icon icon--emoji'
+                        onClick={this.toggleEmojiPicker}
+                        dangerouslySetInnerHTML={{__html: Constants.EMOJI_ICON_SVG}}
+                    />
+                </span>
+            );
+        }
+
         return (
             <div
                 className='modal fade edit-modal'
@@ -264,7 +328,10 @@ export default class EditPostModal extends React.Component {
                                 />
                             </h4>
                         </div>
-                        <div className='edit-modal-body modal-body'>
+                        <div
+                            ref='editModalBody'
+                            className='edit-modal-body modal-body'
+                        >
                             <Textbox
                                 onChange={this.handleChange}
                                 onKeyPress={this.handleEditKeyPress}
@@ -272,12 +339,19 @@ export default class EditPostModal extends React.Component {
                                 handlePostError={this.handlePostError}
                                 value={this.state.editText}
                                 channelId={this.state.channel_id}
+                                emojiEnabled={window.mm_config.EnableEmojiPicker === 'true'}
                                 createMessage={Utils.localizeMessage('edit_post.editPost', 'Edit the post...')}
                                 supportsCommands={false}
                                 suggestionListStyle='bottom'
                                 id='edit_textbox'
                                 ref='editbox'
                             />
+                            <span
+                                ref='editPostEmoji'
+                                className='edit-post__actions'
+                            >
+                                {emojiPicker}
+                            </span>
                             <div className={errorBoxClass}>
                                 {postError}
                             </div>

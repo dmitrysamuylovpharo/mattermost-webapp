@@ -1,38 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import NavbarSearchBox from 'components/search_bar.jsx';
-import MessageWrapper from 'components/message_wrapper.jsx';
-import PopoverListMembers from 'components/popover_list_members';
-import EditChannelHeaderModal from 'components/edit_channel_header_modal.jsx';
-import EditChannelPurposeModal from 'components/edit_channel_purpose_modal.jsx';
-import ChannelInfoModal from 'components/channel_info_modal.jsx';
-import ChannelInviteModal from 'components/channel_invite_modal';
-import ChannelMembersModal from 'components/channel_members_modal.jsx';
-import ChannelNotificationsModal from 'components/channel_notifications_modal.jsx';
-import DeleteChannelModal from 'components/delete_channel_modal.jsx';
-import RenameChannelModal from 'components/rename_channel_modal.jsx';
-import ToggleModalButton from 'components/toggle_modal_button.jsx';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {OverlayTrigger, Popover, Tooltip} from 'react-bootstrap';
+import {FormattedMessage} from 'react-intl';
+
+import 'bootstrap';
 
 import * as GlobalActions from 'actions/global_actions.jsx';
-import * as WebrtcActions from 'actions/webrtc_actions.jsx';
-import * as Utils from 'utils/utils.jsx';
-import * as ChannelUtils from 'utils/channel_utils.jsx';
-import {getSiteURL} from 'utils/url.jsx';
-import * as TextFormatting from 'utils/text_formatting.jsx';
-
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
 import {getFlaggedPosts, getPinnedPosts} from 'actions/post_actions.jsx';
+import * as WebrtcActions from 'actions/webrtc_actions.jsx';
+import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
 import SearchStore from 'stores/search_store.jsx';
 import WebrtcStore from 'stores/webrtc_store.jsx';
 
-import {Constants, UserStatuses, ActionTypes, RHSStates} from 'utils/constants.jsx';
+import * as ChannelUtils from 'utils/channel_utils.jsx';
+import {ActionTypes, Constants, RHSStates, UserStatuses} from 'utils/constants.jsx';
+import * as TextFormatting from 'utils/text_formatting.jsx';
+import {getSiteURL} from 'utils/url.jsx';
+import * as Utils from 'utils/utils.jsx';
 
-import 'bootstrap';
-import React from 'react';
-import PropTypes from 'prop-types';
-import {FormattedMessage} from 'react-intl';
-import {Tooltip, OverlayTrigger, Popover} from 'react-bootstrap';
+import ChannelInfoModal from 'components/channel_info_modal';
+import ChannelInviteModal from 'components/channel_invite_modal';
+import ChannelMembersModal from 'components/channel_members_modal.jsx';
+import ChannelNotificationsModal from 'components/channel_notifications_modal.jsx';
+import DeleteChannelModal from 'components/delete_channel_modal';
+import EditChannelHeaderModal from 'components/edit_channel_header_modal';
+import EditChannelPurposeModal from 'components/edit_channel_purpose_modal';
+import MessageWrapper from 'components/message_wrapper.jsx';
+import PopoverListMembers from 'components/popover_list_members';
+import RenameChannelModal from 'components/rename_channel_modal.jsx';
+import NavbarSearchBox from 'components/search_bar.jsx';
+import StatusIcon from 'components/status_icon.jsx';
+import ToggleModalButton from 'components/toggle_modal_button.jsx';
 
 const PreReleaseFeatures = Constants.PRE_RELEASE_FEATURES;
 
@@ -53,6 +54,11 @@ export default class ChannelHeader extends React.Component {
             favoriteChannel: PropTypes.func.isRequired,
             unfavoriteChannel: PropTypes.func.isRequired
         }).isRequired
+    }
+
+    static defaultProps = {
+        dmUser: {},
+        dmUserStatus: {status: UserStatuses.OFFLINE}
     }
 
     constructor(props) {
@@ -110,9 +116,7 @@ export default class ChannelHeader extends React.Component {
         }
     }
 
-    toggleFavorite = (e) => {
-        e.preventDefault();
-
+    toggleFavorite = () => {
         if (this.props.isFavorite) {
             this.props.actions.unfavoriteChannel(this.props.channel.id);
         } else {
@@ -302,8 +306,8 @@ export default class ChannelHeader extends React.Component {
 
                 webrtc = (
                     <div className='webrtc__header channel-header__icon'>
-                        <a
-                            href='#'
+                        <button
+                            className='style--none'
                             onClick={() => this.initWebrtc(dmUserId, !isOffline)}
                             disabled={isOffline}
                         >
@@ -320,7 +324,7 @@ export default class ChannelHeader extends React.Component {
                                     <span dangerouslySetInnerHTML={{__html: Constants.VIDEO_ICON}}/>
                                 </div>
                             </OverlayTrigger>
-                        </a>
+                        </button>
                     </div>
                 );
             }
@@ -403,17 +407,17 @@ export default class ChannelHeader extends React.Component {
                     key='add_members'
                     role='presentation'
                 >
-                    <a
+                    <button
+                        className='style--none'
                         id='channelAddMembersGroup'
                         role='menuitem'
-                        href='#'
                         onClick={this.openDirectMessageModal}
                     >
                         <FormattedMessage
                             id='channel_header.addMembers'
                             defaultMessage='Add Members'
                         />
-                    </a>
+                    </button>
                 </li>
             );
         } else {
@@ -442,17 +446,17 @@ export default class ChannelHeader extends React.Component {
                         key='manage_members'
                         role='presentation'
                     >
-                        <a
+                        <button
+                            className='style--none'
                             id='channelManageMembers'
                             role='menuitem'
-                            href='#'
                             onClick={() => this.setState({showMembersModal: true})}
                         >
                             <FormattedMessage
                                 id='channel_header.viewMembers'
                                 defaultMessage='View Members'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
             }
@@ -514,17 +518,17 @@ export default class ChannelHeader extends React.Component {
                             key='manage_members'
                             role='presentation'
                         >
-                            <a
+                            <button
+                                className='style--none'
                                 id='channelManageMembers'
                                 role='menuitem'
-                                href='#'
                                 onClick={() => this.setState({showMembersModal: true})}
                             >
                                 <FormattedMessage
                                     id='channel_header.manageMembers'
                                     defaultMessage='Manage Members'
                                 />
-                            </a>
+                            </button>
                         </li>
                     );
                 } else {
@@ -533,17 +537,17 @@ export default class ChannelHeader extends React.Component {
                             key='view_members'
                             role='presentation'
                         >
-                            <a
+                            <button
+                                className='style--none'
                                 id='channelViewMembers'
                                 role='menuitem'
-                                href='#'
                                 onClick={() => this.setState({showMembersModal: true})}
                             >
                                 <FormattedMessage
                                     id='channel_header.viewMembers'
                                     defaultMessage='View Members'
                                 />
-                            </a>
+                            </button>
                         </li>
                     );
                 }
@@ -581,17 +585,17 @@ export default class ChannelHeader extends React.Component {
                         key='set_channel_purpose'
                         role='presentation'
                     >
-                        <a
+                        <button
+                            className='style--none'
                             id='channelEditPurpose'
                             role='menuitem'
-                            href='#'
                             onClick={() => this.setState({showEditChannelPurposeModal: true})}
                         >
                             <FormattedMessage
                                 id='channel_header.setPurpose'
                                 defaultMessage='Edit Channel Purpose'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
 
@@ -600,17 +604,17 @@ export default class ChannelHeader extends React.Component {
                         key='rename_channel'
                         role='presentation'
                     >
-                        <a
+                        <button
+                            className='style--none'
                             id='channelRename'
                             role='menuitem'
-                            href='#'
                             onClick={this.showRenameChannelModal}
                         >
                             <FormattedMessage
                                 id='channel_header.rename'
                                 defaultMessage='Rename Channel'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
             }
@@ -649,20 +653,34 @@ export default class ChannelHeader extends React.Component {
                         key='leave_channel'
                         role='presentation'
                     >
-                        <a
+                        <button
+                            className='style--none'
                             id='channelLeave'
                             role='menuitem'
-                            href='#'
                             onClick={this.handleLeave}
                         >
                             <FormattedMessage
                                 id='channel_header.leave'
                                 defaultMessage='Leave Channel'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
             }
+        }
+
+        let dmHeaderIconStatus;
+        let dmHeaderTextStatus;
+        if (channel.type === Constants.DM_CHANNEL) {
+            dmHeaderIconStatus = (
+                <StatusIcon
+                    type='avatar'
+                    status={channel.status}
+                />
+            );
+            dmHeaderTextStatus = (
+                <span className='header-status__text'>{Utils.toTitleCase(channel.status)}</span>
+            );
         }
 
         let headerTextContainer;
@@ -671,17 +689,26 @@ export default class ChannelHeader extends React.Component {
             if (this.props.enableFormatting) {
                 headerTextElement = (
                     <div
-                        onClick={Utils.handleFormattedTextClick}
-                        className='channel-header__description'
-                        dangerouslySetInnerHTML={{__html: TextFormatting.formatText(channel.header, {singleline: true, mentionHighlight: false, siteURL: getSiteURL()})}}
-                    />
+                        id='channelHeaderDescription'
+                        className='channel-header__description light'
+                    >
+                        {dmHeaderIconStatus}
+                        {dmHeaderTextStatus}
+                        <span
+                            onClick={Utils.handleFormattedTextClick}
+                            dangerouslySetInnerHTML={{__html: TextFormatting.formatText(channel.header, {singleline: true, mentionHighlight: false, siteURL: getSiteURL()})}}
+                        />
+                    </div>
                 );
             } else {
                 headerTextElement = (
                     <div
+                        id='channelHeaderDescription'
                         onClick={Utils.handleFormattedTextClick}
-                        className='channel-header__description'
+                        className='channel-header__description light'
                     >
+                        {dmHeaderIconStatus}
+                        {dmHeaderTextStatus}
                         {channel.header}
                     </div>
                 );
@@ -699,17 +726,29 @@ export default class ChannelHeader extends React.Component {
                 </OverlayTrigger>
             );
         } else {
+            let editMessage;
+            if (ChannelUtils.showManagementOptions(channel, isChannelAdmin, isTeamAdmin, isSystemAdmin)) {
+                editMessage = (
+                    <button
+                        className='style--none'
+                        onClick={() => this.setState({showEditChannelHeaderModal: true})}
+                    >
+                        <FormattedMessage
+                            id='channel_header.addChannelHeader'
+                            defaultMessage='Add a channel description'
+                        />
+                    </button>
+                );
+            }
             headerTextContainer = (
-                <a
-                    href='#'
+                <div
+                    id='channelHeaderDescription'
                     className='channel-header__description light'
-                    onClick={() => this.setState({showEditChannelHeaderModal: true})}
                 >
-                    <FormattedMessage
-                        id='channel_header.addChannelHeader'
-                        defaultMessage='Add a channel description'
-                    />
-                </a>
+                    {dmHeaderIconStatus}
+                    {dmHeaderTextStatus}
+                    {editMessage}
+                </div>
             );
         }
 
@@ -751,14 +790,13 @@ export default class ChannelHeader extends React.Component {
                 placement='bottom'
                 overlay={toggleFavoriteTooltip}
             >
-                <a
+                <button
                     id='toggleFavorite'
-                    href='#'
                     onClick={this.toggleFavorite}
-                    className={'channel-header__favorites ' + (this.props.isFavorite ? 'active' : 'inactive')}
+                    className={'style--none color--link channel-header__favorites ' + (this.props.isFavorite ? 'active' : 'inactive')}
                 >
                     <i className={'icon fa ' + (this.props.isFavorite ? 'fa-star' : 'fa-star-o')}/>
-                </a>
+                </button>
             </OverlayTrigger>
         );
 
@@ -795,21 +833,35 @@ export default class ChannelHeader extends React.Component {
             >
                 <div className='flex-parent'>
                     <div className='flex-child'>
-                        <div className='channel-header__info'>
+                        <div
+                            id='channelHeaderInfo'
+                            className='channel-header__info'
+                        >
                             {toggleFavorite}
-                            <div className='channel-header__title dropdown'>
-                                <a
-                                    id='channelHeaderDropdown'
-                                    href='#'
-                                    className='dropdown-toggle theme'
+                            <div
+                                id='channelHeaderTitle'
+                                className='channel-header__title dropdown'
+                            >
+                                <button
+                                    id='channelHeaderDropdownButton'
+                                    className='dropdown-toggle theme style--none'
                                     type='button'
                                     data-toggle='dropdown'
                                     aria-expanded='true'
                                 >
-                                    <strong className='heading'>{channelTitle} </strong>
-                                    <span className='fa fa-angle-down header-dropdown__icon'/>
-                                </a>
+                                    <strong
+                                        id='channelHeaderTitle'
+                                        className='heading'
+                                    >
+                                        {channelTitle + ' '}
+                                    </strong>
+                                    <span
+                                        id='channelHeaderDropdownIcon'
+                                        className='fa fa-angle-down header-dropdown__icon'
+                                    />
+                                </button>
                                 <ul
+                                    id='channelHeaderDropdownMenu'
                                     className='dropdown-menu'
                                     role='menu'
                                     aria-labelledby='channel_header_dropdown'
@@ -833,8 +885,9 @@ export default class ChannelHeader extends React.Component {
                             placement='bottom'
                             overlay={pinnedPostTooltip}
                         >
-                            <div
-                                className={pinnedIconClass}
+                            <button
+                                id='channelHeaderPinButton'
+                                className={'style--none ' + pinnedIconClass}
                                 onClick={this.getPinnedPosts}
                             >
                                 <span
@@ -842,7 +895,7 @@ export default class ChannelHeader extends React.Component {
                                     dangerouslySetInnerHTML={{__html: pinIcon}}
                                     aria-hidden='true'
                                 />
-                            </div>
+                            </button>
                         </OverlayTrigger>
                     </div>
                     <div className='flex-child search-bar__container'>
@@ -858,8 +911,9 @@ export default class ChannelHeader extends React.Component {
                             placement='bottom'
                             overlay={recentMentionsTooltip}
                         >
-                            <div
-                                className='channel-header__icon icon--hidden'
+                            <button
+                                id='channelHeaderMentionButton'
+                                className='channel-header__icon icon--hidden style--none'
                                 onClick={this.searchMentions}
                             >
                                 <span
@@ -867,7 +921,7 @@ export default class ChannelHeader extends React.Component {
                                     dangerouslySetInnerHTML={{__html: mentionsIcon}}
                                     aria-hidden='true'
                                 />
-                            </div>
+                            </button>
                         </OverlayTrigger>
                     </div>
                     <div className='flex-child'>
@@ -877,8 +931,9 @@ export default class ChannelHeader extends React.Component {
                             placement='bottom'
                             overlay={flaggedTooltip}
                         >
-                            <div
-                                className='channel-header__icon icon--hidden'
+                            <button
+                                id='channelHeaderFlagButton'
+                                className='channel-header__icon icon--hidden style--none'
                                 onClick={this.getFlagged}
 
                             >
@@ -886,7 +941,7 @@ export default class ChannelHeader extends React.Component {
                                     className='icon icon__flag'
                                     dangerouslySetInnerHTML={{__html: flagIcon}}
                                 />
-                            </div>
+                            </button>
                         </OverlayTrigger>
                     </div>
                 </div>

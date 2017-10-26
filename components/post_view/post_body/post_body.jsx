@@ -5,19 +5,19 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
+import {Posts} from 'mattermost-redux/constants';
+
 import * as PostActions from 'actions/post_actions.jsx';
+
+import * as PostUtils from 'utils/post_utils.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 import FileAttachmentListContainer from 'components/file_attachment_list';
 import CommentedOnFilesMessage from 'components/post_view/commented_on_files_message';
-import PostBodyAdditionalContent from 'components/post_view/post_body_additional_content.jsx';
 import FailedPostOptions from 'components/post_view/failed_post_options';
+import PostBodyAdditionalContent from 'components/post_view/post_body_additional_content.jsx';
 import PostMessageView from 'components/post_view/post_message_view';
 import ReactionListContainer from 'components/post_view/reaction_list';
-
-import * as Utils from 'utils/utils.jsx';
-import * as PostUtils from 'utils/post_utils.jsx';
-
-import {Posts} from 'mattermost-redux/constants';
 
 export default class PostBody extends React.PureComponent {
     static propTypes = {
@@ -56,6 +56,11 @@ export default class PostBody extends React.PureComponent {
          * Set to collapse image and video previews
          */
         previewCollapsed: PropTypes.string,
+
+        /**
+         * User's preference to link previews
+         */
+        previewEnabled: PropTypes.bool,
 
         /**
          * Post identifiers for selenium tests
@@ -190,6 +195,7 @@ export default class PostBody extends React.PureComponent {
                 <PostBodyAdditionalContent
                     post={this.props.post}
                     previewCollapsed={this.props.previewCollapsed}
+                    previewEnabled={this.props.previewEnabled}
                 >
                     {messageWrapper}
                 </PostBodyAdditionalContent>
