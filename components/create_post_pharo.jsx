@@ -40,6 +40,7 @@ const KeyCodes = Constants.KeyCodes;
 import React from 'react';
 import ReactSelect from 'react-select-plus';
 import PropTypes from 'prop-types';
+import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 export const REACTION_PATTERN = /^(\+|-):([^:\s]+):\s*$/;
 
@@ -86,6 +87,8 @@ export default class CreatePostPharo extends React.Component {
         this.getTopicOtherTags = this.getTopicOtherTags.bind(this);
         this.getSourceOtherTags = this.getSourceOtherTags.bind(this);
 
+        this.nextPostCritical = this.nextPostCritical.bind(this);
+
         PostStore.clearDraftUploads();
 
         const channel = ChannelStore.getCurrent();
@@ -126,7 +129,8 @@ export default class CreatePostPharo extends React.Component {
             otherTagsList: [],
             topicSelectedRelatedOtherTagsList: [],
             sourceSelectedRelatedOtherTagsList: [],
-            otherSelectedTagsList: []            
+            otherSelectedTagsList: [],
+            nextPostCritical: false
         };
 
         this.lastBlurAt = 0;
@@ -263,11 +267,17 @@ export default class CreatePostPharo extends React.Component {
             // start with heading
             post.message = "##### ";
 
+            if(this.state.nextPostCritical)
+                post.message = post.message + " :exclamation: ";
+
             if(this.state.topic.length > 0)
                 post.message = post.message + this.state.topicLabel + " - ";
 
             if(subjectText.length > 0)
-                post.message = post.message + subjectText + "\r\n";
+                post.message = post.message + subjectText;
+
+            if(subjectText.length > 0)
+                post.message = post.message + " \r\n";
         }
 
         if(this.state.sourceLabel.length > 0)
@@ -312,6 +322,10 @@ export default class CreatePostPharo extends React.Component {
 
             post.message = post.message + tagText;
         }
+
+        // if critical call out to everyone in channel @channel
+        if(this.state.nextPostCritical)
+            post.message = post.message + " @channel";
 
         if (this.state.postError) {
             this.setState({errorClass: 'animation--highlight'});
@@ -379,7 +393,8 @@ export default class CreatePostPharo extends React.Component {
             topic: '',
             source: '',
             other: [],
-            subject: ''            
+            subject: '',
+            nextPostCritical: false
         });
 
         const fasterThanHumanWillClick = 150;
@@ -923,6 +938,10 @@ export default class CreatePostPharo extends React.Component {
         return message.trim().length !== 0 || fileInfos.length !== 0;
     }
 
+    nextPostCritical(val) {
+        this.setState({nextPostCritical: val});
+    }
+
     render() {
         const notifyAllTitle = (
             <FormattedMessage
@@ -1013,6 +1032,10 @@ export default class CreatePostPharo extends React.Component {
             />
         );
 
+        const handleNextPostCritical = (e) => {
+            this.nextPostCritical(e.target.checked);
+        };
+
         let emojiPicker = null;
         if (window.mm_config.EnableEmojiPicker === 'true') {
             emojiPicker = (
@@ -1035,6 +1058,15 @@ export default class CreatePostPharo extends React.Component {
                 </span>
             );
         }        
+
+        const criticalPostTooltip = (
+            <Tooltip id='criticalPostTooltip'>
+                <FormattedMessage
+                    id='create_post_pharo.criticalPosts'
+                    defaultMessage='Mark High Importance'
+                />
+            </Tooltip>
+        );
 
         return (
             <form
@@ -1084,6 +1116,29 @@ export default class CreatePostPharo extends React.Component {
                                     onChange={this.handleSubjectChange} 
                                     style={this.state.subjectValidationBorder} 
                                 />
+                                <div key='criticalPostOption' id='criticalPostOption'>
+                                    <div className='checkbox'>                                        
+                                        <OverlayTrigger
+                                            trigger={['hover', 'focus']}
+                                            delayShow={Constants.OVERLAY_TIME_DELAY}
+                                            placement='top'
+                                            overlay={criticalPostTooltip}
+                                        >                                            
+                                            <label>
+                                                <FormattedMessage
+                                                    id='pharo.post.critical'
+                                                    defaultMessage='!'
+                                                />                                            
+                                                <input
+                                                    id='criticalPostCheckbox'
+                                                    type='checkbox'
+                                                    checked={this.state.nextPostCritical}
+                                                    onChange={handleNextPostCritical}
+                                                />
+                                            </label>
+                                        </OverlayTrigger>
+                                    </div>
+                                </div>                                
                             </div>                             
                             <Textbox
                             onChange={this.handleChange}

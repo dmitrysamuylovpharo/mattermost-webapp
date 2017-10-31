@@ -1734,3 +1734,27 @@ div#post-create div.Select.Select--multi {
 .search-item__container.since-result-item .date-separator .separator__hr {
     display: none;    
 }
+
+#criticalPostOption {
+    width: 35px;
+    color: red;
+    position: absolute;
+    top: 82px;
+    right: 0px;
+}
+
+#criticalPostOption span {
+    margin-right: 5px;
+}
+
+#criticalPostOption label {
+    padding-left: 0px;
+}
+
+#criticalPostOption input {
+    margin-left: 0px;
+}
+
+.app__body .post.current--user .post__body.high-importance, .app__body .post__body.high-importance {
+    background-color: rgba(243, 204, 204, 0.54);
+}

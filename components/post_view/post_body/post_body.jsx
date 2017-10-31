@@ -126,7 +126,7 @@ export default class PostBody extends React.PureComponent {
                 else if (messageParts[1].trim().length > 0)
                     subject = messageParts[1];
 
-                message = message.replace(subject, '');
+                message = message.replace(subject, subject + ' |');
             }
 
             comment = (
@@ -207,10 +207,15 @@ export default class PostBody extends React.PureComponent {
             mentionHighlightClass = 'mention-comment';
         }
 
+        let hightImportanceHighlightClass = '';
+        if (post.message.indexOf(':exclamation:') > -1) {
+            hightImportanceHighlightClass = ' high-importance';
+        }        
+
         return (
             <div>
                 {comment}
-                <div className={'post__body ' + mentionHighlightClass}>
+                <div className={'post__body ' + mentionHighlightClass + hightImportanceHighlightClass}>
                     {messageWithAdditionalContent}
                     {fileAttachmentHolder}
                     <ReactionListContainer post={post}/>
