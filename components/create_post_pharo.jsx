@@ -325,7 +325,7 @@ export default class CreatePostPharo extends React.Component {
 
         // if critical call out to everyone in channel @channel
         if(this.state.nextPostCritical)
-            post.message = post.message + " @channel";
+            post.message = post.message + " #important @channel";
 
         if (this.state.postError) {
             this.setState({errorClass: 'animation--highlight'});
