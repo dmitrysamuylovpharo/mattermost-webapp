@@ -1680,6 +1680,11 @@ div#post-create div.Select {
     width: 50%;
 }
 
+div#post-create .pharo-tweet-create-post-form div.Select {
+    display: inline-block;
+    width: 100%;
+}
+
 div#post-create div.Select.Select--multi {
     width: 100%;
 }
@@ -1711,8 +1716,17 @@ div#post-create div.Select.Select--multi {
     top: 125px;
 }
 
+.post-create__container .pharo-tweet-create-post-form .post-create-body .btn-file {
+    top: 42px;
+}
+
 .post-create__container .pharo-create-post-form .post-body__actions {
     top: 125px;
+    height: 48px;
+}
+
+.post-create__container .pharo-tweet-create-post-form .post-body__actions {
+    top: 42px;
     height: 48px;
 }
 
@@ -1741,6 +1755,12 @@ div#post-create div.Select.Select--multi {
     position: absolute;
     top: 82px;
     right: 0px;
+}
+
+.pharo-tweet-create-post-form #criticalPostOption {
+    top: 48px;
+    right: 80px;
+    z-index: 1000;
 }
 
 #criticalPostOption span {

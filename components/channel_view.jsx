@@ -18,6 +18,7 @@ import ChannelHeader from 'components/channel_header';
 import CreatePost from 'components/create_post.jsx';
 import FileUploadOverlay from 'components/file_upload_overlay.jsx';
 import CreatePostPharo from 'components/create_post_pharo.jsx';
+import CreatePostPharoTweet from 'components/create_post_pharo_tweet.jsx';
 import PostView from 'components/post_view';
 import TutorialView from 'components/tutorial/tutorial_view.jsx';
 
@@ -36,7 +37,10 @@ export default class ChannelView extends React.Component {
 
         this.postUI = (<CreatePost getChannelView={this.getChannelView}/>);
         this.postUIPharo = (<CreatePostPharo getChannelView={this.getChannelView}/>);
-        this.isPharoPostUI = false;         
+        this.postUIPharoTweet = (<CreatePostPharoTweet getChannelView={this.getChannelView}/>);
+        this.isPharoPostUI = false;
+        this.isPharoPostUITweet = false;
+        this.isPharoPostUITweetInput = false;
     }
 
     getStateFromStores() {
@@ -66,7 +70,9 @@ export default class ChannelView extends React.Component {
 
         // pharo custom ui injection
         if(this.props.params.channel === 'market-commentary')
-            this.isPharoPostUI = true;        
+            this.isPharoPostUI = true; 
+        if(this.props.params.channel.indexOf('tweets-') != -1)
+            this.isPharoPostUITweetInput = true;                    
     }
 
     componentWillUnmount() {
@@ -83,14 +89,42 @@ export default class ChannelView extends React.Component {
         // pharo custom ui injection on channel change
         if (!Utils.areObjectsEqual(nextProps.params, this.props.params)) {
             if(nextProps.params.channel === 'market-commentary')
+            {
                 this.isPharoPostUI = true;
-            else
+                this.isPharoPostUITweet = false;
+                this.isPharoPostUITweetInput = false;
+            }
+            if(nextProps.params.channel === 'tweets')
+            {
                 this.isPharoPostUI = false;
+                this.isPharoPostUITweet = true;
+                this.isPharoPostUITweetInput = false;
+            }            
+            else if(nextProps.params.channel.indexOf('tweets-') != -1)
+            {
+                this.isPharoPostUI = false;
+                this.isPharoPostUITweet = false;                
+                this.isPharoPostUITweetInput = true;
+            }
+            else
+            {
+                this.isPharoPostUI = false;
+                this.isPharoPostUITweet = false;
+                this.isPharoPostUITweetInput = false;
+            }
 
             return true;
         }
         if(nextProps.params.channel === 'market-commentary') {
             this.isPharoPostUI = true;
+            return true;
+        }
+        if(nextProps.params.channel === 'tweets') {
+            this.isPharoPostUITweet = true;
+            return true;
+        }        
+        if(nextProps.params.channel.indexOf('tweets-') != -1) {
+            this.isPharoPostUITweetInput = true;
             return true;
         }
 
@@ -106,7 +140,13 @@ export default class ChannelView extends React.Component {
     }
 
     render() {
-        let postUI = this.isPharoPostUI ? this.postUIPharo : this.postUI;
+        let postUI = this.postUI;
+        if(this.isPharoPostUI)
+            postUI = this.postUIPharo;
+        if(this.isPharoPostUITweetInput)
+            postUI = this.postUIPharoTweet;
+        if(this.isPharoPostUITweet)
+            postUI = (<div />);
 
         if (this.state.tutorialStep <= TutorialSteps.INTRO_SCREENS) {
             return (
