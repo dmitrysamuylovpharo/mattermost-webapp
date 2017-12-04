@@ -136,6 +136,8 @@ export default class AboutBuildModal extends React.PureComponent {
             version += '\u00a0 (' + config.BuildNumber + ')';
         }
 
+        let pharoVersion = "1.9";
+
         return (
             <Modal
                 dialogClassName='about-modal'
@@ -169,6 +171,13 @@ export default class AboutBuildModal extends React.PureComponent {
                                     />
                                     <span id='versionString'>{version}</span>
                                 </div>
+                                <div>
+                                    <FormattedMessage
+                                        id='about.pharo.version'
+                                        defaultMessage='Pharo Version:'
+                                    />
+                                    <span id='versionString'> {pharoVersion}</span>
+                                </div>                                
                                 <div>
                                     <FormattedMessage
                                         id='about.database'
