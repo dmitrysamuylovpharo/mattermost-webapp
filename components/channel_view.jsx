@@ -5,6 +5,7 @@ import $ from 'jquery';
 
 import PropTypes from 'prop-types';
 import React from 'react';
+import {FormattedMessage} from 'react-intl';
 
 import ChannelStore from 'stores/channel_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
@@ -35,9 +36,9 @@ export default class ChannelView extends React.Component {
 
         this.state = this.getStateFromStores(props);
 
-        this.postUI = (<CreatePost getChannelView={this.getChannelView}/>);
-        this.postUIPharo = (<CreatePostPharo getChannelView={this.getChannelView}/>);
-        this.postUIPharoTweet = (<CreatePostPharoTweet getChannelView={this.getChannelView}/>);
+        this.postUI = (<div className='post-create__container' id='post-create'><CreatePost getChannelView={this.getChannelView}/></div>);
+        this.postUIPharo = (<div className='post-create__container' id='post-create'><CreatePostPharo getChannelView={this.getChannelView}/></div>);
+        this.postUIPharoTweet = (<div className='post-create__container' id='post-create'><CreatePostPharoTweet getChannelView={this.getChannelView}/></div>);
         this.isPharoPostUI = false;
         this.isPharoPostUITweet = false;
         this.isPharoPostUITweetInput = false;
@@ -140,14 +141,6 @@ export default class ChannelView extends React.Component {
     }
 
     render() {
-        let postUI = this.postUI;
-        if(this.isPharoPostUI)
-            postUI = this.postUIPharo;
-        if(this.isPharoPostUITweetInput)
-            postUI = this.postUIPharoTweet;
-        if(this.isPharoPostUITweet)
-            postUI = (<div />);
-
         if (this.state.tutorialStep <= TutorialSteps.INTRO_SCREENS) {
             return (
                 <TutorialView
@@ -155,6 +148,41 @@ export default class ChannelView extends React.Component {
                 />
             );
         }
+
+        let createPost = (
+            <div
+                className='post-create__container'
+                id='post-create'
+            >
+                <CreatePost
+                    getChannelView={this.getChannelView}
+                />
+            </div>
+        );
+        const channel = ChannelStore.get(this.state.channelId);
+        if (channel.type === Constants.DM_CHANNEL) {
+            const teammate = Utils.getDirectTeammate(channel.id);
+            if (teammate && teammate.delete_at) {
+                createPost = (
+                    <div
+                        className='post-create-message'
+                    >
+                        <FormattedMessage
+                            id='create_post.deactivated'
+                            defaultMessage='You are viewing an archived channel with a deactivated user.'
+                        />
+                    </div>
+                );
+            }
+        }
+
+        let postUI = createPost;
+        if(this.isPharoPostUI)
+            postUI = this.postUIPharo;
+        if(this.isPharoPostUITweetInput)
+            postUI = this.postUIPharoTweet;
+        if(this.isPharoPostUITweet)
+            postUI = (<div />);
 
         return (
             <div
@@ -169,12 +197,7 @@ export default class ChannelView extends React.Component {
                 <PostView
                     channelId={this.state.channelId}
                 />
-                <div
-                    className='post-create__container'
-                    id='post-create'
-                >
-                    {postUI}
-                </div>
+                {postUI}
             </div>
         );
     }

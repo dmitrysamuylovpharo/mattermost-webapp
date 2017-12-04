@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 
 import BrowserStore from 'stores/browser_store.jsx';
 import ErrorStore from 'stores/error_store.jsx';
@@ -47,7 +47,7 @@ export default {
         [
             {
                 getComponents: (location, callback) => {
-                    System.import('components/header_footer_template.jsx').then(RouteUtils.importComponentSuccess(callback));
+                    System.import('components/header_footer_template').then(RouteUtils.importComponentSuccess(callback));
                 },
                 getChildRoutes: RouteUtils.createGetChildComponentsFunction(
                     [
@@ -142,7 +142,7 @@ export default {
                         },
                         {
                             getComponents: (location, callback) => {
-                                System.import('components/header_footer_template.jsx').then(RouteUtils.importComponentSuccess(callback));
+                                System.import('components/header_footer_template').then(RouteUtils.importComponentSuccess(callback));
                             },
                             getChildRoutes: RouteUtils.createGetChildComponentsFunction(
                                 [
@@ -153,7 +153,7 @@ export default {
                                         }
                                     },
                                     {
-                                        path: '*authorize',
+                                        path: 'oauth/authorize',
                                         getComponents: (location, callback) => {
                                             System.import('components/authorize.jsx').then(RouteUtils.importComponentSuccess(callback));
                                         }

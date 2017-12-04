@@ -4,7 +4,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 
 import LoadingScreen from 'components/loading_screen.jsx';
 import ConfirmModal from 'components/confirm_modal.jsx';
@@ -30,11 +30,6 @@ export default class EditCommand extends React.PureComponent {
         * Installed slash commands to display
         */
         commands: PropTypes.object,
-
-        /**
-        * The request state for editCommand action. Contains status and error
-        */
-        editCommandRequest: PropTypes.object.isRequired,
 
         actions: PropTypes.shape({
 
@@ -99,7 +94,7 @@ export default class EditCommand extends React.PureComponent {
     submitCommand = async () => {
         this.setState({serverError: ''});
 
-        const data = await this.props.actions.editCommand(this.newCommand);
+        const {data, error} = await this.props.actions.editCommand(this.newCommand);
 
         if (data) {
             browserHistory.push(`/${this.props.team.name}/integrations/commands`);
@@ -108,8 +103,8 @@ export default class EditCommand extends React.PureComponent {
 
         this.setState({showConfirmModal: false});
 
-        if (this.props.editCommandRequest.error) {
-            this.setState({serverError: this.props.editCommandRequest.error.message});
+        if (error) {
+            this.setState({serverError: error.message});
         }
     }
 

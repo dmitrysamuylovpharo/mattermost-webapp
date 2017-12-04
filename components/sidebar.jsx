@@ -7,7 +7,7 @@ import React from 'react';
 import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
-import {browserHistory, Link} from 'react-router/es6';
+import {browserHistory, Link} from 'react-router';
 
 import {savePreferences} from 'mattermost-redux/actions/preferences';
 import {getChannelsByCategory} from 'mattermost-redux/selectors/entities/channels';
@@ -26,6 +26,7 @@ import UserStore from 'stores/user_store.jsx';
 import * as ChannelUtils from 'utils/channel_utils.jsx';
 import {ActionTypes, Constants} from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
+import {isDesktopApp} from 'utils/user_agent.jsx';
 
 import favicon from 'images/favicon/favicon-16x16.png';
 import redFavicon from 'images/favicon/redfavicon-16x16.png';
@@ -123,6 +124,17 @@ export default class Sidebar extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        // if the active channel disappeared (which can happen when dm channels autoclose), go to town square
+        if (this.state.currentTeam === prevState.currentTeam &&
+            this.state.activeId === prevState.activeId &&
+            !this.channelIdIsDisplayedForState(this.state, this.state.activeId) &&
+            this.channelIdIsDisplayedForState(prevState, this.state.activeId)
+        ) {
+            this.closedDirectChannel = true;
+            browserHistory.push('/' + this.state.currentTeam.name + '/channels/town-square');
+            return;
+        }
+
         this.updateTitle();
         this.updateUnreadIndicators();
         if (!Utils.isMobile()) {
@@ -342,7 +354,21 @@ export default class Sidebar extends React.Component {
     }
 
     getDisplayedChannels = () => {
-        return this.state.favoriteChannels.concat(this.state.publicChannels).concat(this.state.privateChannels).concat(this.state.directAndGroupChannels);
+        return this.getDisplayedChannelsForState(this.state);
+    }
+
+    getDisplayedChannelsForState = (state) => {
+        return state.favoriteChannels.concat(state.publicChannels).concat(state.privateChannels).concat(state.directAndGroupChannels);
+    }
+
+    channelIdIsDisplayedForState = (state, id) => {
+        const allChannels = this.getDisplayedChannelsForState(state);
+        for (let i = 0; i < allChannels.length; i++) {
+            if (allChannels[i].id === id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     handleLeavePublicChannel = (e, channel) => {
@@ -380,10 +406,6 @@ export default class Sidebar extends React.Component {
                 }
             );
 
-            if (ChannelUtils.isFavoriteChannel(channel)) {
-                ChannelActions.unmarkFavorite(channel.id);
-            }
-
             this.setState(this.getStateFromStores());
             trackEvent('ui', 'ui_direct_channel_x_button_clicked');
         }
@@ -392,6 +414,11 @@ export default class Sidebar extends React.Component {
             this.closedDirectChannel = true;
             browserHistory.push('/' + this.state.currentTeam.name + '/channels/town-square');
         }
+    }
+
+    handleClick = (link) => {
+        this.trackChannelSelectedEvent();
+        browserHistory.push(link);
     }
 
     showMoreChannelsModal = () => {
@@ -564,13 +591,22 @@ export default class Sidebar extends React.Component {
             );
         } else if (channel.type === Constants.GM_CHANNEL) {
             icon = <div className='status status--group'>{UserStore.getProfileListInChannel(channel.id, true).length}</div>;
-        } else {
-            // set up status icon for direct message channels (status is null for other channel types)
-            icon = (
-                <StatusIcon
-                    type='avatar'
-                    status={channel.status}
-                />);
+        } else if (channel.type === Constants.DM_CHANNEL) {
+            const teammate = Utils.getDirectTeammate(channel.id);
+            if (teammate && teammate.delete_at) {
+                icon = (
+                    <span
+                        className='icon icon__archive'
+                        dangerouslySetInnerHTML={{__html: Constants.ARCHIVE_ICON_SVG}}
+                    />
+                );
+            } else {
+                icon = (
+                    <StatusIcon
+                        type='avatar'
+                        status={channel.status}
+                    />);
+            }
         }
 
         let closeButton = null;
@@ -601,7 +637,10 @@ export default class Sidebar extends React.Component {
                     overlay={removeTooltip}
                 >
                     <span
-                        onClick={(e) => handleClose(e, channel)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleClose(e, channel);
+                        }}
                         className='btn-close'
                     >
                         {'×'}
@@ -625,7 +664,23 @@ export default class Sidebar extends React.Component {
             link = '/' + this.state.currentTeam.name + '/channels/' + channel.name;
         }
 
-        const displayName = channel.display_name;
+        const user = UserStore.getCurrentUser();
+        let displayName = '';
+        if (user.id === channel.teammate_id) {
+            displayName = (
+                <FormattedMessage
+                    id='sidebar.directchannel.you'
+                    defaultMessage='{displayname} (you)'
+                    values={{
+                        displayname: channel.display_name
+                    }}
+                />
+            );
+        } else {
+            displayName = channel.display_name;
+        }
+
+        const channelLink = this.createChannelButtonOrLink(link, rowClass, icon, displayName, badge, closeButton);
 
         return (
             <li
@@ -633,6 +688,28 @@ export default class Sidebar extends React.Component {
                 ref={channel.name}
                 className={linkClass}
             >
+                {channelLink}
+                {tutorialTip}
+            </li>
+        );
+    }
+
+    createChannelButtonOrLink(link, rowClass, icon, displayName, badge, closeButton) {
+        let element;
+        if (isDesktopApp()) {
+            element = (
+                <button
+                    className={'btn btn-link ' + rowClass}
+                    onClick={() => this.handleClick(link)}
+                >
+                    {icon}
+                    <span className='sidebar-item__name'>{displayName}</span>
+                    {badge}
+                    {closeButton}
+                </button>
+            );
+        } else {
+            element = (
                 <Link
                     to={link}
                     className={rowClass}
@@ -643,9 +720,10 @@ export default class Sidebar extends React.Component {
                     {badge}
                     {closeButton}
                 </Link>
-                {tutorialTip}
-            </li>
-        );
+            );
+        }
+
+        return element;
     }
 
     trackChannelSelectedEvent = () => {
@@ -668,7 +746,9 @@ export default class Sidebar extends React.Component {
         this.lastUnreadChannel = null;
 
         // create elements for all 4 types of channels
-        const favoriteItems = this.state.favoriteChannels.
+        const visibleFavoriteChannels = this.state.favoriteChannels.filter(ChannelUtils.isChannelVisible);
+
+        const favoriteItems = visibleFavoriteChannels.
             map((channel, index, arr) => {
                 if (channel.type === Constants.DM_CHANNEL || channel.type === Constants.GM_CHANNEL) {
                     return this.createChannelElement(channel, index, arr, this.handleLeaveDirectChannel);
@@ -912,14 +992,14 @@ export default class Sidebar extends React.Component {
                     show={this.state.showTopUnread}
                     onClick={this.scrollToFirstUnreadChannel}
                     extraClass='nav-pills__unread-indicator-top'
-                    text={above}
+                    content={above}
                 />
                 <UnreadChannelIndicator
                     name='Bottom'
                     show={this.state.showBottomUnread}
                     onClick={this.scrollToLastUnreadChannel}
                     extraClass='nav-pills__unread-indicator-bottom'
-                    text={below}
+                    content={below}
                 />
 
                 <div

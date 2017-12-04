@@ -3,7 +3,7 @@
 
 import $ from 'jquery';
 
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 import {batchActions} from 'redux-batched-actions';
 
 import {ChannelTypes, EmojiTypes, PostTypes, TeamTypes, UserTypes} from 'mattermost-redux/action_types';
@@ -12,6 +12,7 @@ import {setServerVersion} from 'mattermost-redux/actions/general';
 import {getPosts, getProfilesAndStatusesForPosts} from 'mattermost-redux/actions/posts';
 import * as TeamActions from 'mattermost-redux/actions/teams';
 import {Client4} from 'mattermost-redux/client';
+import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
 
 import {loadChannelsForCurrentUser} from 'actions/channel_actions.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
@@ -92,6 +93,7 @@ export function reconnect(includeWebSocket = true) {
     loadChannelsForCurrentUser();
     getPosts(ChannelStore.getCurrentId())(dispatch, getState);
     StatusActions.loadStatusesForChannelAndSidebar();
+    TeamActions.getMyTeamUnreads()(dispatch, getState);
 
     ErrorStore.clearLastError();
     ErrorStore.emitChange();
@@ -242,6 +244,10 @@ function handleEvent(msg) {
         handlePluginDeactivated(msg);
         break;
 
+    case SocketEvents.USER_ROLE_UPDATED:
+        handleUserRoleUpdated(msg);
+        break;
+
     default:
     }
 }
@@ -377,7 +383,7 @@ function handleUserRemovedEvent(msg) {
             $('#removed_from_channel').modal('show');
         }
 
-        GlobalActions.toggleSideBarAction(false);
+        GlobalActions.emitCloseRightHandSide();
 
         const townsquare = ChannelStore.getByName('town-square');
         browserHistory.push(TeamStore.getCurrentTeamRelativeUrl() + '/channels/' + townsquare.name);
@@ -397,8 +403,18 @@ function handleUserRemovedEvent(msg) {
 }
 
 function handleUserUpdatedEvent(msg) {
+    const currentUser = getCurrentUser(getState());
     const user = msg.data.user;
-    if (UserStore.getCurrentId() !== user.id) {
+
+    if (currentUser.id === user.id) {
+        dispatch({
+            type: UserTypes.RECEIVED_ME,
+            data: {
+                ...currentUser,
+                last_picture_update: user.last_picture_update
+            }
+        });
+    } else {
         UserStore.saveProfile(user);
     }
 }
@@ -419,6 +435,7 @@ function handleChannelDeletedEvent(msg) {
     }
     dispatch({type: ChannelTypes.RECEIVED_CHANNEL_DELETED, data: {id: msg.data.channel_id, team_id: msg.broadcast.team_id}}, getState);
     loadChannelsForCurrentUser();
+    TeamActions.getMyTeamUnreads()(dispatch, getState);
 }
 
 function handlePreferenceChangedEvent(msg) {
@@ -503,4 +520,19 @@ function handlePluginDeactivated(msg) {
     const manifest = msg.data.manifest;
     store.dispatch({type: ActionTypes.REMOVED_WEBAPP_PLUGIN, data: manifest});
     removePlugin(manifest);
+}
+
+function handleUserRoleUpdated(msg) {
+    const user = store.getState().entities.users.profiles[msg.data.user_id];
+
+    if (user) {
+        const roles = msg.data.roles;
+        const demoted = user.roles.includes(Constants.PERMISSIONS_SYSTEM_ADMIN) && !roles.includes(Constants.PERMISSIONS_SYSTEM_ADMIN);
+
+        store.dispatch({type: UserTypes.RECEIVED_PROFILE, data: {...user, roles}});
+
+        if (demoted && global.location.pathname.startsWith('/admin_console')) {
+            GlobalActions.redirectUserToDefaultTeam();
+        }
+    }
 }

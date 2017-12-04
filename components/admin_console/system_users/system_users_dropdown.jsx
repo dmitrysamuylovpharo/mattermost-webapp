@@ -8,12 +8,13 @@ import {FormattedMessage} from 'react-intl';
 import * as UserUtils from 'mattermost-redux/utils/user_utils';
 
 import {adminResetMfa} from 'actions/admin_actions.jsx';
-import {updateActive} from 'actions/user_actions.jsx';
+import {updateActive, revokeAllSessions} from 'actions/user_actions.jsx';
 import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
 
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
+import {clientLogout} from 'actions/global_actions.jsx';
 
 import ConfirmModal from 'components/confirm_modal.jsx';
 
@@ -43,16 +44,21 @@ export default class SystemUsersDropdown extends React.Component {
         /*
          * Function to open manage tokens, takes user as an argument
          */
-        doManageTokens: PropTypes.func.isRequired
+        doManageTokens: PropTypes.func.isRequired,
+
+        /*
+         * The function to call when an error occurs
+         */
+        onError: PropTypes.func.isRequired
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            serverError: null,
             showDemoteModal: false,
             showDeactivateMemberModal: false,
+            showRevokeSessionsModal: false,
             user: null,
             role: null
         };
@@ -60,11 +66,7 @@ export default class SystemUsersDropdown extends React.Component {
 
     handleMakeActive = (e) => {
         e.preventDefault();
-        updateActive(this.props.user.id, true, null,
-            (err) => {
-                this.setState({serverError: err.message});
-            }
-        );
+        updateActive(this.props.user.id, true, null, this.props.onError);
     }
 
     handleManageTeams = (e) => {
@@ -92,18 +94,11 @@ export default class SystemUsersDropdown extends React.Component {
 
     handleResetMfa = (e) => {
         e.preventDefault();
-
-        adminResetMfa(this.props.user.id,
-            null,
-            (err) => {
-                this.setState({serverError: err.message});
-            }
-        );
+        adminResetMfa(this.props.user.id, null, this.props.onError);
     }
 
     handleDemoteSystemAdmin = (user, role) => {
         this.setState({
-            serverError: this.state.serverError,
             showDemoteModal: true,
             user,
             role
@@ -112,11 +107,11 @@ export default class SystemUsersDropdown extends React.Component {
 
     handleDemoteCancel = () => {
         this.setState({
-            serverError: null,
             showDemoteModal: false,
             user: null,
             role: null
         });
+        this.props.onError(null);
     }
 
     handleDemoteSubmit = () => {
@@ -135,17 +130,11 @@ export default class SystemUsersDropdown extends React.Component {
 
     handleShowDeactivateMemberModal = (e) => {
         e.preventDefault();
-
         this.setState({showDeactivateMemberModal: true});
     }
 
     handleDeactivateMember = () => {
-        updateActive(this.props.user.id, false, null,
-            (err) => {
-                this.setState({serverError: err.message});
-            }
-        );
-
+        updateActive(this.props.user.id, false, null, this.props.onError);
         this.setState({showDeactivateMemberModal: false});
     }
 
@@ -195,6 +184,70 @@ export default class SystemUsersDropdown extends React.Component {
         );
     }
 
+    handleShowRevokeSessionsModal = (e) => {
+        e.preventDefault();
+        this.setState({showRevokeSessionsModal: true});
+    }
+
+    handleRevokeSessions = () => {
+        const me = UserStore.getCurrentUser();
+        revokeAllSessions(this.props.user.id,
+            () => {
+                if (this.props.user.id === me.id) {
+                    clientLogout();
+                }
+            },
+            this.props.onError
+        );
+
+        this.setState({showRevokeSessionsModal: false});
+    }
+
+    handleRevokeSessionsCancel = () => {
+        this.setState({showRevokeSessionsModal: false});
+    }
+
+    renderRevokeSessionsModal = () => {
+        const title = (
+            <FormattedMessage
+                id='revoke_user_sessions_modal.title'
+                defaultMessage='Revoke Sessions for {username}'
+                values={{
+                    username: this.props.user.username
+                }}
+            />
+        );
+
+        const message = (
+            <FormattedMessage
+                id='revoke_user_sessions_modal.desc'
+                defaultMessage='This action revokes all sessions for {username}. They will be logged out from all devices. Are you sure you want to revoke all sessions for {username}?'
+                values={{
+                    username: this.props.user.username
+                }}
+            />
+        );
+
+        const revokeUserButtonButton = (
+            <FormattedMessage
+                id='revoke_user_sessions_modal.revoke'
+                defaultMessage='Revoke'
+            />
+        );
+
+        return (
+            <ConfirmModal
+                show={this.state.showRevokeSessionsModal}
+                title={title}
+                message={message}
+                confirmButtonClass='btn btn-danger'
+                confirmButtonText={revokeUserButtonButton}
+                onConfirm={this.handleRevokeSessions}
+                onCancel={this.handleRevokeSessionsCancel}
+            />
+        );
+    }
+
     renderAccessToken = () => {
         const userAccessTokensEnabled = global.window.mm_config.EnableUserAccessTokens === 'true';
         if (!userAccessTokensEnabled) {
@@ -233,15 +286,6 @@ export default class SystemUsersDropdown extends React.Component {
     }
 
     render() {
-        let serverError = null;
-        if (this.state.serverError) {
-            serverError = (
-                <div className='has-error'>
-                    <label className='has-error control-label'>{this.state.serverError}</label>
-                </div>
-            );
-        }
-
         const user = this.props.user;
         if (!user) {
             return <div/>;
@@ -266,6 +310,7 @@ export default class SystemUsersDropdown extends React.Component {
         let showMakeActive = false;
         let showMakeNotActive = !Utils.isSystemAdmin(user.roles);
         let showManageTeams = true;
+        let showRevokeSessions = UserStore.isSystemAdminForCurrentUser();
         const mfaEnabled = global.window.mm_license.IsLicensed === 'true' && global.window.mm_license.MFA === 'true' && global.window.mm_config.EnableMultifactorAuthentication === 'true';
         const showMfaReset = mfaEnabled && user.mfa_active;
 
@@ -279,6 +324,7 @@ export default class SystemUsersDropdown extends React.Component {
             showMakeActive = true;
             showMakeNotActive = false;
             showManageTeams = false;
+            showRevokeSessions = false;
         }
 
         let disableActivationToggle = false;
@@ -408,6 +454,25 @@ export default class SystemUsersDropdown extends React.Component {
             );
         }
 
+        let revokeSessions;
+        if (showRevokeSessions) {
+            revokeSessions = (
+                <li role='presentation'>
+                    <a
+                        id='revokeSessions'
+                        role='menuItem'
+                        href='#'
+                        onClick={this.handleShowRevokeSessionsModal}
+                    >
+                        <FormattedMessage
+                            id='admin.user_item.revokeSessions'
+                            defaultMessage='Revoke Sessions'
+                        />
+                    </a>
+                </li>
+            );
+        }
+
         let manageTokens;
         if (global.window.mm_config.EnableUserAccessTokens === 'true') {
             manageTokens = (
@@ -451,7 +516,6 @@ export default class SystemUsersDropdown extends React.Component {
                             username: me.username
                         }}
                     />
-                    {serverError}
                 </div>
             );
 
@@ -475,11 +539,7 @@ export default class SystemUsersDropdown extends React.Component {
         }
 
         const deactivateMemberModal = this.renderDeactivateMemberModal();
-
-        let displayedName = Utils.getDisplayName(user);
-        if (displayedName !== user.username) {
-            displayedName += ' (@' + user.username + ')';
-        }
+        const revokeSessionsModal = this.renderRevokeSessionsModal();
 
         return (
             <div className='dropdown member-drop text-right'>
@@ -518,10 +578,11 @@ export default class SystemUsersDropdown extends React.Component {
                     {manageTokens}
                     {mfaReset}
                     {passwordReset}
+                    {revokeSessions}
                 </ul>
                 {makeDemoteModal}
                 {deactivateMemberModal}
-                {serverError}
+                {revokeSessionsModal}
             </div>
         );
     }

@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Overlay, OverlayTrigger, Popover, Tooltip} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 
 import {Client4} from 'mattermost-redux/client';
 
@@ -23,7 +23,7 @@ import * as Utils from 'utils/utils.jsx';
 import ChannelInviteModal from 'components/channel_invite_modal';
 import ChannelMembersModal from 'components/channel_members_modal.jsx';
 import ProfilePicture from 'components/profile_picture.jsx';
-import TeamMembersModal from 'components/team_members_modal.jsx';
+import TeamMembersModal from 'components/team_members_modal';
 
 export default class PopoverListMembers extends React.Component {
     static propTypes = {

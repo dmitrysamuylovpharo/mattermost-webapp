@@ -1,12 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 
 import * as ChannelActions from 'mattermost-redux/actions/channels';
 import {deletePreferences, savePreferences} from 'mattermost-redux/actions/preferences';
 import {Client4} from 'mattermost-redux/client';
 import {getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+
+import {actionOnGlobalItemsWithPrefix} from 'actions/storage';
 
 import {trackEvent} from 'actions/diagnostics_actions.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
@@ -19,7 +21,7 @@ import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
 
 import * as ChannelUtils from 'utils/channel_utils.jsx';
-import {Constants, Preferences} from 'utils/constants.jsx';
+import {Constants, Preferences, StoragePrefixes} from 'utils/constants.jsx';
 import * as UserAgent from 'utils/user_agent.jsx';
 import * as Utils from 'utils/utils.jsx';
 import {isUrlSafe} from 'utils/url.jsx';
@@ -66,7 +68,7 @@ export function executeCommand(message, args, success, error) {
             return;
         }
 
-        GlobalActions.showShortcutsModal();
+        GlobalActions.toggleShortcutsModal();
         return;
     case '/leave': {
         // /leave command not supported in reply threads.
@@ -104,6 +106,9 @@ export function executeCommand(message, args, success, error) {
     case '/settings':
         GlobalActions.showAccountSettingsModal();
         return;
+    case '/collapse':
+    case '/expand':
+        actionOnGlobalItemsWithPrefix(StoragePrefixes.EMBED_VISIBLE, () => null)(dispatch, getState);
     }
 
     Client4.executeCommand(msg, args).then(
@@ -188,11 +193,16 @@ export async function openDirectChannelToUser(userId, success, error) {
 
     if (channel) {
         trackEvent('api', 'api_channels_join_direct');
+        const now = Utils.getTimestamp();
         PreferenceStore.setPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, userId, 'true');
+        PreferenceStore.setPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, channel.id, now.toString());
         loadProfilesForSidebar();
 
         const currentUserId = UserStore.getCurrentId();
-        savePreferences(currentUserId, [{user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: userId, value: 'true'}])(dispatch, getState);
+        savePreferences(currentUserId, [
+            {user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: userId, value: 'true'},
+            {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: channel.id, value: now.toString()}
+        ])(dispatch, getState);
 
         if (success) {
             success(channel, true);
@@ -283,7 +293,12 @@ export async function updateChannel(channel, success, error) {
 }
 
 export async function searchMoreChannels(term, success, error) {
-    const {data, error: err} = await ChannelActions.searchChannels(TeamStore.getCurrentId(), term)(dispatch, getState);
+    const teamId = TeamStore.getCurrentId();
+    if (!teamId) {
+        return;
+    }
+
+    const {data, error: err} = await ChannelActions.searchChannels(teamId, term)(dispatch, getState);
     if (data && success) {
         const myMembers = getMyChannelMemberships(getState());
         const channels = data.filter((c) => !myMembers[c.id]);
@@ -294,7 +309,12 @@ export async function searchMoreChannels(term, success, error) {
 }
 
 export async function autocompleteChannels(term, success, error) {
-    const {data, error: err} = await ChannelActions.searchChannels(TeamStore.getCurrentId(), term)(dispatch, getState);
+    const teamId = TeamStore.getCurrentId();
+    if (!teamId) {
+        return;
+    }
+
+    const {data, error: err} = await ChannelActions.searchChannels(teamId, term)(dispatch, getState);
     if (data && success) {
         success(data);
     } else if (err && error) {

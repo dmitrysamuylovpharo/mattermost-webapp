@@ -4,7 +4,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 
 import {createChannel} from 'actions/channel_actions.jsx';
 import TeamStore from 'stores/team_store.jsx';
@@ -34,7 +34,7 @@ export default class NewChannelFlow extends React.Component {
 
         this.state = {
             serverError: '',
-            channelType: 'O',
+            channelType: props.channelType || 'O',
             flowState: SHOW_NEW_CHANNEL,
             channelDisplayName: '',
             channelName: '',
@@ -113,14 +113,18 @@ export default class NewChannelFlow extends React.Component {
             this.doOnModalExited();
         }
     }
-    typeSwitched() {
+    typeSwitched(e) {
+        e.preventDefault();
         if (this.state.channelType === 'P') {
             this.setState({channelType: 'O'});
         } else {
             this.setState({channelType: 'P'});
         }
     }
-    urlChangeRequested() {
+    urlChangeRequested(e) {
+        if (e) {
+            e.preventDefault();
+        }
         this.setState({flowState: SHOW_EDIT_URL});
     }
     urlChangeSubmitted(newURL) {

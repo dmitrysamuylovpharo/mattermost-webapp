@@ -7,6 +7,7 @@ import {Dropdown} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
 import {UserStatuses} from 'utils/constants.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 
 import BootstrapSpan from 'components/bootstrap_span.jsx';
 import StatusIcon from 'components/status_icon.jsx';
@@ -58,6 +59,11 @@ export default class StatusDropdown extends React.Component {
         this.setStatus(UserStatuses.AWAY);
     }
 
+    setDnd = (event) => {
+        event.preventDefault();
+        this.setStatus(UserStatuses.DND);
+    }
+
     renderStatusOnlineAction = () => {
         return this.renderStatusAction(UserStatuses.ONLINE, this.setOnline);
     }
@@ -68,6 +74,10 @@ export default class StatusDropdown extends React.Component {
 
     renderStatusOfflineAction = () => {
         return this.renderStatusAction(UserStatuses.OFFLINE, this.setOffline);
+    }
+
+    renderStatusDndAction = () => {
+        return this.renderStatusAction(UserStatuses.DND, this.setDnd, localizeMessage('status_dropdown.set_dnd.extra', 'Disables Desktop and Push Notifications'));
     }
 
     renderProfilePicture = () => {
@@ -82,7 +92,7 @@ export default class StatusDropdown extends React.Component {
         );
     }
 
-    renderStatusAction = (status, onClick) => {
+    renderStatusAction = (status, onClick, extraText) => {
         return (
             <li key={status}>
                 <a
@@ -94,6 +104,7 @@ export default class StatusDropdown extends React.Component {
                         id={`status_dropdown.set_${status}`}
                         defaultMessage={status}
                     />
+                    <span className='status-dropdown-extra'>{extraText}</span>
                 </a>
             </li>
         );
@@ -104,6 +115,7 @@ export default class StatusDropdown extends React.Component {
         const actions = [
             this.renderStatusOnlineAction(),
             this.renderStatusAwayAction(),
+            this.renderStatusDndAction(),
             this.renderStatusOfflineAction()
         ];
         return (

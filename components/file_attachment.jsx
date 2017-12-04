@@ -11,12 +11,32 @@ import Constants from 'utils/constants.jsx';
 import * as FileUtils from 'utils/file_utils';
 import * as Utils from 'utils/utils.jsx';
 
-export default class FileAttachment extends React.Component {
+export default class FileAttachment extends React.PureComponent {
+    static propTypes = {
+
+        /*
+         * File detailed information
+         */
+        fileInfo: PropTypes.object.isRequired,
+
+        /*
+         * The index of this attachment preview in the parent FileAttachmentList
+         */
+        index: PropTypes.number.isRequired,
+
+        /*
+         * Handler for when the thumbnail is clicked passed the index above
+         */
+        handleImageClick: PropTypes.func,
+
+        /*
+         * Display in compact format
+         */
+        compactDisplay: PropTypes.bool
+    };
+
     constructor(props) {
         super(props);
-
-        this.loadFiles = this.loadFiles.bind(this);
-        this.onAttachmentClick = this.onAttachmentClick.bind(this);
 
         this.state = {
             loaded: Utils.getFileType(props.fileInfo.extension) !== 'image'
@@ -29,8 +49,10 @@ export default class FileAttachment extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.fileInfo.id !== this.props.fileInfo.id) {
+            const extension = nextProps.fileInfo.extension;
+
             this.setState({
-                loaded: Utils.getFileType(nextProps.fileInfo.extension) !== 'image'
+                loaded: Utils.getFileType(extension) !== 'image' && extension !== 'svg'
             });
         }
     }
@@ -41,7 +63,7 @@ export default class FileAttachment extends React.Component {
         }
     }
 
-    loadFiles() {
+    loadFiles = () => {
         const fileInfo = this.props.fileInfo;
         const fileType = Utils.getFileType(fileInfo.extension);
 
@@ -49,6 +71,8 @@ export default class FileAttachment extends React.Component {
             const thumbnailUrl = getFileThumbnailUrl(fileInfo.id);
 
             Utils.loadImage(thumbnailUrl, this.handleImageLoaded);
+        } else if (fileInfo.extension === 'svg') {
+            Utils.loadImage(getFileUrl(fileInfo.id), this.handleImageLoaded);
         }
     }
 
@@ -58,7 +82,7 @@ export default class FileAttachment extends React.Component {
         });
     }
 
-    onAttachmentClick(e) {
+    onAttachmentClick = (e) => {
         e.preventDefault();
         this.props.handleImageClick(this.props.index);
     }
@@ -87,6 +111,13 @@ export default class FileAttachment extends React.Component {
                         style={{
                             backgroundImage: `url(${getFileThumbnailUrl(fileInfo.id)})`
                         }}
+                    />
+                );
+            } else if (fileInfo.extension === 'svg') {
+                thumbnail = (
+                    <img
+                        className='post-image normal'
+                        src={getFileUrl(fileInfo.id)}
                     />
                 );
             } else {
@@ -191,15 +222,3 @@ export default class FileAttachment extends React.Component {
         );
     }
 }
-
-FileAttachment.propTypes = {
-    fileInfo: PropTypes.object.isRequired,
-
-    // the index of this attachment preview in the parent FileAttachmentList
-    index: PropTypes.number.isRequired,
-
-    // handler for when the thumbnail is clicked passed the index above
-    handleImageClick: PropTypes.func,
-
-    compactDisplay: PropTypes.bool
-};

@@ -26,7 +26,7 @@ module.exports = {
     after: (client) => client.end(),
     'Center page, postCreateSection - element check': (client) => {
         const centerPage = client.page.centerPage();
-        centerPage.expect.section('@postList').to.be.visible;
+        centerPage.expect.section('@postCreate').to.be.visible;
 
         const postCreateSection = centerPage.section.postCreate;
 
@@ -34,7 +34,6 @@ module.exports = {
             .assert.visible('@postTextbox')
             .assert.visible('@fileUploadButton')
             .assert.visible('@emojiPickerButton')
-            .assert.visible('@helpTextContainer')
             .assert.visible('@helpTextLink')
             .assert.hidden('@helpText')
             .assert.visible('@postCreateFooter');

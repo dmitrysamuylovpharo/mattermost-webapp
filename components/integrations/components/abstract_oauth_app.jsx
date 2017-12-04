@@ -4,7 +4,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {FormattedMessage} from 'react-intl';
-import {Link} from 'react-router/es6';
+import {Link} from 'react-router';
 
 import BackstageHeader from 'components/backstage/components/backstage_header.jsx';
 
@@ -73,7 +73,6 @@ export default class AbstractOAuthApp extends React.PureComponent {
             is_trusted: app.is_trusted || false,
             has_icon: Boolean(app.icon_url),
             saving: false,
-            serverError: this.props.serverError || '',
             clientError: null
         };
     }
@@ -94,7 +93,6 @@ export default class AbstractOAuthApp extends React.PureComponent {
 
         this.setState({
             saving: true,
-            serverError: '',
             clientError: ''
         });
 
@@ -435,7 +433,7 @@ export default class AbstractOAuthApp extends React.PureComponent {
                         <div className='backstage-form__footer'>
                             <FormError
                                 type='backstage'
-                                errors={[this.state.serverError, this.state.clientError]}
+                                errors={[this.props.serverError, this.state.clientError]}
                             />
                             <Link
                                 className='btn btn-sm'

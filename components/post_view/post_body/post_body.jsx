@@ -11,6 +11,7 @@ import * as PostActions from 'actions/post_actions.jsx';
 
 import * as PostUtils from 'utils/post_utils.jsx';
 import * as Utils from 'utils/utils.jsx';
+import DelayedAction from 'utils/delayed_action.jsx';
 
 import FileAttachmentListContainer from 'components/file_attachment_list';
 import CommentedOnFilesMessage from 'components/post_view/commented_on_files_message';
@@ -18,6 +19,10 @@ import FailedPostOptions from 'components/post_view/failed_post_options';
 import PostBodyAdditionalContent from 'components/post_view/post_body_additional_content.jsx';
 import PostMessageView from 'components/post_view/post_message_view';
 import ReactionListContainer from 'components/post_view/reaction_list';
+
+import loadingGif from 'images/load.gif';
+
+const SENDING_ANIMATION_DELAY = 3000;
 
 export default class PostBody extends React.PureComponent {
     static propTypes = {
@@ -65,7 +70,51 @@ export default class PostBody extends React.PureComponent {
         /**
          * Post identifiers for selenium tests
          */
-        lastPostCount: PropTypes.number
+        lastPostCount: PropTypes.number,
+
+        /*
+         * Post type components from plugins
+         */
+        pluginPostTypes: PropTypes.object,
+
+        /**
+         * Flag passed down to PostBodyAdditionalContent for determining if post embed is visible
+         */
+        isEmbedVisible: PropTypes.bool
+    }
+
+    constructor(props) {
+        super(props);
+
+        this.sendingAction = new DelayedAction(
+            () => {
+                const post = this.props.post;
+                if (post && post.id === post.pending_post_id) {
+                    this.setState({sending: true});
+                }
+            }
+        );
+
+        this.state = {sending: false};
+    }
+
+    componentDidMount() {
+        const post = this.props.post;
+        if (post && post.id === post.pending_post_id) {
+            this.sendingAction.fireAfter(SENDING_ANIMATION_DELAY);
+        }
+    }
+
+    componentWillUnmount() {
+        this.sendingAction.cancel();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const post = nextProps.post;
+        if (post && post.id !== post.pending_post_id) {
+            this.sendingAction.cancel();
+            this.setState({sending: false});
+        }
     }
 
     render() {
@@ -74,8 +123,8 @@ export default class PostBody extends React.PureComponent {
 
         let comment = '';
         let postClass = '';
-
-        if (parentPost && !Utils.isPostEphemeral(post)) {
+        const isEphemeral = Utils.isPostEphemeral(post);
+        if (parentPost && !isEphemeral) {
             const profile = this.props.parentPostUser;
 
             let apostrophe = '';
@@ -174,6 +223,18 @@ export default class PostBody extends React.PureComponent {
             );
         }
 
+        let sending;
+        if (this.state.sending) {
+            sending = (
+                <img
+                    className='post-loading-gif pull-right'
+                    src={loadingGif}
+                />
+            );
+
+            postClass += ' post-waiting';
+        }
+
         const messageWrapper = (
             <div
                 key={`${post.id}_message`}
@@ -181,6 +242,7 @@ export default class PostBody extends React.PureComponent {
                 className={postClass}
             >
                 {failedOptions}
+                {sending}
                 <PostMessageView
                     lastPostCount={this.props.lastPostCount}
                     post={this.props.post}
@@ -190,8 +252,10 @@ export default class PostBody extends React.PureComponent {
             </div>
         );
 
+        const hasPlugin = post.type && this.props.pluginPostTypes.hasOwnProperty(post.type);
+
         let messageWithAdditionalContent;
-        if (this.props.post.state === Posts.POST_DELETED) {
+        if (this.props.post.state === Posts.POST_DELETED || hasPlugin) {
             messageWithAdditionalContent = messageWrapper;
         } else {
             messageWithAdditionalContent = (
@@ -199,6 +263,7 @@ export default class PostBody extends React.PureComponent {
                     post={this.props.post}
                     previewCollapsed={this.props.previewCollapsed}
                     previewEnabled={this.props.previewEnabled}
+                    isEmbedVisible={this.props.isEmbedVisible}
                 >
                     {messageWrapper}
                 </PostBodyAdditionalContent>
@@ -213,12 +278,17 @@ export default class PostBody extends React.PureComponent {
         let hightImportanceHighlightClass = '';
         if (post.message.indexOf(':exclamation:') > -1) {
             hightImportanceHighlightClass = ' high-importance';
-        }        
+        }
+        
+        let ephemeralPostClass = '';
+        if (isEphemeral) {
+            ephemeralPostClass = 'post--ephemeral';
+        }
 
         return (
             <div>
                 {comment}
-                <div className={'post__body ' + mentionHighlightClass + hightImportanceHighlightClass}>
+                <div className={`post__body ${mentionHighlightClass} ${hightImportanceHighlightClass} ${ephemeralPostClass}`}>
                     {messageWithAdditionalContent}
                     {fileAttachmentHolder}
                     <ReactionListContainer post={post}/>

@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import {browserHistory} from 'react-router/es6';
+import {browserHistory} from 'react-router';
 
 import {getChannelAndMyMember} from 'mattermost-redux/actions/channels';
 import {getClientConfig, getLicenseConfig} from 'mattermost-redux/actions/general';
@@ -22,8 +22,8 @@ import store from 'stores/redux_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
 
+import * as Utils from 'utils/utils.jsx';
 import {Constants, Preferences} from 'utils/constants.jsx';
-import {getDirectChannelName, getUserIdFromChannelName} from 'utils/utils.jsx';
 
 const dispatch = store.dispatch;
 const getState = store.getState;
@@ -195,7 +195,7 @@ function populateDMChannelsWithProfiles(userIds) {
     const currentUserId = UserStore.getCurrentId();
 
     for (let i = 0; i < userIds.length; i++) {
-        const channelName = getDirectChannelName(currentUserId, userIds[i]);
+        const channelName = Utils.getDirectChannelName(currentUserId, userIds[i]);
         const channel = ChannelStore.getByName(channelName);
         const profilesInChannel = Selectors.getUserIdsInChannels(getState())[channel.id] || new Set();
         if (channel && !profilesInChannel.has(userIds[i])) {
@@ -213,7 +213,7 @@ function populateChannelWithProfiles(channelId, users) {
 
 export async function loadNewDMIfNeeded(channelId) {
     function checkPreference(channel) {
-        const userId = getUserIdFromChannelName(channel);
+        const userId = Utils.getUserIdFromChannelName(channel);
 
         if (!userId) {
             return;
@@ -221,9 +221,14 @@ export async function loadNewDMIfNeeded(channelId) {
 
         const pref = PreferenceStore.getBool(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, userId, false);
         if (pref === false) {
+            const now = Utils.getTimestamp();
             PreferenceStore.setPreference(Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, userId, 'true');
+            PreferenceStore.setPreference(Preferences.CATEGORY_CHANNEL_OPEN_TIME, channelId, now.toString());
             const currentUserId = UserStore.getCurrentId();
-            savePreferencesRedux(currentUserId, [{user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: userId, value: 'true'}])(dispatch, getState);
+            savePreferencesRedux(currentUserId, [
+                {user_id: currentUserId, category: Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, name: userId, value: 'true'},
+                {user_id: currentUserId, category: Preferences.CATEGORY_CHANNEL_OPEN_TIME, name: channelId, value: now.toString()}
+            ])(dispatch, getState);
             loadProfilesForDM();
         }
     }
@@ -519,6 +524,19 @@ export async function updatePassword(userId, currentPassword, newPassword, succe
     } else if (err && error) {
         error({id: err.server_error_id, ...err});
     }
+}
+
+export function revokeAllSessions(userId, success, error) {
+    UserActions.revokeAllSessionsForUser(userId)(dispatch, getState).then(
+        (data) => {
+            if (data && success) {
+                success(data);
+            } else if (data == null && error) {
+                const serverError = getState().requests.users.updateUser.error;
+                error({id: serverError.server_error_id, ...serverError});
+            }
+        }
+    );
 }
 
 export async function verifyEmail(token, success, error) {

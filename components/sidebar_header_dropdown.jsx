@@ -8,7 +8,7 @@ import React from 'react';
 import {Dropdown} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
-import {Link} from 'react-router/es6';
+import {Link} from 'react-router';
 
 import * as GlobalActions from 'actions/global_actions.jsx';
 import TeamStore from 'stores/team_store.jsx';
@@ -22,9 +22,9 @@ import * as Utils from 'utils/utils.jsx';
 
 import AboutBuildModal from 'components/about_build_modal';
 import AddUsersToTeam from 'components/add_users_to_team';
+import TeamMembersModal from 'components/team_members_modal';
 
 import SidebarHeaderDropdownButton from './sidebar_header_dropdown_button.jsx';
-import TeamMembersModal from './team_members_modal.jsx';
 
 export default class SidebarHeaderDropdown extends React.Component {
     static propTypes = {
@@ -52,7 +52,7 @@ export default class SidebarHeaderDropdown extends React.Component {
         this.showGetTeamInviteLinkModal = this.showGetTeamInviteLinkModal.bind(this);
         this.showTeamMembersModal = this.showTeamMembersModal.bind(this);
         this.hideTeamMembersModal = this.hideTeamMembersModal.bind(this);
-        this.showShortcutsModal = this.showShortcutsModal.bind(this);
+        this.toggleShortcutsModal = this.toggleShortcutsModal.bind(this);
 
         this.onTeamChange = this.onTeamChange.bind(this);
 
@@ -111,11 +111,11 @@ export default class SidebarHeaderDropdown extends React.Component {
         GlobalActions.showAccountSettingsModal();
     }
 
-    showShortcutsModal(e) {
+    toggleShortcutsModal(e) {
         e.preventDefault();
         this.setState({showDropdown: false});
 
-        GlobalActions.showShortcutsModal();
+        GlobalActions.toggleShortcutsModal();
     }
 
     showAddUsersToTeamModal(e) {
@@ -513,7 +513,7 @@ export default class SidebarHeaderDropdown extends React.Component {
                 <button
                     className='style--none'
                     id='keyboardShortcuts'
-                    onClick={this.showShortcutsModal}
+                    onClick={this.toggleShortcutsModal}
                 >
                     <FormattedMessage
                         id='navbar_dropdown.keyboardShortcuts'
