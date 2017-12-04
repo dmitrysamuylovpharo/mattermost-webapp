@@ -229,9 +229,9 @@ export default class CreatePostPharo extends React.Component {
 
         const post = {};
         post.file_ids = [];
-        post.message = this.state.message;
+        post.message = '';
 
-        if (post.message.trim().length === 0 && this.state.fileInfos.length === 0) {
+        if (this.state.message.trim().length === 0 && this.state.fileInfos.length === 0) {
             return;
         }
 
@@ -262,28 +262,26 @@ export default class CreatePostPharo extends React.Component {
             subjectText = originalMessage.split(/\s+/).slice(0,5).join(" ") + " ...";
         }
 
-        if(subjectText.length > 0 || this.state.topic.length > 0)
-        {
-            // start with heading
+        if (subjectText.length > 0)
             post.message = "##### ";
 
-            if(this.state.nextPostCritical)
-                post.message = post.message + " :exclamation: ";
+        if(this.state.nextPostCritical)
+            post.message = post.message + " :exclamation: ";
 
-            if(this.state.topic.length > 0)
-                post.message = post.message + this.state.topicLabel + " - ";
-
-            if(subjectText.length > 0)
-                post.message = post.message + subjectText;
-
-            if(subjectText.length > 0)
-                post.message = post.message + " \r\n";
+        if(this.state.topic.length > 0)
+            post.message = post.message + this.state.topicLabel + " - ";
+        
+        if (subjectText.length > 0)
+        {
+            post.message = post.message + subjectText;
+            post.message = post.message + " \r\n";
         }
 
         if(this.state.sourceLabel.length > 0)
             post.message = post.message + "`" + this.state.sourceLabel + "` ";
 
         post.message = post.message + this.state.message + "\r\n\r\n";
+        //post.message = post.message + "\r\n\r\n";
 
         var selectedTopicTag = this.state.tags.topicTags.countryTopicTags.find(x => x.tag === this.state.topic);
 
@@ -391,7 +389,9 @@ export default class CreatePostPharo extends React.Component {
             serverError: null,
             enableSendButton: false,
             topic: '',
+            topicLabel: '',
             source: '',
+            sourceLabel: '',
             other: [],
             subject: '',
             nextPostCritical: false
