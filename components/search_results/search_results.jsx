@@ -104,7 +104,7 @@ export default class SearchResults extends React.PureComponent {
 
         let ctls = null;
 
-        var isSince = searchTerm != null ? searchTerm.indexOf("since:") > -1 : false;
+        var isSince = searchTerms != null ? searchTerms.indexOf("since:") > -1 : false;
 
         if (this.props.loading) {
             ctls =

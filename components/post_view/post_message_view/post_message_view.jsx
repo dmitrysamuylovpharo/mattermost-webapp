@@ -119,6 +119,9 @@ export default class PostMessageView extends React.PureComponent {
     }
 
     render() {
+        let fontSizeClass = Utils.getSizeClassForUser(this.props.currentUser);
+        let classNames = 'post-message__text ' + fontSizeClass;
+
         const {
             post,
             enableFormatting,

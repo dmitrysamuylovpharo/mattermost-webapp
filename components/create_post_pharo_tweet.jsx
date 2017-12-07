@@ -1,46 +1,42 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
+import PropTypes from 'prop-types';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import MsgTyping from './msg_typing.jsx';
-import Textbox from './textbox.jsx';
-import FileUpload from './file_upload.jsx';
-import FilePreview from './file_preview.jsx';
-import PostDeletedModal from './post_deleted_modal.jsx';
-import TutorialTip from './tutorial/tutorial_tip.jsx';
-import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
-import * as EmojiPicker from 'components/emoji_picker/emoji_picker.jsx';
+import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
-import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
-import * as GlobalActions from 'actions/global_actions.jsx';
-import * as Utils from 'utils/utils.jsx';
-import * as UserAgent from 'utils/user_agent.jsx';
 import * as ChannelActions from 'actions/channel_actions.jsx';
+import * as GlobalActions from 'actions/global_actions.jsx';
 import * as PostActions from 'actions/post_actions.jsx';
-
 import ChannelStore from 'stores/channel_store.jsx';
 import EmojiStore from 'stores/emoji_store.jsx';
-import PostStore from 'stores/post_store.jsx';
 import MessageHistoryStore from 'stores/message_history_store.jsx';
-import UserStore from 'stores/user_store.jsx';
+import PostStore from 'stores/post_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
-import ConfirmModal from './confirm_modal.jsx';
+import TeamStore from 'stores/team_store.jsx';
+import UserStore from 'stores/user_store.jsx';
 
 import Constants from 'utils/constants.jsx';
 import * as FileUtils from 'utils/file_utils';
+import * as PostUtils from 'utils/post_utils.jsx';
+import * as UserAgent from 'utils/user_agent.jsx';
+import * as Utils from 'utils/utils.jsx';
+import store from 'stores/redux_store.jsx';
 
-import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router/es6';
+import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
+
+import ConfirmModal from './confirm_modal.jsx';
+import FilePreview from './file_preview.jsx';
+import FileUpload from './file_upload.jsx';
+import MsgTyping from './msg_typing.jsx';
+import PostDeletedModal from './post_deleted_modal.jsx';
+import Textbox from './textbox.jsx';
+import TutorialTip from './tutorial/tutorial_tip.jsx';
 
 const Preferences = Constants.Preferences;
 const TutorialSteps = Constants.TutorialSteps;
-const ActionTypes = Constants.ActionTypes;
 const KeyCodes = Constants.KeyCodes;
-
-import React from 'react';
-import ReactSelect from 'react-select-plus';
-import PropTypes from 'prop-types';
-import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 export const REACTION_PATTERN = /^(\+|-):([^:\s]+):\s*$/;
 
@@ -293,21 +289,8 @@ export default class CreatePostPharoTweet extends React.Component {
             ChannelActions.executeCommand(
                 post.message,
                 args,
-                (data) => {
+                () => {
                     this.setState({submitting: false});
-
-                    if (post.message.trim() === '/logout') {
-                        GlobalActions.clientLogout(data.goto_location);
-                        return;
-                    }
-
-                    if (data.goto_location && data.goto_location.length > 0) {
-                        if (data.goto_location.startsWith('/') || data.goto_location.includes(window.location.hostname)) {
-                            browserHistory.push(data.goto_location);
-                        } else {
-                            window.open(data.goto_location);
-                        }
-                    }
                 },
                 (err) => {
                     if (err.sendMessage) {
@@ -365,7 +348,7 @@ export default class CreatePostPharoTweet extends React.Component {
         const members = stats.member_count - 1;
         const updateChannel = ChannelStore.getCurrent();
 
-        if ((this.state.message.includes('@all') || this.state.message.includes('@channel')) && members >= Constants.NOTIFY_ALL_MEMBERS) {
+        if ((PostUtils.containsAtMention(this.state.message, '@all') || PostUtils.containsAtMention(this.state.message, '@channel')) && members >= Constants.NOTIFY_ALL_MEMBERS && window.mm_config.EnableConfirmNotificationsToChannel === 'true') {
             this.setState({totalMembers: members});
             this.showNotifyAllModal();
             return;
@@ -380,6 +363,12 @@ export default class CreatePostPharoTweet extends React.Component {
         const isDirectOrGroup = ((updateChannel.type === Constants.DM_CHANNEL) || (updateChannel.type === Constants.GM_CHANNEL));
         if (!isDirectOrGroup && this.state.message.trimRight() === '/purpose') {
             GlobalActions.showChannelPurposeUpdateModal(updateChannel);
+            this.setState({message: ''});
+            return;
+        }
+
+        if (!isDirectOrGroup && this.state.message.trimRight() === '/rename') {
+            GlobalActions.showChannelNameUpdateModal(updateChannel);
             this.setState({message: ''});
             return;
         }
@@ -422,9 +411,8 @@ export default class CreatePostPharoTweet extends React.Component {
 
     sendReaction(isReaction) {
         const action = isReaction[1];
-
         const emojiName = isReaction[2];
-        const postId = PostStore.getLatestPostId(this.state.channelId);
+        const postId = PostStore.getMostRecentPostIdInChannel(this.state.channelId);
 
         if (postId && action === '+') {
             PostActions.addReaction(this.state.channelId, postId, emojiName);
@@ -604,19 +592,8 @@ export default class CreatePostPharoTweet extends React.Component {
     showShortcuts(e) {
         if ((e.ctrlKey || e.metaKey) && e.keyCode === Constants.KeyCodes.FORWARD_SLASH) {
             e.preventDefault();
-            const args = {};
-            args.channel_id = this.state.channelId;
-            ChannelActions.executeCommand(
-                '/shortcuts',
-                args,
-                null,
-                (err) => {
-                    this.setState({
-                        serverError: err.message,
-                        submitting: false
-                    });
-                }
-            );
+
+            GlobalActions.toggleShortcutsModal();
         }
     }
 
@@ -785,15 +762,14 @@ export default class CreatePostPharoTweet extends React.Component {
                 type = Utils.localizeMessage('create_post.post', 'Post');
             }
 
-            AppDispatcher.handleViewAction({
-                type: ActionTypes.RECEIVED_EDIT_POST,
-                refocusId: '#post_textbox',
-                title: type,
-                message: lastPost.message,
-                postId: lastPost.id,
-                channelId: lastPost.channel_id,
-                comments: PostStore.getCommentCount(lastPost)
-            });
+            store.dispatch(
+                PostActions.setEditingPost(
+                    lastPost.id,
+                    PostStore.getCommentCount(lastPost),
+                    '#post_textbox',
+                    type
+                )
+            );
         } else if (!e.ctrlKey && !e.metaKey && !e.altKey && e.shiftKey && e.keyCode === KeyCodes.UP && this.state.message === '' && lastPostEl) {
             e.preventDefault();
             if (document.createEvent) {
@@ -870,6 +846,7 @@ export default class CreatePostPharoTweet extends React.Component {
 
         return (
             <TutorialTip
+                id='postTextboxTipMessage'
                 placement='top'
                 screens={screens}
                 overlayClass='tip-overlay--chat'
@@ -994,10 +971,10 @@ export default class CreatePostPharoTweet extends React.Component {
                         topOffset={-7}
                     />
                     <span
-                        className='icon icon--emoji'
+                        id='emojiPickerButton'
+                        className={'icon icon--emoji ' + (this.state.showEmojiPicker ? 'active' : '')}
                         dangerouslySetInnerHTML={{__html: Constants.EMOJI_ICON_SVG}}
                         onClick={this.toggleEmojiPicker}
-                        onMouseOver={EmojiPicker.beginPreloading}
                     />
                 </span>
             );

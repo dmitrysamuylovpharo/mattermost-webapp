@@ -5614,9 +5614,8 @@ math-expression-evaluator@^1.2.14:
   version "1.2.16"
   resolved "https://registry.yarnpkg.com/math-expression-evaluator/-/math-expression-evaluator-1.2.16.tgz#b357fa1ca9faefb8e48d10c14ef2bcb2d9f0a7c9"
 
-"mattermost-redux@https://github.com/mattermost/mattermost-redux.git#fb083f67b5560ff64fe251415460a1af5d690e5a":
+"mattermost-redux@file:../mattermost-redux":
   version "1.0.1"
-  resolved "https://github.com/mattermost/mattermost-redux.git#fb083f67b5560ff64fe251415460a1af5d690e5a"
   dependencies:
     deep-equal "1.0.1"
     form-data "2.3.1"
@@ -7049,13 +7048,6 @@ react-dom@16.1.0:
     object-assign "^4.1.1"
     prop-types "^15.6.0"
 
-react-input-autosize@^1.1.3:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-1.2.0.tgz#87241071159f742123897691da6796ec33b57d05"
-  dependencies:
-    create-react-class "^15.5.2"
-    prop-types "^15.5.8"
-
 react-input-autosize@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-2.0.1.tgz#e92190497b4026c2780ad0f2fd703c835ba03e33"
@@ -7105,14 +7097,13 @@ react-router@3.2.0:
     prop-types "^15.5.6"
     warning "^3.0.0"
 
-react-select-plus@1.0.0-rc.5:
-  version "1.0.0-rc.5"
-  resolved "https://registry.yarnpkg.com/react-select-plus/-/react-select-plus-1.0.0-rc.5.tgz#00942063d824c57f9cf1fc98c47df2c6307dcff9"
+react-select-plus@1.0.0-rc.10.patch1:
+  version "1.0.0-rc.10.patch1"
+  resolved "https://registry.yarnpkg.com/react-select-plus/-/react-select-plus-1.0.0-rc.10.patch1.tgz#f23ed6f13fff44e065f586cd9dad6f6e5352a468"
   dependencies:
     classnames "^2.2.4"
-    create-react-class "^15.5.2"
     prop-types "^15.5.8"
-    react-input-autosize "^1.1.3"
+    react-input-autosize "^2.0.1"
 
 react-select@1.0.0-rc.10:
   version "1.0.0-rc.10"

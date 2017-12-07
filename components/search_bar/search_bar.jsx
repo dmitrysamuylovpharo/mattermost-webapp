@@ -12,7 +12,7 @@ import * as Utils from 'utils/utils.jsx';
 import SearchChannelProvider from '../suggestion/search_channel_provider.jsx';
 import SearchSuggestionList from '../suggestion/search_suggestion_list.jsx';
 import SearchUserProvider from '../suggestion/search_user_provider.jsx';
-import SearchDateProvider from './suggestion/search_date_provider.jsx';
+import SearchDateProvider from '../suggestion/search_date_provider.jsx';
 import SuggestionBox from '../suggestion/suggestion_box.jsx';
 
 const {KeyCodes} = Constants;
