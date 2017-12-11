@@ -4,6 +4,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import ReactSelect from 'react-select-plus';
+import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
 import * as ChannelActions from 'actions/channel_actions.jsx';
