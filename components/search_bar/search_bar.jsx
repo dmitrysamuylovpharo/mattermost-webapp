@@ -56,6 +56,9 @@ export default class SearchBar extends React.Component {
         if (Utils.isMobile()) {
             setTimeout(() => {
                 document.querySelector('.app__body .sidebar--menu').classList.add('visible');
+                document.querySelector('#sidebar-webrtc').classList.remove('webrtc--show');
+                document.querySelector('#inner-wrap-webrtc').classList.remove('webrtc--show');
+                document.querySelector('#inner-wrap-webrtc').classList.remove('move--left');
             });
         }
 
@@ -155,6 +158,10 @@ export default class SearchBar extends React.Component {
                 />
             </Popover>
         );
+    }
+
+    getSearch = (node) => {
+        this.search = node;
     }
 
     render() {
@@ -283,9 +290,7 @@ export default class SearchBar extends React.Component {
                         />
                         <SuggestionBox
                             id='searchBox'
-                            ref={(search) => {
-                                this.search = search;
-                            }}
+                            ref={this.getSearch}
                             className='search-bar'
                             placeholder={Utils.localizeMessage('search_bar.search', 'Search')}
                             value={this.props.searchTerms}

@@ -217,7 +217,9 @@ export const ActionTypes = keyMirror({
     REMOVED_WEBAPP_PLUGIN: null,
 
     MODAL_OPEN: null,
-    MODAL_CLOSE: null
+    MODAL_CLOSE: null,
+
+    POPOVER_MENTION_KEY_CLICK: null
 });
 
 export const WebrtcActionTypes = keyMirror({
@@ -350,7 +352,8 @@ export const StorageTypes = keyMirror({
 
 export const StoragePrefixes = {
     EMBED_VISIBLE: 'isVisible_',
-    COMMENT_DRAFT: 'comment_draft_'
+    COMMENT_DRAFT: 'comment_draft_',
+    DRAFT: 'draft_'
 };
 
 export const ErrorPageTypes = {
@@ -424,15 +427,6 @@ export const Constants = {
     StatTypes,
     STAT_MAX_ACTIVE_USERS: 20,
     STAT_MAX_NEW_USERS: 20,
-
-    UserUpdateEvents: {
-        USERNAME: 'username',
-        FULLNAME: 'fullname',
-        NICKNAME: 'nickname',
-        EMAIL: 'email',
-        LANGUAGE: 'language',
-        POSITION: 'position'
-    },
 
     ScrollTypes: {
         FREE: 1,
@@ -589,7 +583,7 @@ export const Constants = {
             onlineIndicator: '#06d6a0',
             awayIndicator: '#ffbc42',
             dndIndicator: '#f74343',
-            mentionBj: '#ffffff',
+            mentionBg: '#ffffff',
             mentionColor: '#145dbf',
             centerChannelBg: '#ffffff',
             centerChannelColor: '#3d3c40',
@@ -616,7 +610,7 @@ export const Constants = {
             onlineIndicator: '#7dbe00',
             awayIndicator: '#dcbd4e',
             dndIndicator: '#ff6a6a',
-            mentionBj: '#fbfbfb',
+            mentionBg: '#fbfbfb',
             mentionColor: '#2071f7',
             centerChannelBg: '#f2f4f8',
             centerChannelColor: '#333333',
@@ -643,7 +637,7 @@ export const Constants = {
             onlineIndicator: '#65dcc8',
             awayIndicator: '#c1b966',
             dndIndicator: '#e81023',
-            mentionBj: '#b74a4a',
+            mentionBg: '#b74a4a',
             mentionColor: '#ffffff',
             centerChannelBg: '#2f3e4e',
             centerChannelColor: '#dddddd',
@@ -670,7 +664,7 @@ export const Constants = {
             onlineIndicator: '#399fff',
             awayIndicator: '#c1b966',
             dndIndicator: '#e81023',
-            mentionBj: '#0177e7',
+            mentionBg: '#0177e7',
             mentionColor: '#ffffff',
             centerChannelBg: '#1f1f1f',
             centerChannelColor: '#dddddd',
@@ -743,7 +737,7 @@ export const Constants = {
         },
         {
             group: 'sidebarElements',
-            id: 'mentionBj',
+            id: 'mentionBg',
             uiName: 'Mention Jewel BG'
         },
         {
