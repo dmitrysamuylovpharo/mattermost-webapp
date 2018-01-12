@@ -18,7 +18,7 @@ import LocalizationStore from 'stores/localization_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
 
-import Constants from 'utils/constants.jsx';
+import Constants, {UserStatusesWeight} from 'utils/constants.jsx';
 import * as UserAgent from 'utils/user_agent.jsx';
 
 import bing from 'images/bing.mp3';
@@ -146,9 +146,9 @@ export function notifyMe(title, body, channel, teamId, duration, silent) {
                             } else if (channel) {
                                 browserHistory.push(TeamStore.getTeamUrl(teamId) + '/channels/' + channel.name);
                             } else if (teamId) {
-                                browserHistory.push(TeamStore.getTeamUrl(teamId) + '/channels/town-square');
+                                browserHistory.push(TeamStore.getTeamUrl(teamId) + `/channels/${Constants.DEFAULT_CHANNEL}`);
                             } else {
-                                browserHistory.push(TeamStore.getCurrentTeamUrl() + '/channels/town-square');
+                                browserHistory.push(TeamStore.getCurrentTeamUrl() + `/channels/${Constants.DEFAULT_CHANNEL}`);
                             }
                         };
 
@@ -1095,6 +1095,20 @@ export function displayUsernameForUser(user) {
 }
 
 /**
+ * Sort users by status then by display name, respecting the TeammateNameDisplay configuration setting
+ */
+export function sortUsersByStatusAndDisplayName(userA, userB) {
+    function sortByDisplayName(a, b) {
+        const aName = displayUsernameForUser(a);
+        const bName = displayUsernameForUser(b);
+
+        return aName.localeCompare(bName);
+    }
+
+    return UserStatusesWeight[userA.status] - UserStatusesWeight[userB.status] || sortByDisplayName(userA, userB);
+}
+
+/**
  * Gets the entire name, including username, full name, and nickname, of the user with the specified id
  */
 export function displayEntireName(userId) {
@@ -1147,7 +1161,7 @@ export function imageURLForUser(userIdOrObject) {
         if (profile) {
             return imageURLForUser(profile);
         }
-        return Client4.getUsersRoute() + '/' + userIdOrObject + '/image?_=0';
+        return Constants.TRANSPARENT_PIXEL;
     }
     return Client4.getUsersRoute() + '/' + userIdOrObject.id + '/image?_=' + (userIdOrObject.last_picture_update || 0);
 }

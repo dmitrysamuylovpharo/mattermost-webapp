@@ -1,18 +1,15 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See License.txt for license information.
 
-import $ from 'jquery';
-
 import {browserHistory} from 'react-router';
 
-import {fetchMyChannelsAndMembers, joinChannel} from 'mattermost-redux/actions/channels';
+import {joinChannel} from 'mattermost-redux/actions/channels';
 import {getMyTeamUnreads} from 'mattermost-redux/actions/teams';
 import {getUser, getUserByEmail, getUserByUsername} from 'mattermost-redux/actions/users';
 
 import {openDirectChannelToUser} from 'actions/channel_actions.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
-import {loadStatusesForChannelAndSidebar} from 'actions/status_actions.jsx';
-import {loadNewDMIfNeeded, loadNewGMIfNeeded, loadProfilesForSidebar} from 'actions/user_actions.jsx';
+import {loadNewDMIfNeeded, loadNewGMIfNeeded} from 'actions/user_actions.jsx';
 import {reconnect} from 'actions/websocket_actions.jsx';
 import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
 import BrowserStore from 'stores/browser_store.jsx';
@@ -62,7 +59,7 @@ function doChannelChange(state, replace, callback) {
                         GlobalActions.emitChannelClickEvent(channel);
                     } else if (result.error) {
                         if (state.params.team) {
-                            replace('/' + state.params.team + '/channels/town-square');
+                            replace('/' + state.params.team + `/channels/${Constants.DEFAULT_CHANNEL}`);
                         } else {
                             replace('/');
                         }
@@ -119,21 +116,7 @@ function preNeedsTeam(nextState, replace, callback) {
     BrowserStore.setGlobalItem('team', team.id);
     TeamStore.emitChange();
     GlobalActions.emitCloseRightHandSide();
-
-    const d1 = $.Deferred(); //eslint-disable-line new-cap
-
-    fetchMyChannelsAndMembers(team.id)(dispatch, getState).then(
-        () => {
-            loadStatusesForChannelAndSidebar();
-            loadProfilesForSidebar();
-
-            d1.resolve();
-        }
-    );
-
-    $.when(d1).done(() => {
-        callback();
-    });
+    callback();
 }
 
 function selectLastChannel(nextState, replace, callback) {
@@ -141,7 +124,7 @@ function selectLastChannel(nextState, replace, callback) {
     const channelId = BrowserStore.getGlobalItem(team.id);
     const channel = ChannelStore.getChannelById(channelId);
 
-    let channelName = 'town-square';
+    let channelName = Constants.DEFAULT_CHANNEL;
     if (channel) {
         channelName = channel.name;
     }
@@ -300,7 +283,7 @@ export default {
                     getComponents: (location, callback) => {
                         Promise.all([
                             import('components/team_sidebar'),
-                            import('components/sidebar.jsx'),
+                            import('components/sidebar'),
                             import('components/channel_view')
                         ]).then((comarr) => {
                             callback(null, {
@@ -317,7 +300,7 @@ export default {
                     getComponents: (location, callback) => {
                         Promise.all([
                             import('components/team_sidebar'),
-                            import('components/sidebar.jsx'),
+                            import('components/sidebar'),
                             import('components/permalink_view.jsx')
                         ]).then((comarr) => {
                             callback(null, {
@@ -334,7 +317,7 @@ export default {
                     getComponents: (location, callback) => {
                         Promise.all([
                             import('components/team_sidebar'),
-                            import('components/sidebar.jsx'),
+                            import('components/sidebar'),
                             import('components/channel_view')
                         ]).then((comarr) => {
                             callback(null, {
@@ -350,7 +333,7 @@ export default {
                     getComponents: (location, callback) => {
                         Promise.all([
                             import('components/team_sidebar'),
-                            import('components/sidebar.jsx'),
+                            import('components/sidebar'),
                             import('components/tutorial/tutorial_view.jsx')
                         ]).then((comarr) => {
                             callback(null, {

@@ -16,6 +16,10 @@ import * as Utils from 'utils/utils.jsx';
 import SettingItemMax from 'components/setting_item_max.jsx';
 import SettingItemMin from 'components/setting_item_min.jsx';
 
+const SECTION_MARK_UNREAD_LEVEL = 'markUnreadLevel';
+const SECTION_DESKTOP = 'desktop';
+const SECTION_PUSH = 'push';
+
 export default class ChannelNotificationsModal extends React.Component {
     constructor(props) {
         super(props);
@@ -97,6 +101,45 @@ export default class ChannelNotificationsModal extends React.Component {
         this.setState({notifyLevel});
     }
 
+    setUnreadLevel = () => {
+        this.setState({
+            unreadLevel: this.props.channelMember.notify_props.mark_unread
+        });
+    }
+
+    handleMinUpdateSection = (section) => {
+        this.updateSection(section);
+
+        switch (section) {
+        case SECTION_MARK_UNREAD_LEVEL:
+            this.setUnreadLevel();
+            break;
+        default:
+        }
+    }
+
+    handleMaxUpdateSection = (section) => {
+        this.updateSection(section);
+
+        switch (this.state.activeSection) {
+        case SECTION_DESKTOP:
+            this.setState({
+                notifyLevel: this.props.channelMember.notify_props.desktop
+            });
+            break;
+        case SECTION_MARK_UNREAD_LEVEL:
+            this.setUnreadLevel();
+            break;
+
+        case SECTION_PUSH:
+            this.setState({
+                pushLevel: this.props.channelMember.notify_props.push || NotificationLevels.DEFAULT
+            });
+            break;
+        default:
+        }
+    }
+
     createDesktopNotifyLevelSection(serverError) {
         // Get glabal user setting for notifications
         const globalNotifyLevel = this.props.currentUser.notify_props ? this.props.currentUser.notify_props.desktop : NotificationLevels.ALL;
@@ -133,7 +176,7 @@ export default class ChannelNotificationsModal extends React.Component {
 
         const notificationLevel = this.state.notifyLevel;
 
-        if (this.state.activeSection === 'desktop') {
+        if (this.state.activeSection === SECTION_DESKTOP) {
             const notifyActive = [false, false, false, false];
             if (notificationLevel === NotificationLevels.DEFAULT) {
                 notifyActive[0] = true;
@@ -209,14 +252,6 @@ export default class ChannelNotificationsModal extends React.Component {
                 </div>
             );
 
-            const handleUpdateSection = function updateSection(e) {
-                this.updateSection('');
-                this.setState({
-                    notifyLevel: this.props.channelMember.notify_props.desktop
-                });
-                e.preventDefault();
-            }.bind(this);
-
             const extraInfo = (
                 <span>
                     <FormattedMessage
@@ -232,7 +267,7 @@ export default class ChannelNotificationsModal extends React.Component {
                     inputs={inputs}
                     submit={this.handleSubmitDesktopNotifyLevel}
                     server_error={serverError}
-                    updateSection={handleUpdateSection}
+                    updateSection={this.handleMaxUpdateSection}
                     extraInfo={extraInfo}
                 />
             );
@@ -260,9 +295,8 @@ export default class ChannelNotificationsModal extends React.Component {
             <SettingItemMin
                 title={sendDesktop}
                 describe={describe}
-                updateSection={() => {
-                    this.updateSection('desktop');
-                }}
+                section={SECTION_DESKTOP}
+                updateSection={this.handleMinUpdateSection}
             />
         );
     }
@@ -305,7 +339,7 @@ export default class ChannelNotificationsModal extends React.Component {
                 defaultMessage='Mark Channel Unread'
             />
         );
-        if (this.state.activeSection === 'markUnreadLevel') {
+        if (this.state.activeSection === SECTION_MARK_UNREAD_LEVEL) {
             const inputs = [(
                 <div key='channel-notification-unread-radio'>
                     <div className='radio'>
@@ -340,14 +374,6 @@ export default class ChannelNotificationsModal extends React.Component {
                 </div>
             )];
 
-            const handleUpdateSection = function handleUpdateSection(e) {
-                this.updateSection('');
-                this.setState({
-                    unreadLevel: this.props.channelMember.notify_props.mark_unread
-                });
-                e.preventDefault();
-            }.bind(this);
-
             const extraInfo = (
                 <span>
                     <FormattedMessage
@@ -363,7 +389,7 @@ export default class ChannelNotificationsModal extends React.Component {
                     inputs={inputs}
                     submit={this.handleSubmitMarkUnreadLevel}
                     server_error={serverError}
-                    updateSection={handleUpdateSection}
+                    updateSection={this.handleMaxUpdateSection}
                     extraInfo={extraInfo}
                 />
             );
@@ -381,19 +407,12 @@ export default class ChannelNotificationsModal extends React.Component {
                 describe = (<FormattedMessage id='channel_notifications.onlyMentions'/>);
             }
 
-            const handleUpdateSection = function handleUpdateSection(e) {
-                this.updateSection('markUnreadLevel');
-                this.setState({
-                    unreadLevel: this.props.channelMember.notify_props.mark_unread
-                });
-                e.preventDefault();
-            }.bind(this);
-
             content = (
                 <SettingItemMin
                     title={markUnread}
                     describe={describe}
-                    updateSection={handleUpdateSection}
+                    section={SECTION_MARK_UNREAD_LEVEL}
+                    updateSection={this.handleMinUpdateSection}
                 />
             );
         }
@@ -472,7 +491,7 @@ export default class ChannelNotificationsModal extends React.Component {
         const notificationLevel = this.state.pushLevel;
 
         let content;
-        if (this.state.activeSection === 'push') {
+        if (this.state.activeSection === SECTION_PUSH) {
             const notifyActive = [false, false, false, false];
             if (notificationLevel === NotificationLevels.DEFAULT) {
                 notifyActive[0] = true;
@@ -548,14 +567,6 @@ export default class ChannelNotificationsModal extends React.Component {
                 </div>
             );
 
-            const handleUpdateSection = function updateSection(e) {
-                this.updateSection('');
-                this.setState({
-                    pushLevel: this.props.channelMember.notify_props.push || NotificationLevels.DEFAULT
-                });
-                e.preventDefault();
-            }.bind(this);
-
             const extraInfo = (
                 <span>
                     <FormattedMessage
@@ -571,7 +582,7 @@ export default class ChannelNotificationsModal extends React.Component {
                     inputs={inputs}
                     submit={this.handleSubmitPushNotificationLevel}
                     server_error={serverError}
-                    updateSection={handleUpdateSection}
+                    updateSection={this.handleMaxUpdateSection}
                     extraInfo={extraInfo}
                 />
             );
@@ -598,9 +609,8 @@ export default class ChannelNotificationsModal extends React.Component {
                 <SettingItemMin
                     title={sendPushNotifications}
                     describe={describe}
-                    updateSection={() => {
-                        this.updateSection('push');
-                    }}
+                    section={SECTION_PUSH}
+                    updateSection={this.handleMinUpdateSection}
                 />
             );
         }

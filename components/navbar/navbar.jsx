@@ -99,9 +99,9 @@ export default class Navbar extends React.Component {
         UserStore.removeChangeListener(this.onChange);
         PreferenceStore.removeChangeListener(this.onChange);
         ModalStore.removeModalListener(ActionTypes.TOGGLE_QUICK_SWITCH_MODAL, this.toggleQuickSwitchModal);
-        ModalStore.addModalListener(ActionTypes.TOGGLE_CHANNEL_HEADER_UPDATE_MODAL, this.hideEditChannelHeaderModal);
-        ModalStore.addModalListener(ActionTypes.TOGGLE_CHANNEL_PURPOSE_UPDATE_MODAL, this.hideChannelPurposeModal);
-        ModalStore.addModalListener(ActionTypes.TOGGLE_CHANNEL_NAME_UPDATE_MODAL, this.hideRenameChannelModal);
+        ModalStore.removeModalListener(ActionTypes.TOGGLE_CHANNEL_HEADER_UPDATE_MODAL, this.hideEditChannelHeaderModal);
+        ModalStore.removeModalListener(ActionTypes.TOGGLE_CHANNEL_PURPOSE_UPDATE_MODAL, this.hideChannelPurposeModal);
+        ModalStore.removeModalListener(ActionTypes.TOGGLE_CHANNEL_NAME_UPDATE_MODAL, this.hideRenameChannelModal);
         WebrtcStore.removeChangedListener(this.onChange);
         WebrtcStore.removeBusyListener(this.onBusy);
         document.removeEventListener('keydown', this.handleQuickSwitchKeyPress);
@@ -354,6 +354,12 @@ export default class Navbar extends React.Component {
                 </a>
             </div>
         );
+    }
+
+    hideHeaderOverlay = () => {
+        if (this.refs.headerOverlay) {
+            this.refs.headerOverlay.hide();
+        }
     }
 
     createDropdown = (channel, channelTitle, isSystemAdmin, isTeamAdmin, isChannelAdmin, isDirect, isGroup) => {
@@ -692,7 +698,7 @@ export default class Navbar extends React.Component {
                             {toggleFavoriteOption}
                             <div
                                 className='close visible-xs-block'
-                                onClick={() => this.refs.headerOverlay.hide()}
+                                onClick={this.hideHeaderOverlay}
                             >
                                 {'×'}
                             </div>
@@ -705,7 +711,7 @@ export default class Navbar extends React.Component {
         return (
             <div className='navbar-brand'>
                 <Link
-                    to={TeamStore.getCurrentTeamUrl() + '/channels/town-square'}
+                    to={TeamStore.getCurrentTeamUrl() + `/channels/${Constants.DEFAULT_CHANNEL}`}
                     className='heading'
                 >
                     {channelTitle}
@@ -789,6 +795,16 @@ export default class Navbar extends React.Component {
         return null;
     }
 
+    hideEditChannelHeaderModal = () => {
+        this.setState({showEditChannelHeaderModal: false});
+    }
+
+    showChannelInviteModalButton = () => {
+        if (this.refs.channelInviteModalButton) {
+            this.refs.channelInviteModalButton.show();
+        }
+    }
+
     render() {
         if (!this.isStateValid()) {
             return null;
@@ -837,7 +853,7 @@ export default class Navbar extends React.Component {
             if (this.state.showEditChannelHeaderModal) {
                 editChannelHeaderModal = (
                     <EditChannelHeaderModal
-                        onHide={() => this.setState({showEditChannelHeaderModal: false})}
+                        onHide={this.hideEditChannelHeaderModal}
                         channel={channel}
                     />
                 );
@@ -864,7 +880,7 @@ export default class Navbar extends React.Component {
                 channelMembersModal = (
                     <ChannelMembersModal
                         onModalDismissed={this.hideMembersModal}
-                        showInviteModal={() => this.refs.channelInviteModalButton.show()}
+                        showInviteModal={this.showChannelInviteModalButton}
                         channel={channel}
                     />
                 );

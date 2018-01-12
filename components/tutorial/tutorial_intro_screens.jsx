@@ -55,7 +55,7 @@ export default class TutorialIntroScreens extends React.Component {
             return;
         }
 
-        browserHistory.push(TeamStore.getCurrentTeamUrl() + '/channels/town-square');
+        browserHistory.push(TeamStore.getCurrentTeamUrl() + `/channels/${Constants.DEFAULT_CHANNEL}`);
 
         const step = PreferenceStore.getInt(Preferences.TUTORIAL_STEP, UserStore.getCurrentId(), 0);
 
@@ -86,7 +86,7 @@ export default class TutorialIntroScreens extends React.Component {
             '999'
         );
 
-        browserHistory.push(TeamStore.getCurrentTeamUrl() + '/channels/town-square');
+        browserHistory.push(TeamStore.getCurrentTeamUrl() + `/channels/${Constants.DEFAULT_CHANNEL}`);
     }
     createScreen() {
         switch (this.state.currentScreen) {
@@ -269,6 +269,13 @@ export default class TutorialIntroScreens extends React.Component {
             </div>
         );
     }
+
+    handleCircleClick = (e) => {
+        e.preventDefault();
+        const currentScreen = e.currentTarget.getAttribute('data-screen');
+        this.setState({currentScreen});
+    }
+
     createCircles() {
         const circles = [];
         for (let i = 0; i < NUM_SCREENS; i++) {
@@ -283,10 +290,8 @@ export default class TutorialIntroScreens extends React.Component {
                     href='#'
                     key={'circle' + i}
                     className={className}
-                    onClick={(e) => { //eslint-disable-line no-loop-func
-                        e.preventDefault();
-                        this.setState({currentScreen: i});
-                    }}
+                    data-screen={i}
+                    onClick={this.handleCircleClick}
                 />
             );
         }

@@ -6,7 +6,7 @@ import {browserHistory} from 'react-router';
 import * as ChannelActions from 'mattermost-redux/actions/channels';
 import {deletePreferences, savePreferences} from 'mattermost-redux/actions/preferences';
 import {Client4} from 'mattermost-redux/client';
-import {getMyChannelMemberships} from 'mattermost-redux/selectors/entities/channels';
+import {getMyChannelMemberships, getChannel} from 'mattermost-redux/selectors/entities/channels';
 
 import {actionOnGlobalItemsWithPrefix} from 'actions/storage';
 
@@ -28,6 +28,11 @@ import {isUrlSafe} from 'utils/url.jsx';
 
 const dispatch = store.dispatch;
 const getState = store.getState;
+
+export function goToChannelById(channelId) {
+    const channel = getChannel(getState(), channelId);
+    browserHistory.push(TeamStore.getCurrentTeamRelativeUrl() + '/channels/' + channel.name);
+}
 
 export function goToChannel(channel) {
     if (channel.fake) {
@@ -98,7 +103,7 @@ export function executeCommand(message, args, success, error) {
             if (ChannelUtils.isFavoriteChannel(channel)) {
                 unmarkFavorite(channel.id);
             }
-            browserHistory.push(`${TeamStore.getCurrentTeamRelativeUrl()}/channels/town-square`);
+            browserHistory.push(`${TeamStore.getCurrentTeamRelativeUrl()}/channels/${Constants.DEFAULT_CHANNEL}`);
             return;
         }
         break;
@@ -375,6 +380,7 @@ export async function leaveChannel(channelId, success) {
     if (ChannelUtils.isFavoriteChannelId(channelId)) {
         unmarkFavorite(channelId);
     }
+
     if (success) {
         success();
     }
