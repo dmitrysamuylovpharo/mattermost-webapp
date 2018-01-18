@@ -292,7 +292,6 @@ class GeneralTab extends React.Component {
                     inputs={inputs}
                     submit={this.handleOpenInviteSubmit}
                     serverError={serverError}
-                    section={'open_invite'}
                     updateSection={this.handleUpdateSection}
                 />
             );
@@ -309,6 +308,7 @@ class GeneralTab extends React.Component {
                     title={Utils.localizeMessage('general_tab.openInviteTitle', 'Allow any user with an account on this server to join this team')}
                     describe={describe}
                     updateSection={this.handleUpdateSection}
+                    section={'open_invite'}
                 />
             );
         }
@@ -325,6 +325,7 @@ class GeneralTab extends React.Component {
                         <div className='col-sm-12'>
                             <input
                                 id='teamInviteId'
+                                autoFocus={true}
                                 className='form-control'
                                 type='text'
                                 onChange={this.updateInviteId}
@@ -371,7 +372,6 @@ class GeneralTab extends React.Component {
                     submit={this.handleInviteIdSubmit}
                     serverError={serverError}
                     clientError={clientError}
-                    section={'invite_id'}
                     updateSection={this.handleUpdateSection}
                 />
             );
@@ -381,6 +381,7 @@ class GeneralTab extends React.Component {
                     title={Utils.localizeMessage('general_tab.codeTitle', 'Invite Code')}
                     describe={Utils.localizeMessage('general_tab.codeDesc', "Click 'Edit' to regenerate Invite Code.")}
                     updateSection={this.handleUpdateSection}
+                    section={'invite_id'}
                 />
             );
         }
@@ -409,6 +410,7 @@ class GeneralTab extends React.Component {
                     <div className='col-sm-7'>
                         <input
                             id='teamName'
+                            autoFocus={true}
                             className='form-control'
                             type='text'
                             maxLength={Constants.MAX_TEAMNAME_LENGTH.toString()}
@@ -428,7 +430,6 @@ class GeneralTab extends React.Component {
                     submit={this.handleNameSubmit}
                     serverError={serverError}
                     clientError={clientError}
-                    section={'name'}
                     updateSection={this.handleUpdateSection}
                     extraInfo={nameExtraInfo}
                 />
@@ -441,6 +442,7 @@ class GeneralTab extends React.Component {
                     title={Utils.localizeMessage('general_tab.teamName', 'Team Name')}
                     describe={describe}
                     updateSection={this.handleUpdateSection}
+                    section={'name'}
                 />
             );
         }
@@ -469,6 +471,7 @@ class GeneralTab extends React.Component {
                     <div className='col-sm-7'>
                         <input
                             id='teamDescription'
+                            autoFocus={true}
                             className='form-control'
                             type='text'
                             maxLength={Constants.MAX_TEAMDESCRIPTION_LENGTH.toString()}
@@ -488,7 +491,6 @@ class GeneralTab extends React.Component {
                     submit={this.handleDescriptionSubmit}
                     serverError={serverError}
                     clientError={clientError}
-                    section={'description'}
                     updateSection={this.handleUpdateSection}
                     extraInfo={descriptionExtraInfo}
                 />
@@ -505,12 +507,12 @@ class GeneralTab extends React.Component {
                     />
                 );
             }
-
             descriptionSection = (
                 <SettingItemMin
                     title={Utils.localizeMessage('general_tab.teamDescription', 'Team Description')}
                     describe={describemsg}
                     updateSection={this.handleUpdateSection}
+                    section={'description'}
                 />
             );
         }
