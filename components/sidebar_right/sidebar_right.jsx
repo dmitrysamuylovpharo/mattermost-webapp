@@ -197,9 +197,12 @@ export default class SidebarRight extends React.Component {
             expandedClass = '';
         }
 
+        let fontSizeClass = Utils.getSizeClassForUser(this.state.currentUser);
+        let classNames = 'sidebar--right ' + expandedClass + ' ' + fontSizeClass;
+
         return (
             <div
-                className={'sidebar--right ' + expandedClass}
+                className={classNames}
                 id='sidebar-right'
             >
                 <div

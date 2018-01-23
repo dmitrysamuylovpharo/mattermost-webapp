@@ -199,6 +199,40 @@ export async function deletePost(channelId, post, success) {
     }
 }
 
+export function performSearchSinceDate(channelId, sinceDate, success, error) {
+    Client4.getPostsSince(channelId, sinceDate).then(
+        (data) => {
+            // sort posts from selected date to current date
+            var sortingArray = [];
+            for(var key in data.posts) {
+                sortingArray[sortingArray.length] = data.posts[key];
+            }
+            sortingArray.sort(function(a,b) { 
+                return new Date(a.create_at) - new Date(b.create_at);
+            });
+            const sortOrder = sortingArray.map((post) => post.id);
+            data.order = sortOrder;
+
+            AppDispatcher.handleServerAction({
+                type: ActionTypes.RECEIVED_SEARCH,
+                results: data
+            });
+
+            PostActions.getProfilesAndStatusesForPosts(data.posts, dispatch, getState);
+
+            if (success) {
+                success(data);
+            }
+        }
+    ).catch(
+        (err) => {
+            if (error) {
+                error(err);
+            }
+        }
+    );
+}
+
 const POST_INCREASE_AMOUNT = Constants.POST_CHUNK_SIZE / 2;
 
 // Returns true if there are more posts to load

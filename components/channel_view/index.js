@@ -9,7 +9,7 @@ import {get} from 'mattermost-redux/selectors/entities/preferences';
 import {getDirectTeammate} from 'utils/utils.jsx';
 import {TutorialSteps, Preferences} from 'utils/constants.jsx';
 
-import ChannelView from './channel_view.jsx';
+import ChannelView from './channel_view';
 
 // Temporary selector until getDirectTeammate is converted to be redux-friendly
 const getDeactivatedChannel = createSelector(

@@ -9,6 +9,7 @@ import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 
+import SearchDateProvider from 'components/suggestion/search_date_provider.jsx';
 import SearchChannelProvider from 'components/suggestion/search_channel_provider.jsx';
 import SearchSuggestionList from 'components/suggestion/search_suggestion_list.jsx';
 import SearchUserProvider from 'components/suggestion/search_user_provider.jsx';
@@ -42,7 +43,7 @@ export default class SearchBar extends React.Component {
             isPristine: true
         };
 
-        this.suggestionProviders = [new SearchChannelProvider(), new SearchUserProvider()];
+        this.suggestionProviders = [new SearchChannelProvider(), new SearchUserProvider(), new SearchDateProvider()];
     }
 
     componentDidMount() {

@@ -339,8 +339,10 @@ export default class SearchResultsItem extends React.PureComponent {
             );
         }
 
+        var searchItemContainerCssClass = this.props.isSince ? 'search-item__container since-result-item' : 'search-item__container';
+
         return (
-            <div className='search-item__container'>
+            <div className={searchItemContainerCssClass}>
                 <div className='date-separator'>
                     <hr className='separator__hr'/>
                     <div className='separator__text'>

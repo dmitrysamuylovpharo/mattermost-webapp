@@ -94,6 +94,9 @@ export default class PostMessageView extends React.PureComponent {
     }
 
     render() {
+        let fontSizeClass = Utils.getSizeClassForUser(this.props.currentUser);
+        let classNames = 'post-message__text ' + fontSizeClass;
+
         const {
             post,
             enableFormatting,
@@ -145,7 +148,7 @@ export default class PostMessageView extends React.PureComponent {
             <div>
                 <span
                     id={postId}
-                    className='post-message__text'
+                    className={classNames}
                     onClick={Utils.handleFormattedTextClick}
                 >
                     <PostMarkdown

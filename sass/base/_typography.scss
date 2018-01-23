@@ -67,6 +67,30 @@ body {
     cursor: pointer;
 }
 
+.post span.size1 p { font-size: 14px; }
+.post span.size2 p { font-size: 16px; }
+.post span.size3 p { font-size: 18px; }
+
+.post span.size1 h5 { font-size: 16px; }
+.post span.size2 h5 { font-size: 18px; }
+.post span.size3 h5 { font-size: 20px; }
+
+body.size1 { font-size: 14px; }
+body.size2 { font-size: 16px; }
+body.size3 { font-size: 18px; }
+
+.sidebar--menu.size1 .nav > li > a { font-size: 14px; }
+.sidebar--menu.size2 .nav > li > a { font-size: 16px; }
+.sidebar--menu.size3 .nav > li > a { font-size: 18px; }
+
+.sidebar--left.size1 .nav li > a { font-size: 14px; }
+.sidebar--left.size2 .nav li > a { font-size: 16px; }
+.sidebar--left.size3 .nav li > a { font-size: 18px; }
+
+.sidebar--right.size1 .nav li > a { font-size: 14px; }
+.sidebar--right.size2 .nav li > a { font-size: 16px; }
+.sidebar--right.size3 .nav li > a { font-size: 18px; }
+
 /* open-sans-300 - latin-ext_latin_cyrillic-ext_greek-ext_greek_cyrillic_vietnamese */
 @font-face {
     font-family: 'Open Sans';

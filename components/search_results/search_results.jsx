@@ -128,6 +128,8 @@ export default class SearchResults extends React.PureComponent {
 
         let ctls = null;
 
+        var isSince = searchTerms != null ? searchTerms.indexOf("since:") > -1 : false;
+
         if (
             this.props.isSearchingTerm ||
             this.props.isSearchingFlaggedPost ||
@@ -368,6 +370,7 @@ export default class SearchResults extends React.PureComponent {
                         isBusy={this.state.isBusy}
                         status={status}
                         onSelect={this.props.selectPost}
+                        isSince={isSince}
                     />
                 );
             }, this);

@@ -455,9 +455,12 @@ export default class SidebarRightMenu extends React.Component {
             consoleDivider = <li className='divider'/>;
         }
 
+        let fontSizeClass = Utils.getSizeClassForUser(currentUser);
+        let classNames = 'sidebar--menu ' + fontSizeClass;
+        
         return (
             <div
-                className='sidebar--menu'
+                className={classNames}
                 id='sidebar-menu'
             >
                 <div className='team__header theme'>

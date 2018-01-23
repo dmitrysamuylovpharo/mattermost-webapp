@@ -1466,8 +1466,19 @@
         text-overflow: ellipsis;
         white-space: nowrap;
 
+        span {
+            span {
+                a {
+                    display: inline;
+                }
+            }
+        }
+        
         a {
             font-weight: bold;
+            display: block;
+            max-height: 36px;
+            white-space: normal;            
         }
     }
 
@@ -1705,4 +1716,114 @@
 .permalink-popover {
     margin-left: 50px !important;
     min-width: 320px;
+}
+
+/* pharo styles */
+// div#post-create  {
+//     border: solid 1px lightgray;
+// }
+
+h1#pharo-post-title {
+    margin-top: 0px;
+    font-size: 15px;
+    text-align: center;
+}
+
+div#post-create div.Select {
+    display: inline-block;
+    width: 50%;
+}
+
+div#post-create .pharo-tweet-create-post-form div.Select {
+    display: inline-block;
+    width: 100%;
+}
+
+div#post-create div.Select.Select--multi {
+    width: 100%;
+}
+
+.Select-menu-outer { 
+    top: auto; 
+    bottom: 100%; 
+}
+
+#subject_textbox {
+    box-sizing:border-box;
+    border-radius: 4px;
+    color:rgb(51, 51, 51);
+    display:block;
+    font-family:"Open Sans", sans-serif;
+    font-size:14px;
+    height:37px;
+    line-height:20px;
+    min-height:37px;
+    position:relative;
+    width:100%;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:rgba(0, 0, 0, 0);
+    margin-bottom: 5px;
+    padding-left: 10px;
+}
+
+.post-create__container .pharo-create-post-form .post-create-body .btn-file {
+    top: 125px;
+}
+
+.post-create__container .pharo-tweet-create-post-form .post-create-body .btn-file {
+    top: 42px;
+}
+
+.post-create__container .pharo-create-post-form .post-body__actions {
+    top: 125px;
+    height: 48px;
+}
+
+.post-create__container .pharo-tweet-create-post-form .post-body__actions {
+    top: 42px;
+    height: 48px;
+}
+
+
+.post .post__link a span {
+    font-weight: normal;
+}
+
+.Select-option-group-label {
+    color: #bfbfbf;
+    padding: 8px 10px;
+    font-size: 20px;
+}
+
+.search-item__container.since-result-item .date-separator .separator__text {
+    color: #ccc;
+}
+
+.search-item__container.since-result-item .search-channel__name,
+.search-item__container.since-result-item .date-separator .separator__hr {
+    display: none;    
+}
+
+#criticalPostOption {
+    width: 35px;
+    color: red;
+    position: absolute;
+    top: 82px;
+    right: 0px;
+}
+
+#criticalPostOption span {
+    margin-right: 5px;
+}
+
+#criticalPostOption label {
+    padding-left: 0px;
+}
+
+#criticalPostOption input {
+    margin-left: 0px;
+}
+
+.app__body .post.current--user .post__body.high-importance, .app__body .post__body.high-importance {
+    background-color: rgba(243, 204, 204, 0.54);
 }

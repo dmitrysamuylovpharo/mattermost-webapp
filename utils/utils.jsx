@@ -189,6 +189,18 @@ export function getDateForUnixTicks(ticks) {
     return new Date(ticks);
 }
 
+export function getUnixTicksForStringDate(stringDate){
+    // example date string: "2013/09/05 15:34:00"
+    // let result = Math.round(new Date(stringDate).getTime()/1000);
+    let result = Math.round(new Date(stringDate).getTime());
+    return result;
+}
+
+export function getSearchDate(date){
+    let result = (date.getUTCMonth()+1) + '-' + date.getUTCDate() + '-' + date.getUTCFullYear();
+    return result;
+}
+
 export function displayDate(ticks) {
     var d = new Date(ticks);
     var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -1540,6 +1552,44 @@ export function getEmailInterval(isEmailEnabled) {
     }
 
     return emailInterval;
+}
+
+export function removeDuplicatesBy(keyFn, array) {
+    let mySet = new Set();
+    let filteredArray = array.filter(function(x) {
+      var key = keyFn(x), isNew = !mySet.has(key);
+      if (isNew) mySet.add(key);
+      return isNew;
+    });
+    return filteredArray;
+}
+  
+export function getSizeClassForUser(currentUser) {
+    // if we don't have current user, no settings should be applied
+    if(typeof currentUser == 'undefined')
+        return "";
+
+    const sizes = ["size1","size2","size3","size4","size5","size6"];
+    let username = currentUser.username;
+    let allUserSettings = global.window.mm_pharo_config.settings.userSettings;
+    let currentUserSettings = undefined;
+    for (var setting in allUserSettings) {
+        if (allUserSettings[setting] !== undefined && allUserSettings[setting].username === username) {
+            currentUserSettings = allUserSettings[setting];
+            break;
+        }
+    }
+
+    let result = "";
+    if(currentUserSettings !== undefined)
+    {
+        if(this.isMobile())
+            result = sizes[currentUserSettings.fontSizeMobile - 1];
+        else
+            result = sizes[currentUserSettings.fontSize - 1];
+    }
+
+    return result;
 }
 
 export function copyToClipboard(e, data) {

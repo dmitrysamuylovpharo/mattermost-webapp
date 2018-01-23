@@ -79,6 +79,44 @@ function preRenderSetup(callwhendone) {
         );
     }
 
+    if(global.window.mm_pharo_config === undefined)
+    {
+        $.ajax({
+            url: 'https://s3.amazonaws.com/pharo-mattermost/tags.json',
+            contentType: 'text/plain',
+            success: function (result) {
+                if (result.isOk == false) {
+                    console.log(result.message);
+                    return;
+                }
+
+                if(global.window.mm_pharo_config === undefined)
+                    global.window.mm_pharo_config = {};
+
+                global.window.mm_pharo_config.tags = $.parseJSON(result);
+                //global.window.mm_pharo_config.tags = result;
+            },
+            async: true
+        });
+        $.ajax({
+            url: 'https://s3.amazonaws.com/pharo-mattermost/settings.json',
+            contentType: 'text/plain',
+            success: function (result) {
+                if (result.isOk == false) {
+                    console.log(result.message);
+                    return;
+                }
+
+                if(global.window.mm_pharo_config === undefined)
+                    global.window.mm_pharo_config = {};
+
+                global.window.mm_pharo_config.settings = $.parseJSON(result);
+                //global.window.mm_pharo_config.settings = result;
+            },
+            async: true
+        });                
+    }
+
     // Make sure the websockets close and reset version
     $(window).on('beforeunload',
          () => {
