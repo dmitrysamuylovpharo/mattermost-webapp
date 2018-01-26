@@ -748,23 +748,39 @@ export default class CreatePostPharoTweet extends React.Component {
     getGroupedTopicTags(tags)
     {
         var topicTags = [];
+        var pmTags = [];
+        var tweetTags = [];
+        var tweetAdminTags = [];
+
+        // add pharo Tweet Admin tags
+        if(this.props.isAdmin || this.props.currentChannel.name === 'tweets-admin')
+        {
+            tweetAdminTags = [
+                { label: "Tweet Admin Tags", options:[{ value: "survey-question", label: "Survey Question" }, { value: "topics-question", label: "Topics Question" }, { value: "survey", label: "Survey" }, { value: "topics", label: "Topics" }]}
+            ];
+        }
+
+        // add pharo Tweet survey / topic tags
+        tweetTags = [
+            { label: "Tweet Tags", options:[{ value: "survey-answer", label: "Survey Answer" }, { value: "topics-answer", label: "Topics Answer" }]}
+        ];        
 
         // add pharo PM specific tags
         const currentUser = UserStore.getCurrentUser();
         if(currentUser && (currentUser.position.toLowerCase().includes('portfolio') || currentUser.position.toLowerCase().includes('managing partner')))
         {
-            topicTags = [
+            pmTags = [
                 { label: "PM Tags", options:[{ value: "general", label: "General" }, { value: "strategy", label: "Strategy" }]}
             ];
         }
-        
+
         var assetTopicTags = tags.assetTopicTags.map((tag) => { return { value: tag.tag, label: tag.name }; });
         var countryTopicTags = tags.countryTopicTags.map((tag) => { return { value: tag.tag, label: tag.name }; });
         var generalTopicTags = tags.generalTopicTags.map((tag) => { return { value: tag.tag, label: tag.name }; });
         var regionTopicTags = tags.regionTopicTags.map((tag) => { return { value: tag.tag, label: tag.name }; });
         var internalTopicTags = tags.internalTopicTags.map((tag) => { return { value: tag.tag, label: tag.name }; });
         
-        var topicAdditionalTags = [            
+        topicTags = [            
             { label: "General Tags", options:generalTopicTags}, 
             { label: "Region Tags", options:regionTopicTags}, 
             { label: "Country Tags", options:countryTopicTags}, 
@@ -772,7 +788,7 @@ export default class CreatePostPharoTweet extends React.Component {
             { label: "Internal Tags", options:internalTopicTags}
         ];
 
-        topicTags = topicTags.concat(topicAdditionalTags);
+        topicTags = tweetAdminTags.concat(tweetTags).concat(pmTags).concat(topicTags);
 
         return topicTags;
     }
@@ -1068,7 +1084,7 @@ export default class CreatePostPharoTweet extends React.Component {
                                     name="topicSelector"
                                     value={this.state.topic}
                                     placeholder="Topic ..."
-                                    options={this.state.topicTagsGroupedList}
+                                    options={this.getGroupedTopicTags(global.window.mm_pharo_config.tags.topicTags)}
                                     onChange={this.handleTopicChange}
                                     style={this.state.topicValidationBorder}
                                 />

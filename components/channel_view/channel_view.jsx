@@ -20,6 +20,7 @@ import {clearMarks, mark, measure, trackEvent} from 'actions/diagnostics_actions
 
 import CreatePostPharo from 'components/create_post_pharo';
 import CreatePostPharoTweet from 'components/create_post_pharo_tweet';
+import { fail } from 'assert';
 
 export default class ChannelView extends React.PureComponent {
     static propTypes = {
@@ -46,10 +47,12 @@ export default class ChannelView extends React.PureComponent {
 
         this.postUI = (<div className='post-create__container' id='post-create'><CreatePost getChannelView={this.getChannelView}/></div>);
         this.postUIPharo = (<div className='post-create__container' id='post-create'><CreatePostPharo getChannelView={this.getChannelView}/></div>);
-        this.postUIPharoTweet = (<div className='post-create__container' id='post-create'><CreatePostPharoTweet getChannelView={this.getChannelView}/></div>);
+        this.postUIPharoTweet = (<div className='post-create__container' id='post-create'><CreatePostPharoTweet isAdmin={false} getChannelView={this.getChannelView}/></div>);
+        this.postUIPharoTweetAdmin = (<div className='post-create__container' id='post-create'><CreatePostPharoTweet isAdmin={true} getChannelView={this.getChannelView}/></div>);
         this.isPharoPostUI = false;
         this.isPharoPostUITweet = false;
-        this.isPharoPostUITweetInput = false; 
+        this.isPharoPostUITweetInput = false;
+        this.isPharoPostUITweetAdminInput = false;
     }
 
     createDeferredPostView = () => {
@@ -70,8 +73,12 @@ export default class ChannelView extends React.PureComponent {
         // pharo custom ui injection
         if(this.props.params.channel === 'market-commentary')
             this.isPharoPostUI = true;
-        if(this.props.params.channel === 'tweets')
-            this.isPharoPostTweetUI = true;            
+        else if(this.props.params.channel === 'tweets')
+            this.isPharoPostUITweet = true;
+        else if(this.props.params.channel === 'tweets-admin')
+            this.isPharoPostUITweetAdminInput = true;
+        else if(this.props.params.channel.indexOf('tweets-') != -1)
+            this.isPharoPostUITweetInput = true;
     }
 
     componentWillUnmount() {
@@ -84,55 +91,40 @@ export default class ChannelView extends React.PureComponent {
         }
 
         // pharo custom ui injection on channel change
-        if (!Utils.areObjectsEqual(nextProps.params, this.props.params)) {
-            if(nextProps.params.channel === 'market-commentary')
-            {
-                this.isPharoPostUI = true;
-                this.isPharoPostUITweet = false;
-                this.isPharoPostUITweetInput = false;
-            }
-            else if(nextProps.params.channel === 'tweets')
-            {
-                this.isPharoPostUI = false;
-                this.isPharoPostUITweet = true;
-                this.isPharoPostUITweetInput = false;
-            }            
-            else if(nextProps.params.channel.indexOf('tweets-') != -1)
-            {
-                this.isPharoPostUI = false;
-                this.isPharoPostUITweet = false;                
-                this.isPharoPostUITweetInput = true;
-            }
-            else
-            {
-                this.isPharoPostUI = false;
-                this.isPharoPostUITweet = false;
-                this.isPharoPostUITweetInput = false;
-            }
+        if(nextProps.params.channel === 'market-commentary')
+        {
+            this.isPharoPostUI = true;
+            this.isPharoPostUITweet = false;
+            this.isPharoPostUITweetInput = false;
+            this.isPharoPostUITweetAdminInput = false;
+        }
+        else if(nextProps.params.channel === 'tweets')
+        {
+            this.isPharoPostUI = false;
+            this.isPharoPostUITweet = true;
+            this.isPharoPostUITweetInput = false;
+            this.isPharoPostUITweetAdminInput = false;
+        }
+        else if(nextProps.params.channel.indexOf('tweets-admin') != -1)
+        {
+            this.isPharoPostUI = false;
+            this.isPharoPostUITweet = false;
+            this.isPharoPostUITweetInput = false;
+            this.isPharoPostUITweetAdminInput = true;
+        }
+        else if(nextProps.params.channel.indexOf('tweets-') != -1)
+        {
+            this.isPharoPostUI = false;
+            this.isPharoPostUITweet = false;
+            this.isPharoPostUITweetInput = true;
+            this.isPharoPostUITweetAdminInput = false;
         }
         else
         {
-            if(nextProps.params.channel === 'market-commentary') {
-                this.isPharoPostUI = true;
-                this.isPharoPostUITweet = false;
-                this.isPharoPostUITweetInput = false;                
-            }
-            else if(nextProps.params.channel === 'tweets') {                
-                this.isPharoPostUI = false;
-                this.isPharoPostUITweet = true;
-                this.isPharoPostUITweetInput = false;                
-            }        
-            else if(nextProps.params.channel.indexOf('tweets-') != -1) {                
-                this.isPharoPostUI = false;
-                this.isPharoPostUITweet = false;
-                this.isPharoPostUITweetInput = true;
-            }
-            else
-            {
-                this.isPharoPostUI = false;
-                this.isPharoPostUITweet = false;
-                this.isPharoPostUITweetInput = false;
-            }
+            this.isPharoPostUI = false;
+            this.isPharoPostUITweet = false;
+            this.isPharoPostUITweetInput = false;
+            this.isPharoPostUITweetAdminInput = false;
         }
     }
 
@@ -203,6 +195,8 @@ export default class ChannelView extends React.PureComponent {
             postUI = this.postUIPharo;
         if(this.isPharoPostUITweetInput)
             postUI = this.postUIPharoTweet;
+        if(this.isPharoPostUITweetAdminInput)
+            postUI = this.postUIPharoTweetAdmin;            
         if(this.isPharoPostUITweet)
             postUI = (<div />);
 

@@ -162,6 +162,13 @@ export default class AboutBuildModal extends React.PureComponent {
                             <div className='form-group less'>
                                 <div>
                                     <FormattedMessage
+                                        id='about.version'
+                                        defaultMessage='Version:'
+                                    />
+                                    <span id='versionString'>{version}</span>
+                                </div>                       
+                                <div>
+                                    <FormattedMessage
                                         id='about.pharo.version'
                                         defaultMessage='Pharo Version:'
                                     />
