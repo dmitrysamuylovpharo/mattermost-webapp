@@ -1812,6 +1812,12 @@ div#post-create div.Select.Select--multi {
     right: 0px;
 }
 
+.pharo-tweet-create-post-form #criticalPostOption {
+    top: 48px;
+    right: 80px;
+    z-index: 1000;
+}
+
 #criticalPostOption span {
     margin-right: 5px;
 }
