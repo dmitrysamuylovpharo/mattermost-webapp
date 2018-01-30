@@ -251,6 +251,47 @@ export default class CreatePostPharoTweet extends React.Component {
             return;
         }
 
+        // if selected topic is a rating topic and message is empty, populate message with a table template
+        var message = this.state.message;
+        if(message.length == 0)
+        {
+            if(event.value === 'ratings-question')
+            {
+                this.setState({
+                    message: `
+
+|   | DM | EM |
+| :- |:-:| :-:|
+|FX	|0.9% .RMDMFX Index (EUR&JY) | 0.6% .RMEMFX Index (18EM and AUD, CAD, NZD) |
+|Rates |	7bp .DMRATES Index (UST and GE 10yr) | 5bp .EMRATES Index (Pharo EM Rates index) |
+|Credit – Sov |	8bp .RMDMSCRE Index (IT&SP 10yr spread) | 7bp JPEIGLSP Index (JPMorgan EMBI Global Spr) |
+|Credit – Corp |	10bp .RMDMCCRE Index (CDX and XO) | 6bp JBBSCOMP Index (CEMBI Spread) |
+|Eq |	1.0% SPX Index | 1.2% MSELEGF Index (MSCI EM Lcl ccy) |
+|Comm |	1.6% CRY Index (CRB Commodity index) | |
+
+`
+                });
+            }
+
+            if(event.value === 'ratings-answer')
+            {
+                this.setState({
+                    message: `
+
+|   | DM | EM |
+| :- |:-:| :-:|
+| FX |  |  |
+| Rates |  |  |
+| Credit – Sov |  |  |
+| Credit – Corp |  |  |
+| Eq |  |  |
+| Comm |  |  |
+
+`
+                });
+            }            
+        }
+
         // tag selected
         this.setState({
             topic: event.value,
@@ -756,13 +797,24 @@ export default class CreatePostPharoTweet extends React.Component {
         if(this.props.isAdmin || this.props.currentChannel.name === 'tweets-admin')
         {
             tweetAdminTags = [
-                { label: "Tweet Admin Tags", options:[{ value: "survey-question", label: "Survey Question" }, { value: "topics-question", label: "Topics Question" }, { value: "survey", label: "Survey" }, { value: "topics", label: "Topics" }]}
+                { label: "Tweet Admin Tags", options:[
+                    { value: "survey-question", label: "Survey Question" }, 
+                    { value: "topics-question", label: "Topics Question" }, 
+                    { value: "ratings-question", label: "Ratings Question" }, 
+                    { value: "survey", label: "Survey" }, 
+                    { value: "topics", label: "Topics" }, 
+                    { value: "ratings", label: "Ratings" }]
+                }
             ];
         }
 
         // add pharo Tweet survey / topic tags
         tweetTags = [
-            { label: "Tweet Tags", options:[{ value: "survey-answer", label: "Survey Answer" }, { value: "topics-answer", label: "Topics Answer" }]}
+            { label: "Tweet Tags", options:[
+                { value: "survey-answer", label: "Survey Answer" }, 
+                { value: "topics-answer", label: "Topics Answer" }, 
+                { value: "ratings-answer", label: "Ratings Answer" }]
+            }
         ];        
 
         // add pharo PM specific tags
@@ -770,7 +822,10 @@ export default class CreatePostPharoTweet extends React.Component {
         if(currentUser && (currentUser.position.toLowerCase().includes('portfolio') || currentUser.position.toLowerCase().includes('managing partner')))
         {
             pmTags = [
-                { label: "PM Tags", options:[{ value: "general", label: "General" }, { value: "strategy", label: "Strategy" }]}
+                { label: "PM Tags", options:[
+                    { value: "general", label: "General" }, 
+                    { value: "strategy", label: "Strategy" }]
+                }
             ];
         }
 
