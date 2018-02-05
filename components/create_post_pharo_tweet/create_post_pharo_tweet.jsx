@@ -996,6 +996,10 @@ export default class CreatePostPharoTweet extends React.Component {
         return message.trim().length !== 0 || fileInfos.length !== 0;
     }
 
+    nextPostCritical(val) {
+        this.setState({nextPostCritical: val});
+    }
+
     render() {
         const members = this.props.currentChannelMembersCount - 1;
 
