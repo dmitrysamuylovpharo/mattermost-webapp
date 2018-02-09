@@ -56,7 +56,7 @@ class AtMentionSuggestion extends Suggestion {
             description = (
                 <FormattedMessage
                     id='suggestion.mention.pharo-pms'
-                    defaultMessage='Notifies all Pharo PMs'
+                    defaultMessage='Notifies all Pharo PMs in this channel'
                 />
             );
             icon = <i className='mention__image fa fa-users fa-2x'/>;
@@ -65,7 +65,7 @@ class AtMentionSuggestion extends Suggestion {
             description = (
                 <FormattedMessage
                     id='suggestion.mention.pharo-traders'
-                    defaultMessage='Notifies all Pharo Traders'
+                    defaultMessage='Notifies all Pharo Traders in this channel'
                 />
             );
             icon = <i className='mention__image fa fa-users fa-2x'/>;
@@ -74,7 +74,7 @@ class AtMentionSuggestion extends Suggestion {
             description = (
                 <FormattedMessage
                     id='suggestion.mention.pharo-research'
-                    defaultMessage='Notifies everyone in Pharo Research Team'
+                    defaultMessage='Notifies everyone in Pharo Research Team in this channel'
                 />
             );
             icon = <i className='mention__image fa fa-users fa-2x'/>;                        
