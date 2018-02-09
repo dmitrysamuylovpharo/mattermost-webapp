@@ -60,6 +60,24 @@ class AtMentionSuggestion extends Suggestion {
                 />
             );
             icon = <i className='mention__image fa fa-users fa-2x'/>;
+        } else if (user.username === 'pharo-traders') {
+            username = 'pharo-traders';
+            description = (
+                <FormattedMessage
+                    id='suggestion.mention.pharo-traders'
+                    defaultMessage='Notifies all Pharo Traders'
+                />
+            );
+            icon = <i className='mention__image fa fa-users fa-2x'/>;
+        } else if (user.username === 'pharo-research') {
+            username = 'pharo-research';
+            description = (
+                <FormattedMessage
+                    id='suggestion.mention.pharo-research'
+                    defaultMessage='Notifies everyone in Pharo Research Team'
+                />
+            );
+            icon = <i className='mention__image fa fa-users fa-2x'/>;                        
         } else {
             username = user.username;
 
@@ -143,7 +161,7 @@ export default class AtMentionProvider extends Provider {
 
                 let specialMentions = [];
                 if (!pretext.startsWith('/msg')) {
-                    specialMentions = ['pharo-pms', 'here', 'channel', 'all'].filter((item) => {
+                    specialMentions = ['pharo-pms', 'pharo-traders', 'pharo-research', 'here', 'channel', 'all'].filter((item) => {
                         return item.startsWith(prefix);
                     }).map((name) => {
                         return {username: name, type: Constants.MENTION_SPECIAL};
