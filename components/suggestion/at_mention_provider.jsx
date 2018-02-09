@@ -51,6 +51,15 @@ class AtMentionSuggestion extends Suggestion {
                 />
             );
             icon = <i className='mention__image fa fa-users fa-2x'/>;
+        } else if (user.username === 'pharo-pms') {
+            username = 'pharo-pms';
+            description = (
+                <FormattedMessage
+                    id='suggestion.mention.pharo-pms'
+                    defaultMessage='Notifies all Pharo PMs'
+                />
+            );
+            icon = <i className='mention__image fa fa-users fa-2x'/>;
         } else {
             username = user.username;
 
@@ -134,7 +143,7 @@ export default class AtMentionProvider extends Provider {
 
                 let specialMentions = [];
                 if (!pretext.startsWith('/msg')) {
-                    specialMentions = ['here', 'channel', 'all'].filter((item) => {
+                    specialMentions = ['pharo-pms', 'here', 'channel', 'all'].filter((item) => {
                         return item.startsWith(prefix);
                     }).map((name) => {
                         return {username: name, type: Constants.MENTION_SPECIAL};
