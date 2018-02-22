@@ -15,11 +15,13 @@ export default class SuggestionList extends React.Component {
         suggestionId: PropTypes.string.isRequired,
         location: PropTypes.string,
         renderDividers: PropTypes.bool,
-        onCompleteWord: PropTypes.func.isRequired
+        onCompleteWord: PropTypes.func.isRequired,
+        isTweetAdmin: PropTypes.bool
     };
 
     static defaultProps = {
-        renderDividers: false
+        renderDividers: false,
+        isTweetAdmin: false
     };
 
     constructor(props) {
@@ -38,6 +40,21 @@ export default class SuggestionList extends React.Component {
 
     getStateFromStores(suggestionId) {
         const suggestions = SuggestionStore.getSuggestions(suggestionId || this.props.suggestionId);
+        
+        // PHARO: remove tweet related items unless we're in a tweet admin channel
+        if(!this.props.isTweetAdmin && suggestions.items.length > 0)
+        {            
+            for (var i = suggestions.items.length - 1; i >= 0; --i) 
+            {
+                if (suggestions.items[i].type === undefined && suggestions.items[i].suggestion !== undefined && suggestions.items[i].suggestion.indexOf("/tweets-") != -1) 
+                {
+                    suggestions.components.splice(i, 1);
+                    suggestions.items.splice(i, 1);
+                    suggestions.matchedPretext.splice(i, 1);
+                    suggestions.terms.splice(i, 1);
+                }
+            }
+        }
 
         return {
             matchedPretext: suggestions.matchedPretext,

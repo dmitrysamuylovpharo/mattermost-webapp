@@ -40,14 +40,16 @@ export default class Textbox extends React.Component {
         emojiEnabled: PropTypes.bool,
         isRHS: PropTypes.bool,
         popoverMentionKeyClick: PropTypes.bool,
-        characterLimit: PropTypes.number
+        characterLimit: PropTypes.number,
+        isTweetAdmin: PropTypes.bool
     };
 
     static defaultProps = {
         supportsCommands: true,
         isRHS: false,
         popoverMentionKeyClick: false,
-        characterLimit: Constants.CHARACTER_LIMIT
+        characterLimit: Constants.CHARACTER_LIMIT,
+        isTweetAdmin: false
     };
 
     constructor(props) {
@@ -321,6 +323,7 @@ export default class Textbox extends React.Component {
                     renderDividers={true}
                     isRHS={this.props.isRHS}
                     popoverMentionKeyClick={this.props.popoverMentionKeyClick}
+                    isTweetAdmin={this.props.isTweetAdmin}
                 />
                 {preview}
                 <div className={'help__text ' + helpTextClass}>

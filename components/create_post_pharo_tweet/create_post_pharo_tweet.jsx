@@ -382,41 +382,43 @@ export default class CreatePostPharoTweet extends React.Component {
             return;
         }
 
-        // validate Pharo input form if not PM
-        const currentUser = UserStore.getCurrentUser();
+        if (post.message.indexOf('/') !== 0) {
+            // validate Pharo input form if not PM
+            const currentUser = UserStore.getCurrentUser();
 
-        if (this.state.topic === undefined || this.state.topic.trim().length === 0) 
-        {
-            if(currentUser)
+            if (this.state.topic === undefined || this.state.topic.trim().length === 0) 
             {
-                if(this.state.topic === undefined || this.state.topic.trim().length === 0)
-                    this.setState({topicValidationBorder: { border:'solid 1px red' }});
+                if(currentUser)
+                {
+                    if(this.state.topic === undefined || this.state.topic.trim().length === 0)
+                        this.setState({topicValidationBorder: { border:'solid 1px red' }});
 
-                return;
+                    return;
+                }
             }
-        }
 
-        if(this.state.topic.length > 0)
-        {
             if(this.state.topic.length > 0)
-                post.message = "`" + this.state.topicLabel + "` - ";
+            {
+                if(this.state.topic.length > 0)
+                    post.message = "`" + this.state.topicLabel + "` - ";
+            }
+
+            post.message = post.message + this.state.message + " ";
+
+            var selectedTopicTag = this.state.tags.topicTags.countryTopicTags.find(x => x.tag === this.state.topic);
+
+            // append our tags to the message
+            if(this.state.topic.toLocaleLowerCase().length > 0)
+                post.message = post.message + " #" + this.state.topic.toLocaleLowerCase();
+
+            // if topic tag has a region set add that as a tag as well
+            if(selectedTopicTag && selectedTopicTag.region)
+                post.message = post.message + " #" + selectedTopicTag.region;
+
+            // if critical highlight
+            if(this.state.nextPostCritical)
+                post.message = "** " + post.message + " #important **";
         }
-
-        post.message = post.message + this.state.message + " ";
-
-        var selectedTopicTag = this.state.tags.topicTags.countryTopicTags.find(x => x.tag === this.state.topic);
-
-        // append our tags to the message
-        if(this.state.topic.toLocaleLowerCase().length > 0)
-            post.message = post.message + " #" + this.state.topic.toLocaleLowerCase();
-
-        // if topic tag has a region set add that as a tag as well
-        if(selectedTopicTag && selectedTopicTag.region)
-            post.message = post.message + " #" + selectedTopicTag.region;
-
-        // if critical highlight
-        if(this.state.nextPostCritical)
-            post.message = "** " + post.message + " #important **";
 
         if (this.state.postError) {
             this.setState({errorClass: 'animation--highlight'});
@@ -824,7 +826,8 @@ export default class CreatePostPharoTweet extends React.Component {
             { label: "Tweet Tags", options:[
                 { value: "survey-answer", label: "Survey Answer" }, 
                 { value: "topics-answer", label: "Topics Answer" }, 
-                { value: "ratings-answer", label: "Ratings Answer" }]
+                { value: "ratings-answer", label: "Ratings Answer" },
+                { value: "timeline", label: "Timeline" }]
             }
         ];        
 
@@ -1138,6 +1141,8 @@ export default class CreatePostPharoTweet extends React.Component {
             </Tooltip>
         );
 
+        let isTweetAdmin = this.props.currentChannel.name === "tweets-admin";
+
         return (
             <form
                 id='create_post'
@@ -1193,6 +1198,7 @@ export default class CreatePostPharoTweet extends React.Component {
                                 createMessage={Utils.localizeMessage('create_post.write', 'Write a message...')}
                                 channelId={this.props.currentChannel.id}
                                 popoverMentionKeyClick={true}
+                                isTweetAdmin={isTweetAdmin}
                                 id='post_textbox'
                                 ref='textbox'
                             />

@@ -95,7 +95,9 @@ export default class SuggestionBox extends React.Component {
         /**
          * If true, the suggestion box is opened on focus, default to false
          */
-        openOnFocus: PropTypes.bool
+        openOnFocus: PropTypes.bool,
+
+        isTweetAdmin: PropTypes.bool
     }
 
     static defaultProps = {
@@ -105,7 +107,8 @@ export default class SuggestionBox extends React.Component {
         completeOnTab: true,
         isRHS: false,
         requiredCharacters: 1,
-        openOnFocus: false
+        openOnFocus: false,
+        isTweetAdmin: false
     }
 
     constructor(props) {
@@ -381,6 +384,7 @@ export default class SuggestionBox extends React.Component {
         Reflect.deleteProperty(props, 'popoverMentionKeyClick');
         Reflect.deleteProperty(props, 'requiredCharacters');
         Reflect.deleteProperty(props, 'openOnFocus');
+        Reflect.deleteProperty(props, 'isTweetAdmin');
 
         const childProps = {
             ref: 'textbox',
@@ -434,6 +438,7 @@ export default class SuggestionBox extends React.Component {
                         location={listStyle}
                         renderDividers={renderDividers}
                         onCompleteWord={this.handleCompleteWord}
+                        isTweetAdmin={this.props.isTweetAdmin}
                     />
                 }
             </div>

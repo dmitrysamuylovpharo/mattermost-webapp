@@ -135,7 +135,7 @@ export default class AboutBuildModal extends React.PureComponent {
             version += '\u00a0 (' + config.BuildNumber + ')';
         }
 
-        let pharoVersion = "1.16";
+        let pharoVersion = "1.18";
 
         return (
             <Modal
