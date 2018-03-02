@@ -69,16 +69,8 @@ export default class ChannelView extends React.PureComponent {
         if (UserAgent.isInternetExplorer() || UserAgent.isEdge()) {
             $('body').addClass('browser--ie');
         }
-
-        // pharo custom ui injection
-        if(this.props.params.channel === 'market-commentary')
-            this.isPharoPostUI = true;
-        else if(this.props.params.channel === 'tweets')
-            this.isPharoPostUITweet = true;
-        else if(this.props.params.channel === 'tweets-admin')
-            this.isPharoPostUITweetAdminInput = true;
-        else if(this.props.params.channel.indexOf('tweets-') != -1)
-            this.isPharoPostUITweetInput = true;
+        
+        this.setPharoUIFlags(this.props);
     }
 
     componentWillUnmount() {
@@ -90,41 +82,32 @@ export default class ChannelView extends React.PureComponent {
             this.createDeferredPostView();
         }
 
+        this.setPharoUIFlags(nextProps);
+    }
+
+    setPharoUIFlags(checkProps)
+    {
+        this.isPharoPostUI = false;
+        this.isPharoPostUITweet = false;
+        this.isPharoPostUITweetInput = false;
+        this.isPharoPostUITweetAdminInput = false;
+
         // pharo custom ui injection on channel change
-        if(nextProps.params.channel === 'market-commentary')
+        if(checkProps.params.channel === 'market-commentary')
         {
             this.isPharoPostUI = true;
-            this.isPharoPostUITweet = false;
-            this.isPharoPostUITweetInput = false;
-            this.isPharoPostUITweetAdminInput = false;
         }
-        else if(nextProps.params.channel === 'tweets')
+        else if(checkProps.params.channel === 'tweets')
         {
-            this.isPharoPostUI = false;
             this.isPharoPostUITweet = true;
-            this.isPharoPostUITweetInput = false;
-            this.isPharoPostUITweetAdminInput = false;
         }
-        else if(nextProps.params.channel.indexOf('tweets-admin') != -1)
+        else if(checkProps.params.channel.indexOf('tweets-admin') != -1)
         {
-            this.isPharoPostUI = false;
-            this.isPharoPostUITweet = false;
-            this.isPharoPostUITweetInput = false;
             this.isPharoPostUITweetAdminInput = true;
         }
-        else if(nextProps.params.channel.indexOf('tweets-') != -1)
+        else if(checkProps.params.channel.indexOf('tweets-') != -1)
         {
-            this.isPharoPostUI = false;
-            this.isPharoPostUITweet = false;
             this.isPharoPostUITweetInput = true;
-            this.isPharoPostUITweetAdminInput = false;
-        }
-        else
-        {
-            this.isPharoPostUI = false;
-            this.isPharoPostUITweet = false;
-            this.isPharoPostUITweetInput = false;
-            this.isPharoPostUITweetAdminInput = false;
         }
     }
 
