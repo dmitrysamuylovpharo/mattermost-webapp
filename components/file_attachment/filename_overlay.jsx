@@ -85,7 +85,7 @@ export default class FilenameOverlay extends React.PureComponent {
                     overlay={<Tooltip id='file-name__tooltip'>{Utils.localizeMessage('file_attachment.download', 'Download') + ' "' + fileName + '"'}</Tooltip>}
                 >
                     <a
-                        href={fileUrl}
+                        href={fileUrl+"?open=true"}
                         download={fileName}
                         className='post-image__name'
                         target='_blank'

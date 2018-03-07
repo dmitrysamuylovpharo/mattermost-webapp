@@ -79,6 +79,20 @@ function preRenderSetup(callwhendone) {
         );
     }
 
+    if(global.window.mm_pharoclient === undefined && document.cookie.indexOf('pharoclient=') > -1)
+    {
+        var cookies = document.cookie.split(";");
+        var pharoclient = "";
+        cookies.forEach(cookie => {
+            if(cookie.indexOf("pharoclient") > -1)
+            {
+                var cookievalue = cookie.replace("pharoclient=", "");
+                pharoclient = cookievalue.trim();
+            }
+        });
+        global.window.mm_pharoclient = pharoclient;
+    }
+
     if(global.window.mm_pharo_config === undefined)
     {
         $.ajax({

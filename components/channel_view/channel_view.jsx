@@ -49,10 +49,7 @@ export default class ChannelView extends React.PureComponent {
         this.postUIPharo = (<div className='post-create__container' id='post-create'><CreatePostPharo getChannelView={this.getChannelView}/></div>);
         this.postUIPharoTweet = (<div className='post-create__container' id='post-create'><CreatePostPharoTweet isAdmin={false} getChannelView={this.getChannelView}/></div>);
         this.postUIPharoTweetAdmin = (<div className='post-create__container' id='post-create'><CreatePostPharoTweet isAdmin={true} getChannelView={this.getChannelView}/></div>);
-        this.isPharoPostUI = false;
-        this.isPharoPostUITweet = false;
-        this.isPharoPostUITweetInput = false;
-        this.isPharoPostUITweetAdminInput = false;
+        this.setPharoUIFlags(props);
     }
 
     createDeferredPostView = () => {
@@ -171,6 +168,8 @@ export default class ChannelView extends React.PureComponent {
             );
         }
 
+        this.setPharoUIFlags(this.props);
+        
         const DeferredPostView = this.deferredPostView;
 
         let postUI = createPost;

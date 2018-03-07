@@ -102,6 +102,39 @@ export default class ViewImagePopoverBar extends React.PureComponent {
             );
         }
 
+        let downloadLinksWithOpen = null;
+        if (FileUtils.canDownloadFiles()) {
+            downloadLinksWithOpen = (
+                <div className='image-links'>
+                    {publicLink}
+                    <a
+                        href={this.props.fileURL}
+                        download={this.props.filename}
+                        className='text'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                    >
+                        <span>Save As</span>
+                    </a>
+                    <span className='text'>{' | '}</span>
+                    <a
+                        href={this.props.fileURL+"?open=true"}
+                        download={this.props.filename}
+                        className='text'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                    >
+                        <span>Open</span>
+                    </a>
+                </div> 
+            );
+        }        
+
+        if(global.window.mm_pharoclient !== undefined && global.window.mm_pharoclient.indexOf("desktop") > -1)
+        {
+            downloadLinks = downloadLinksWithOpen;
+        }
+
         return (
             <div
                 ref='imageFooter'

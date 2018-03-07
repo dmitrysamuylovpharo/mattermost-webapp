@@ -140,7 +140,7 @@ export default class FileAttachment extends React.PureComponent {
         if (canDownloadFiles) {
             downloadButton = (
                 <a
-                    href={fileUrl}
+                    href={fileUrl+"?open=true"}
                     download={fileName}
                     className='post-image__download'
                     target='_blank'
