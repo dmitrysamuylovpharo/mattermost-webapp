@@ -2,17 +2,13 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
-
 import {Client4} from 'mattermost-redux/client';
 
 import {uploadBrandImage} from 'actions/admin_actions.jsx';
-
 import {UploadStatuses} from 'utils/constants.jsx';
-
 import FormError from 'components/form_error.jsx';
 
 import UploadButton from './upload_button.jsx';
@@ -25,7 +21,7 @@ export default class BrandImageSetting extends React.PureComponent {
         /*
          * Set to disable the setting
          */
-        disabled: PropTypes.bool.isRequired
+        disabled: PropTypes.bool.isRequired,
     }
 
     constructor(props) {
@@ -39,7 +35,7 @@ export default class BrandImageSetting extends React.PureComponent {
             brandImageExists: false,
             brandImageTimestamp: Date.now(),
             error: '',
-            status: UploadStatuses.DEFAULT
+            status: UploadStatuses.DEFAULT,
         };
     }
 
@@ -74,7 +70,7 @@ export default class BrandImageSetting extends React.PureComponent {
         if (element.prop('files').length > 0) {
             this.setState({
                 brandImage: element.prop('files')[0],
-                status: UploadStatuses.DEFAULT
+                status: UploadStatuses.DEFAULT,
             });
         }
     }
@@ -92,7 +88,7 @@ export default class BrandImageSetting extends React.PureComponent {
 
         this.setState({
             error: '',
-            status: UploadStatuses.LOADING
+            status: UploadStatuses.LOADING,
         });
 
         uploadBrandImage(
@@ -102,13 +98,13 @@ export default class BrandImageSetting extends React.PureComponent {
                     brandImageExists: true,
                     brandImage: null,
                     brandImageTimestamp: Date.now(),
-                    status: UploadStatuses.COMPLETE
+                    status: UploadStatuses.COMPLETE,
                 });
             },
             (err) => {
                 this.setState({
                     error: err.message,
-                    status: UploadStatuses.DEFAULT
+                    status: UploadStatuses.DEFAULT,
                 });
             }
         );

@@ -3,12 +3,10 @@
 
 import React from 'react';
 import {Modal} from 'react-bootstrap';
-
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
 import {openModal, closeModal} from 'actions/views/modals';
-
 import {ActionTypes, ModalIdentifiers} from 'utils/constants.jsx';
 
 class TestModal extends React.Component {
@@ -35,14 +33,14 @@ describe('modals view actions', () => {
     test(ActionTypes.MODAL_OPEN, () => {
         const dialogType = TestModal;
         const dialogProps = {
-            test: true
+            test: true,
         };
 
         const modalData = {
             type: ActionTypes.MODAL_OPEN,
             modalId: ModalIdentifiers.DELETE_CHANNEL,
             dialogType,
-            dialogProps
+            dialogProps,
         };
 
         store.dispatch(openModal(modalData));
@@ -51,7 +49,7 @@ describe('modals view actions', () => {
             type: ActionTypes.MODAL_OPEN,
             modalId: ModalIdentifiers.DELETE_CHANNEL,
             dialogType,
-            dialogProps
+            dialogProps,
         };
 
         expect(store.getActions()).toEqual([action]);
@@ -62,7 +60,7 @@ describe('modals view actions', () => {
 
         const action = {
             type: ActionTypes.MODAL_CLOSE,
-            modalId: ModalIdentifiers.DELETE_CHANNEL
+            modalId: ModalIdentifiers.DELETE_CHANNEL,
         };
 
         expect(store.getActions()).toEqual([action]);

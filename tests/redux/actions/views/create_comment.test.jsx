@@ -3,14 +3,12 @@
 
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-
 import {
     addReaction,
     removeReaction,
     addMessageIntoHistory,
-    moveHistoryIndexBack
+    moveHistoryIndexBack,
 } from 'mattermost-redux/actions/posts';
-
 import {Posts} from 'mattermost-redux/constants';
 
 import {
@@ -21,14 +19,12 @@ import {
     submitReaction,
     submitCommand,
     makeOnSubmit,
-    makeOnEditLatestPost
+    makeOnEditLatestPost,
 } from 'actions/views/create_comment';
 import {setGlobalItem, actionOnGlobalItemsWithPrefix} from 'actions/storage';
-
 import * as PostActions from 'actions/post_actions.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
 import * as ChannelActions from 'actions/channel_actions.jsx';
-
 import {StoragePrefixes} from 'utils/constants';
 
 const mockStore = configureStore([thunk]);
@@ -38,31 +34,31 @@ jest.mock('mattermost-redux/actions/posts', () => ({
     removeReaction: (...args) => ({type: 'MOCK_REMOVE_REACTION', args}),
     addMessageIntoHistory: (...args) => ({type: 'MOCK_ADD_MESSAGE_INTO_HISTORY', args}),
     moveHistoryIndexBack: (...args) => ({type: 'MOCK_MOVE_MESSAGE_HISTORY_BACK', args}),
-    moveHistoryIndexForward: (...args) => ({type: 'MOCK_MOVE_MESSAGE_HISTORY_FORWARD', args})
+    moveHistoryIndexForward: (...args) => ({type: 'MOCK_MOVE_MESSAGE_HISTORY_FORWARD', args}),
 }));
 
 jest.mock('dispatcher/app_dispatcher.jsx', () => ({
     handleViewAction: jest.fn(),
-    register: jest.fn()
+    register: jest.fn(),
 }));
 
 jest.mock('actions/channel_actions.jsx', () => ({
-    executeCommand: jest.fn()
+    executeCommand: jest.fn(),
 }));
 
 jest.mock('actions/global_actions.jsx', () => ({
-    emitUserCommentedEvent: jest.fn()
+    emitUserCommentedEvent: jest.fn(),
 }));
 
 jest.mock('actions/post_actions.jsx', () => ({
     createPost: jest.fn(),
     setEditingPost: (...args) => ({type: 'MOCK_SET_EDITING_POST', args}),
-    emitEmojiPosted: jest.fn()
+    emitEmojiPosted: jest.fn(),
 }));
 
 jest.mock('actions/storage', () => ({
     setGlobalItem: (...args) => ({type: 'MOCK_SET_GLOBAL_ITEM', args}),
-    actionOnGlobalItemsWithPrefix: (...args) => ({type: 'MOCK_ACTION_ON_GLOBAL_ITEMS_WITH_PREFIX', args})
+    actionOnGlobalItemsWithPrefix: (...args) => ({type: 'MOCK_ACTION_ON_GLOBAL_ITEMS_WITH_PREFIX', args}),
 }));
 
 function lastCall(calls) {
@@ -84,36 +80,36 @@ describe('rhs view actions', () => {
                         id: latestPostId,
                         user_id: currentUserId,
                         message: 'test msg',
-                        channel_id: channelId
-                    }
+                        channel_id: channelId,
+                    },
                 },
                 postsInChannel: {
-                    [channelId]: [latestPostId]
+                    [channelId]: [latestPostId],
                 },
                 messagesHistory: {
                     index: {
-                        [Posts.MESSAGE_TYPES.COMMENT]: 0
+                        [Posts.MESSAGE_TYPES.COMMENT]: 0,
                     },
-                    messages: ['test message']
-                }
+                    messages: ['test message'],
+                },
             },
             users: {
-                currentUserId
+                currentUserId,
             },
             teams: {
-                currentTeamId: teamId
+                currentTeamId: teamId,
             },
             emojis: {
-                customEmoji: {}
-            }
+                customEmoji: {},
+            },
         },
         storage: {
             [`${StoragePrefixes.COMMENT_DRAFT}${latestPostId}`]: {
                 message: '',
                 fileInfos: [],
-                uploadsInProgress: []
-            }
-        }
+                uploadsInProgress: [],
+            },
+        },
     };
 
     let store;
@@ -200,7 +196,7 @@ describe('rhs view actions', () => {
             channel_id: channelId,
             root_id: rootId,
             parent_id: rootId,
-            user_id: currentUserId
+            user_id: currentUserId,
         };
 
         test('it calls GlobalActions.emitUserCommentedEvent with post', () => {
@@ -253,7 +249,7 @@ describe('rhs view actions', () => {
             channel_id: channelId,
             team_id: teamId,
             root_id: rootId,
-            parent_id: rootId
+            parent_id: rootId,
         };
 
         const draft = {message: 'test msg'};
@@ -272,7 +268,7 @@ describe('rhs view actions', () => {
 
         test('it calls submitPost on error.sendMessage', () => {
             jest.mock('actions/channel_actions.jsx', () => ({
-                executeCommand: jest.fn((message, _args, resolve, reject) => reject({sendMessage: 'test'}))
+                executeCommand: jest.fn((message, _args, resolve, reject) => reject({sendMessage: 'test'})),
             }));
 
             jest.resetModules();
@@ -321,10 +317,10 @@ describe('rhs view actions', () => {
                         [`${StoragePrefixes.COMMENT_DRAFT}${latestPostId}`]: {
                             message: '+:smile:',
                             fileInfos: [],
-                            uploadsInProgress: []
-                        }
-                    }
-                }
+                            uploadsInProgress: [],
+                        },
+                    },
+                },
             });
 
             store.dispatch(onSubmit());
@@ -344,9 +340,9 @@ describe('rhs view actions', () => {
                     [`${StoragePrefixes.COMMENT_DRAFT}${latestPostId}`]: {
                         message: '/away',
                         fileInfos: [],
-                        uploadsInProgress: []
-                    }
-                }
+                        uploadsInProgress: [],
+                    },
+                },
             });
 
             store.dispatch(onSubmit());
@@ -366,9 +362,9 @@ describe('rhs view actions', () => {
                     [`${StoragePrefixes.COMMENT_DRAFT}${latestPostId}`]: {
                         message: 'test msg',
                         fileInfos: [],
-                        uploadsInProgress: []
-                    }
-                }
+                        uploadsInProgress: [],
+                    },
+                },
             });
 
             store.dispatch(onSubmit());

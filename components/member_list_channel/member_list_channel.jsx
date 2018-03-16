@@ -3,7 +3,6 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-
 import {searchProfilesInCurrentChannel} from 'mattermost-redux/selectors/entities/users';
 
 import {loadProfilesAndTeamMembersAndChannelMembers, loadTeamMembersAndChannelMembersForProfilesList, searchUsers} from 'actions/user_actions.jsx';
@@ -11,11 +10,9 @@ import ChannelStore from 'stores/channel_store.jsx';
 import store from 'stores/redux_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-
 import Constants from 'utils/constants.jsx';
 import * as UserAgent from 'utils/user_agent.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import ChannelMembersDropdown from 'components/channel_members_dropdown';
 import SearchableUserList from 'components/searchable_user_list/searchable_user_list_container.jsx';
 
@@ -25,8 +22,8 @@ export default class MemberListChannel extends React.Component {
     static propTypes = {
         channel: PropTypes.object.isRequired,
         actions: PropTypes.shape({
-            getChannelStats: PropTypes.func.isRequired
-        }).isRequired
+            getChannelStats: PropTypes.func.isRequired,
+        }).isRequired,
     }
 
     constructor(props) {
@@ -49,7 +46,7 @@ export default class MemberListChannel extends React.Component {
             total: stats.member_count,
             loading: true,
             actionUserProps: {},
-            usersToDisplay: []
+            usersToDisplay: [],
         };
     }
 
@@ -97,7 +94,7 @@ export default class MemberListChannel extends React.Component {
             const {
                 users,
                 teamMembers,
-                channelMembers
+                channelMembers,
             } = nextState;
 
             this.setUsersDisplayAndActionProps(users, teamMembers, channelMembers);
@@ -118,7 +115,7 @@ export default class MemberListChannel extends React.Component {
                 actionUserProps[user.id] = {
                     channel: this.props.channel,
                     teamMember: teamMembers[user.id],
-                    channelMember: channelMembers[user.id]
+                    channelMember: channelMembers[user.id],
                 };
             }
         }
@@ -127,7 +124,7 @@ export default class MemberListChannel extends React.Component {
 
         this.setState({
             usersToDisplay,
-            actionUserProps
+            actionUserProps,
         });
     }
 
@@ -149,7 +146,7 @@ export default class MemberListChannel extends React.Component {
         this.setState({
             users,
             teamMembers,
-            channelMembers
+            channelMembers,
         });
 
         this.setUsersDisplayAndActionProps(users, teamMembers, channelMembers);

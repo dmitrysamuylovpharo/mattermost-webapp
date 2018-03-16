@@ -2,20 +2,16 @@
 // See License.txt for license information.
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {Modal} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 import PropTypes from 'prop-types';
-
 import * as Selectors from 'mattermost-redux/selectors/entities/posts';
 
 import * as GlobalActions from 'actions/global_actions.jsx';
 import store from 'stores/redux_store.jsx';
-
 import Constants from 'utils/constants.jsx';
 import * as UserAgent from 'utils/user_agent.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
 import EmojiIcon from 'components/svg/emoji_icon';
 import Textbox from 'components/textbox.jsx';
@@ -40,13 +36,39 @@ export default class EditPostModal extends React.PureComponent {
         /**
          * Editing post information
          */
-        editingPost: PropTypes.object.isRequired,
+        editingPost: PropTypes.shape({
+
+            /**
+             * The post being edited
+             */
+            post: PropTypes.object,
+
+            /**
+             * The ID of the post being edited
+             */
+            postId: PropTypes.string,
+
+            /**
+             * The ID of a DOM node to focus with the keyboard when this modal closes
+             */
+            refocusId: PropTypes.string,
+
+            /**
+             * Whether or not to show the modal
+             */
+            show: PropTypes.bool.isRequired,
+
+            /**
+             * What to show in the title of the modal as "Edit {title}"
+             */
+            title: PropTypes.string,
+        }).isRequired,
 
         actions: PropTypes.shape({
-            editPost: PropTypes.func.isRequired,
             addMessageIntoHistory: PropTypes.func.isRequired,
-            setEditingPost: PropTypes.func.isRequired
-        }).isRequired
+            editPost: PropTypes.func.isRequired,
+            hideEditPostModal: PropTypes.func.isRequired,
+        }).isRequired,
     }
 
     constructor(props) {
@@ -57,18 +79,15 @@ export default class EditPostModal extends React.PureComponent {
             postError: '',
             errorClass: null,
             showEmojiPicker: false,
-            hiding: false
         };
     }
 
-    mustBeShown = () => {
-        if (this.state.hiding) {
-            return false;
+    componentWillUpdate(nextProps) {
+        if (!this.props.editingPost.show && nextProps.editingPost.show) {
+            this.setState({
+                editText: nextProps.editingPost.post.message_source || nextProps.editingPost.post.message,
+            });
         }
-        if (!this.props.editingPost || !this.props.editingPost.post) {
-            return false;
-        }
-        return true;
     }
 
     getContainer = () => {
@@ -121,7 +140,7 @@ export default class EditPostModal extends React.PureComponent {
         const updatedPost = {
             message: this.state.editText,
             id: editingPost.postId,
-            channel_id: editingPost.post.channel_id
+            channel_id: editingPost.post.channel_id,
         };
 
         if (this.state.postError) {
@@ -132,7 +151,7 @@ export default class EditPostModal extends React.PureComponent {
             return;
         }
 
-        if (updatedPost.message === editingPost.post.message) {
+        if (updatedPost.message === (editingPost.post.message_source || editingPost.post.message)) {
             // no changes so just close the modal
             this.handleHide();
             return;
@@ -140,7 +159,7 @@ export default class EditPostModal extends React.PureComponent {
 
         const hasAttachment = editingPost.post.file_ids && editingPost.post.file_ids.length > 0;
         if (updatedPost.message.trim().length === 0 && !hasAttachment) {
-            this.handleHide();
+            this.handleHide(false);
             GlobalActions.showDeletePostModal(Selectors.getPost(getState(), editingPost.postId), editingPost.commentsCount);
             return;
         }
@@ -158,18 +177,18 @@ export default class EditPostModal extends React.PureComponent {
     handleChange = (e) => {
         const message = e.target.value;
         this.setState({
-            editText: message
+            editText: message,
         });
     }
 
     handleEditKeyPress = (e) => {
         if (!UserAgent.isMobile() && !this.props.ctrlSend && e.which === KeyCodes.ENTER && !e.shiftKey && !e.altKey) {
             e.preventDefault();
-            ReactDOM.findDOMNode(this.refs.editbox).blur();
+            this.refs.editbox.blur();
             this.handleEdit();
         } else if (this.props.ctrlSend && e.ctrlKey && e.which === KeyCodes.ENTER) {
             e.preventDefault();
-            ReactDOM.findDOMNode(this.refs.editbox).blur();
+            this.refs.editbox.blur();
             this.handleEdit();
         }
     }
@@ -180,14 +199,9 @@ export default class EditPostModal extends React.PureComponent {
         }
     }
 
-    handleHide = () => {
-        this.setState({hiding: true});
-    }
-
-    handleEnter = () => {
-        this.setState({
-            editText: this.props.editingPost.post.message
-        });
+    handleHide = (doRefocus = true) => {
+        this.refocusId = doRefocus ? this.props.editingPost.refocusId : null;
+        this.props.actions.hideEditPostModal();
     }
 
     handleEntered = () => {
@@ -200,8 +214,8 @@ export default class EditPostModal extends React.PureComponent {
     }
 
     handleExited = () => {
-        const refocusId = this.props.editingPost.refocusId;
-        if (refocusId !== '') {
+        const refocusId = this.refocusId;
+        if (refocusId) {
             setTimeout(() => {
                 const element = document.getElementById(refocusId);
                 if (element) {
@@ -209,8 +223,9 @@ export default class EditPostModal extends React.PureComponent {
                 }
             });
         }
-        this.props.actions.setEditingPost();
-        this.setState({editText: '', postError: '', errorClass: null, hiding: false, showEmojiPicker: false});
+
+        this.refocusId = null;
+        this.setState({editText: '', postError: '', errorClass: null, showEmojiPicker: false});
     }
 
     render() {
@@ -245,10 +260,9 @@ export default class EditPostModal extends React.PureComponent {
         return (
             <Modal
                 dialogClassName='edit-modal'
-                show={this.mustBeShown()}
+                show={this.props.editingPost.show}
                 onKeyDown={this.handleKeyDown}
                 onHide={this.handleHide}
-                onEnter={this.handleEnter}
                 onEntered={this.handleEntered}
                 onExit={this.handleExit}
                 onExited={this.handleExited}
@@ -259,7 +273,7 @@ export default class EditPostModal extends React.PureComponent {
                             id='edit_post.edit'
                             defaultMessage='Edit {title}'
                             values={{
-                                title: this.props.editingPost.title
+                                title: this.props.editingPost.title,
                             }}
                         />
                     </Modal.Title>

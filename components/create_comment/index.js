@@ -3,39 +3,52 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {isCurrentUserSystemAdmin} from 'mattermost-redux/selectors/entities/users';
 import {getBool} from 'mattermost-redux/selectors/entities/preferences';
 import {getAllChannelStats} from 'mattermost-redux/selectors/entities/channels';
+import {makeGetMessageInHistoryItem} from 'mattermost-redux/selectors/entities/posts';
 import {resetCreatePostRequest, resetHistoryIndex} from 'mattermost-redux/actions/posts';
 import {Preferences, Posts} from 'mattermost-redux/constants';
+
+import {Constants, StoragePrefixes} from 'utils/constants.jsx';
 
 import {
     clearCommentDraftUploads,
     updateCommentDraft,
     makeOnMoveHistoryIndex,
     makeOnSubmit,
-    makeOnEditLatestPost
+    makeOnEditLatestPost,
 } from 'actions/views/create_comment';
-
-import {makeGetCommentDraft} from 'selectors/rhs';
+import {getPostDraft} from 'selectors/rhs';
 
 import CreateComment from './create_comment.jsx';
 
 function mapStateToProps(state, ownProps) {
     const err = state.requests.posts.createPost.error || {};
 
-    const getCommentDraft = makeGetCommentDraft(ownProps.rootId);
-
-    const draft = getCommentDraft(state);
-
+    const draft = getPostDraft(state, StoragePrefixes.COMMENT_DRAFT, ownProps.rootId);
     const enableAddButton = draft.message.trim().length !== 0 || draft.fileInfos.length !== 0;
+
     const channelMembersCount = getAllChannelStats(state)[ownProps.channelId] ? getAllChannelStats(state)[ownProps.channelId].member_count : 1;
+    const messageInHistory = makeGetMessageInHistoryItem(Posts.MESSAGE_TYPES.COMMENT)(state);
+
+    const channel = state.entities.channels.channels[ownProps.channelId] || {};
+
+    const config = getConfig(state);
+    const enableConfirmNotificationsToChannel = config.EnableConfirmNotificationsToChannel === 'true';
+    const enableEmojiPicker = config.EnableEmojiPicker === 'true';
 
     return {
         draft,
+        messageInHistory,
         enableAddButton,
         channelMembersCount,
         ctrlSend: getBool(state, Preferences.CATEGORY_ADVANCED_SETTINGS, 'send_on_ctrl_enter'),
-        createPostErrorId: err.server_error_id
+        createPostErrorId: err.server_error_id,
+        readOnlyChannel: !isCurrentUserSystemAdmin(state) && config.ExperimentalTownSquareIsReadOnly === 'true' && channel.name === Constants.DEFAULT_CHANNEL,
+        enableConfirmNotificationsToChannel,
+        enableEmojiPicker,
     };
 }
 
@@ -85,7 +98,7 @@ function makeMapDispatchToProps() {
             onMoveHistoryIndexBack,
             onMoveHistoryIndexForward,
             onEditLatestPost,
-            resetCreatePostRequest
+            resetCreatePostRequest,
         }, dispatch);
     };
 }

@@ -4,13 +4,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 
 import * as AdminActions from 'actions/admin_actions.jsx';
 import AnalyticsStore from 'stores/analytics_store.jsx';
 import ErrorStore from 'stores/error_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-
 import {ErrorBarTypes, StatTypes, StoragePrefixes} from 'utils/constants.jsx';
 import {displayExpiryDate, isLicenseExpired, isLicenseExpiring, isLicensePastGracePeriod} from 'utils/license_utils.jsx';
 import * as TextFormatting from 'utils/text_formatting.jsx';
@@ -28,11 +27,21 @@ export default class AnnouncementBar extends React.PureComponent {
         /*
          * Set if the user is logged in
          */
-        isLoggedIn: PropTypes.bool.isRequired
+        isLoggedIn: PropTypes.bool.isRequired,
+
+        licenseId: PropTypes.string,
+        siteURL: PropTypes.string,
+        sendEmailNotifications: PropTypes.bool.isRequired,
+        bannerText: PropTypes.string,
+        allowBannerDismissal: PropTypes.bool.isRequired,
+        enableBanner: PropTypes.bool.isRequired,
+        bannerColor: PropTypes.string,
+        bannerTextColor: PropTypes.string,
+        enableSignUpWithGitLab: PropTypes.bool.isRequired,
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.onErrorChange = this.onErrorChange.bind(this);
         this.onAnalyticsChange = this.onAnalyticsChange.bind(this);
@@ -55,10 +64,10 @@ export default class AnnouncementBar extends React.PureComponent {
         const errorIgnored = ErrorStore.getIgnoreNotification();
 
         if (!errorIgnored) {
-            if (isSystemAdmin && global.mm_config.SiteURL === '') {
+            if (isSystemAdmin && this.props.siteURL === '') {
                 ErrorStore.storeLastError({notification: true, message: ErrorBarTypes.SITE_URL});
                 return;
-            } else if (global.mm_config.SendEmailNotifications === 'false') {
+            } else if (!this.props.sendEmailNotifications) {
                 ErrorStore.storeLastError({notification: true, message: ErrorBarTypes.PREVIEW_MODE});
                 return;
             }
@@ -83,11 +92,11 @@ export default class AnnouncementBar extends React.PureComponent {
             return {message: error.message, color: null, textColor: null, type: error.type, allowDismissal: true};
         }
 
-        const bannerText = global.window.mm_config.BannerText || '';
-        const allowDismissal = global.window.mm_config.AllowBannerDismissal === 'true';
-        const bannerDismissed = localStorage.getItem(StoragePrefixes.ANNOUNCEMENT + global.window.mm_config.BannerText);
+        const bannerText = this.props.bannerText || '';
+        const allowDismissal = this.props.allowBannerDismissal;
+        const bannerDismissed = localStorage.getItem(StoragePrefixes.ANNOUNCEMENT + this.props.bannerText);
 
-        if (global.window.mm_config.EnableBanner === 'true' &&
+        if (this.props.enableBanner &&
             bannerText.length > 0 &&
             (!bannerDismissed || !allowDismissal)
         ) {
@@ -95,10 +104,10 @@ export default class AnnouncementBar extends React.PureComponent {
             Utils.removePrefixFromLocalStorage(StoragePrefixes.ANNOUNCEMENT);
             return {
                 message: bannerText,
-                color: global.window.mm_config.BannerColor,
-                textColor: global.window.mm_config.BannerTextColor,
+                color: this.props.bannerColor,
+                textColor: this.props.bannerTextColor,
                 type: BAR_ANNOUNCEMENT_TYPE,
-                allowDismissal
+                allowDismissal,
             };
         }
 
@@ -217,7 +226,7 @@ export default class AnnouncementBar extends React.PureComponent {
             );
         }
 
-        const renewalLink = RENEWAL_LINK + '?id=' + global.window.mm_license.Id + '&user_count=' + this.state.totalUsers;
+        const renewalLink = RENEWAL_LINK + '?id=' + this.props.licenseId + '&user_count=' + this.state.totalUsers;
 
         let message = this.state.message;
         if (this.state.type === BAR_ANNOUNCEMENT_TYPE) {
@@ -240,7 +249,7 @@ export default class AnnouncementBar extends React.PureComponent {
                     defaultMessage='Enterprise license expires on {date}. <a href="{link}" target="_blank">Please renew</a>.'
                     values={{
                         date: displayExpiryDate(),
-                        link: renewalLink
+                        link: renewalLink,
                     }}
                 />
             );
@@ -250,7 +259,7 @@ export default class AnnouncementBar extends React.PureComponent {
                     id={ErrorBarTypes.LICENSE_EXPIRED}
                     defaultMessage='Enterprise license is expired and some features may be disabled. <a href="{link}" target="_blank">Please renew</a>.'
                     values={{
-                        link: renewalLink
+                        link: renewalLink,
                     }}
                 />
             );
@@ -271,7 +280,7 @@ export default class AnnouncementBar extends React.PureComponent {
         } else if (message === ErrorBarTypes.SITE_URL) {
             let id;
             let defaultMessage;
-            if (global.mm_config.EnableSignUpWithGitLab === 'true') {
+            if (this.props.enableSignUpWithGitLab) {
                 id = 'error_bar.site_url_gitlab';
                 defaultMessage = 'Please configure your {docsLink} in the System Console or in gitlab.rb if you\'re using GitLab Mattermost.';
             } else {
@@ -303,7 +312,7 @@ export default class AnnouncementBar extends React.PureComponent {
                                     defaultMessage='the System Console'
                                 />
                             </Link>
-                        )
+                        ),
                     }}
                 />
             );

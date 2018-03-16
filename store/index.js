@@ -6,17 +6,13 @@
 import localForage from 'localforage';
 import {extendPrototype} from 'localforage-observable';
 import {createTransform, persistStore} from 'redux-persist';
-
 import {General, RequestStatus} from 'mattermost-redux/constants';
 import configureServiceStore from 'mattermost-redux/store';
 import reduxInitialState from 'mattermost-redux/store/initial_state';
 
 import {storageRehydrate} from 'actions/storage';
-
 import appReducer from 'reducers';
-
 import {transformSet} from 'store/utils';
-
 import {detect} from 'utils/network.js';
 
 function getAppReducer() {
@@ -27,16 +23,16 @@ const usersSetTransform = [
     'profilesInChannel',
     'profilesNotInChannel',
     'profilesInTeam',
-    'profilesNotInTeam'
+    'profilesNotInTeam',
 ];
 
 const teamSetTransform = [
-    'membersInTeam'
+    'membersInTeam',
 ];
 
 const setTransforms = [
     ...usersSetTransform,
-    ...teamSetTransform
+    ...teamSetTransform,
 ];
 
 export default function configureStore(initialState) {
@@ -81,17 +77,17 @@ export default function configureStore(initialState) {
                 const persistor = persistStore(store, {storage, keyPrefix: KEY_PREFIX, ...options}, () => {
                     store.dispatch({
                         type: General.STORE_REHYDRATION_COMPLETE,
-                        complete: true
+                        complete: true,
                     });
                 });
 
                 localforage.configObservables({
-                    crossTabNotification: true
+                    crossTabNotification: true,
                 });
 
                 const observable = localforage.newObservable({
                     crossTabNotification: true,
-                    changeDetection: true
+                    changeDetection: true,
                 });
 
                 const restoredState = {};
@@ -113,7 +109,7 @@ export default function configureStore(initialState) {
                             statePartial[keyspace] = args.newValue;
                             storageRehydrate(statePartial)(store.dispatch, persistor);
                         }
-                    }
+                    },
                 });
 
                 let purging = false;
@@ -130,7 +126,7 @@ export default function configureStore(initialState) {
 
                             store.dispatch({
                                 type: General.OFFLINE_STORE_RESET,
-                                data: Object.assign({}, reduxInitialState, initialState)
+                                data: Object.assign({}, reduxInitialState, initialState),
                             });
 
                             setTimeout(() => {
@@ -143,12 +139,12 @@ export default function configureStore(initialState) {
         },
         persistOptions: {
             autoRehydrate: {
-                log: false
+                log: false,
             },
             blacklist: ['errors', 'offline', 'requests', 'entities', 'views', 'plugins'],
             debounce: 500,
             transforms: [
-                setTransformer
+                setTransformer,
             ],
             _stateIterator: (collection, callback) => {
                 return Object.keys(collection).forEach((key) => {
@@ -175,9 +171,9 @@ export default function configureStore(initialState) {
                 }
                 state[key] = value;
                 return state;
-            }
+            },
         },
-        detectNetwork: detect
+        detectNetwork: detect,
     };
 
     return configureServiceStore({}, appReducer, offlineOptions, getAppReducer, {enableBuffer: false});

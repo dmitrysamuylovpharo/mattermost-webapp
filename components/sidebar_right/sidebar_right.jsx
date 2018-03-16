@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -11,13 +10,11 @@ import {postListScrollChange} from 'actions/global_actions.jsx';
 import PostStore from 'stores/post_store.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
 import WebrtcStore from 'stores/webrtc_store.jsx';
-
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import FileUploadOverlay from 'components/file_upload_overlay.jsx';
 import RhsThread from 'components/rhs_thread';
-import SearchBox from 'components/search_bar';
+import SearchBar from 'components/search_bar';
 import SearchResults from 'components/search_results';
 
 export default class SidebarRight extends React.Component {
@@ -32,8 +29,8 @@ export default class SidebarRight extends React.Component {
         previousRhsState: PropTypes.string,
         actions: PropTypes.shape({
             getPinnedPosts: PropTypes.func,
-            getFlaggedPosts: PropTypes.func
-        })
+            getFlaggedPosts: PropTypes.func,
+        }),
     }
 
     constructor(props) {
@@ -43,7 +40,7 @@ export default class SidebarRight extends React.Component {
 
         this.state = {
             expanded: false,
-            useMilitaryTime: PreferenceStore.getBool(Constants.Preferences.CATEGORY_DISPLAY_SETTINGS, Constants.Preferences.USE_MILITARY_TIME, false)
+            useMilitaryTime: PreferenceStore.getBool(Constants.Preferences.CATEGORY_DISPLAY_SETTINGS, Constants.Preferences.USE_MILITARY_TIME, false),
         };
     }
 
@@ -68,7 +65,7 @@ export default class SidebarRight extends React.Component {
 
         if (!isOpen && willOpen) {
             this.setState({
-                expanded: false
+                expanded: false,
             });
         }
     }
@@ -112,12 +109,8 @@ export default class SidebarRight extends React.Component {
     }
 
     onPreferenceChange = () => {
-        if (this.props.isFlaggedPosts) {
-            this.props.actions.getFlaggedPosts();
-        }
-
         this.setState({
-            useMilitaryTime: PreferenceStore.getBool(Constants.Preferences.CATEGORY_DISPLAY_SETTINGS, Constants.Preferences.USE_MILITARY_TIME, false)
+            useMilitaryTime: PreferenceStore.getBool(Constants.Preferences.CATEGORY_DISPLAY_SETTINGS, Constants.Preferences.USE_MILITARY_TIME, false),
         });
     }
 
@@ -129,7 +122,7 @@ export default class SidebarRight extends React.Component {
 
     onShrink = () => {
         this.setState({
-            expanded: false
+            expanded: false,
         });
     }
 
@@ -147,7 +140,7 @@ export default class SidebarRight extends React.Component {
 
         var searchForm = null;
         if (this.props.currentUser) {
-            searchForm = <SearchBox isFocus={this.props.searchVisible && Utils.isMobile()}/>;
+            searchForm = <SearchBar isFocus={this.props.searchVisible}/>;
         }
 
         const channel = this.props.channel;

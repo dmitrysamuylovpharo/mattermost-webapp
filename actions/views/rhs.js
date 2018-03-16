@@ -2,22 +2,17 @@
 // See License.txt for license information.
 
 import {batchActions} from 'redux-batched-actions';
-
 import {SearchTypes} from 'mattermost-redux/action_types';
 import {searchPosts} from 'mattermost-redux/actions/search';
 import * as PostActions from 'mattermost-redux/actions/posts';
-
 import {Client4} from 'mattermost-redux/client';
-
 import {getCurrentUserId, getCurrentUserMentionKeys} from 'mattermost-redux/selectors/entities/users';
 import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 
 import {trackEvent} from 'actions/diagnostics_actions.jsx';
-
 import {getSearchTerms, getRhsState} from 'selectors/rhs';
-
 import {ActionTypes, RHSStates} from 'utils/constants';
 import * as Utils from 'utils/utils';
 
@@ -25,7 +20,7 @@ export function updateRhsState(rhsState) {
     return (dispatch, getState) => {
         const action = {
             type: ActionTypes.UPDATE_RHS_STATE,
-            state: rhsState
+            state: rhsState,
         };
 
         if (rhsState === RHSStates.PIN) {
@@ -44,7 +39,7 @@ export function selectPostFromRightHandSideSearch(post) {
             type: ActionTypes.SELECT_POST,
             postId: Utils.getRootId(post),
             channelId: post.channel_id,
-            previousRhsState: getRhsState(getState())
+            previousRhsState: getRhsState(getState()),
         });
     };
 }
@@ -59,7 +54,7 @@ export function selectPostFromRightHandSideSearchByPostId(postId) {
 export function updateSearchTerms(terms) {
     return {
         type: ActionTypes.UPDATE_RHS_SEARCH_TERMS,
-        terms
+        terms,
     };
 }
 
@@ -85,26 +80,26 @@ function getSearchActions(result, teamId) {
     return [
         {
             type: SearchTypes.RECEIVED_SEARCH_POSTS,
-            data: result
+            data: result,
         },
         {
             type: SearchTypes.RECEIVED_SEARCH_TERM,
             data: {
                 teamId,
                 terms: null,
-                isOrSearch: false
-            }
+                isOrSearch: false,
+            },
         },
         {
-            type: SearchTypes.SEARCH_POSTS_SUCCESS
-        }
+            type: SearchTypes.SEARCH_POSTS_SUCCESS,
+        },
     ];
 }
 
 function getPreRHSSearchActions(searchPostRequest, terms, rhsState, channelId) {
     const updateRHSState = {
         type: ActionTypes.UPDATE_RHS_STATE,
-        state: rhsState
+        state: rhsState,
     };
 
     if (channelId) {
@@ -113,13 +108,13 @@ function getPreRHSSearchActions(searchPostRequest, terms, rhsState, channelId) {
 
     return [
         {
-            type: searchPostRequest
+            type: searchPostRequest,
         },
         {
             type: ActionTypes.UPDATE_RHS_SEARCH_TERMS,
-            terms
+            terms,
         },
-        updateRHSState
+        updateRHSState,
     ];
 }
 
@@ -229,24 +224,11 @@ export function showPinnedPosts(channelId) {
 
 export function showMentions() {
     return (dispatch, getState) => {
-        const termKeys = [...getCurrentUserMentionKeys(getState())];
+        const termKeys = getCurrentUserMentionKeys(getState()).filter(({key}) => {
+            return key !== '@channel' && key !== '@all' && key !== '@here';
+        });
 
-        const indexOfChannel = termKeys.indexOf('@channel');
-        if (indexOfChannel !== -1) {
-            termKeys.splice(indexOfChannel, 1);
-        }
-
-        const indexOfAll = termKeys.indexOf('@all');
-        if (indexOfAll !== -1) {
-            termKeys.splice(indexOfAll, 1);
-        }
-
-        const indexOfHere = termKeys.indexOf('@here');
-        if (indexOfHere !== -1) {
-            termKeys.splice(indexOfHere, 1);
-        }
-
-        const terms = termKeys.join(' ').trim() + ' ';
+        const terms = termKeys.map(({key}) => key).join(' ').trim() + ' ';
 
         trackEvent('api', 'api_posts_search_mention');
 
@@ -254,12 +236,12 @@ export function showMentions() {
         dispatch(batchActions([
             {
                 type: ActionTypes.UPDATE_RHS_SEARCH_TERMS,
-                terms
+                terms,
             },
             {
                 type: ActionTypes.UPDATE_RHS_STATE,
-                state: RHSStates.MENTION
-            }
+                state: RHSStates.MENTION,
+            },
         ]));
     };
 }
@@ -269,13 +251,13 @@ export function closeRightHandSide() {
         dispatch(batchActions([
             {
                 type: ActionTypes.UPDATE_RHS_STATE,
-                state: null
+                state: null,
             },
             {
                 type: ActionTypes.SELECT_POST,
                 postId: '',
-                channelId: ''
-            }
+                channelId: '',
+            },
         ]));
     };
 }

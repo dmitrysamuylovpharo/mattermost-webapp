@@ -2,24 +2,20 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Overlay, OverlayTrigger, Popover, Tooltip} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router';
-
 import {Client4} from 'mattermost-redux/client';
 
+import {browserHistory} from 'utils/browser_history';
 import {openDirectChannelToUser} from 'actions/channel_actions.jsx';
 import ChannelStore from 'stores/channel_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-
 import {canManageMembers} from 'utils/channel_utils.jsx';
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import ChannelInviteModal from 'components/channel_invite_modal';
 import ChannelMembersModal from 'components/channel_members_modal';
 import ProfilePicture from 'components/profile_picture.jsx';
@@ -34,8 +30,8 @@ export default class PopoverListMembers extends React.Component {
         memberCount: PropTypes.number,
         currentUserId: PropTypes.string.isRequired,
         actions: PropTypes.shape({
-            getProfilesInChannel: PropTypes.func.isRequired
-        }).isRequired
+            getProfilesInChannel: PropTypes.func.isRequired,
+        }).isRequired,
     }
 
     constructor(props) {
@@ -55,7 +51,7 @@ export default class PopoverListMembers extends React.Component {
             isSystemAdmin: UserStore.isSystemAdminForCurrentUser(),
             isTeamAdmin: TeamStore.isTeamAdminForCurrentTeam(),
             isChannelAdmin: ChannelStore.isChannelAdminForCurrentChannel(),
-            sortedMembers: []
+            sortedMembers: [],
         };
     }
 
@@ -81,20 +77,22 @@ export default class PopoverListMembers extends React.Component {
 
     handleShowDirectChannel(e) {
         e.preventDefault();
-        const teammate = e.currentTarget.getAttribute('data-member');
+        const teammateId = e.currentTarget.getAttribute('data-member-id');
 
-        openDirectChannelToUser(
-            teammate.id,
-            (channel, channelAlreadyExisted) => {
-                browserHistory.push(TeamStore.getCurrentTeamRelativeUrl() + '/channels/' + channel.name);
-                if (channelAlreadyExisted) {
+        if (teammateId) {
+            openDirectChannelToUser(
+                teammateId,
+                (channel, channelAlreadyExisted) => {
+                    browserHistory.push(TeamStore.getCurrentTeamRelativeUrl() + '/channels/' + channel.name);
+                    if (channelAlreadyExisted) {
+                        this.closePopover();
+                    }
+                },
+                () => {
                     this.closePopover();
                 }
-            },
-            () => {
-                this.closePopover();
-            }
-        );
+            );
+        }
     }
 
     closePopover() {
@@ -106,7 +104,7 @@ export default class PopoverListMembers extends React.Component {
 
         this.setState({
             showPopover: false,
-            showChannelMembersModal: true
+            showChannelMembersModal: true,
         });
     }
 
@@ -144,7 +142,7 @@ export default class PopoverListMembers extends React.Component {
             teamMembers,
             isSystemAdmin,
             isTeamAdmin,
-            isChannelAdmin
+            isChannelAdmin,
         } = this.state;
 
         if (this.props.members && teamMembers) {
@@ -167,7 +165,7 @@ export default class PopoverListMembers extends React.Component {
                 if (name) {
                     popoverHtml.push(
                         <div
-                            data-member={m}
+                            data-member-id={m.id}
                             className='more-modal__row'
                             onClick={this.handleShowDirectChannel}
                             key={'popover-member-' + i}

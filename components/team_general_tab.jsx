@@ -2,16 +2,13 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
 import {updateTeam} from 'actions/team_actions.jsx';
-
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import SettingItemMax from 'components/setting_item_max.jsx';
 import SettingItemMin from 'components/setting_item_min.jsx';
 
@@ -51,7 +48,7 @@ class GeneralTab extends React.Component {
             allow_open_invite: team.allow_open_invite,
             description: team.description,
             serverError: '',
-            clientError: ''
+            clientError: '',
         };
     }
 
@@ -60,7 +57,7 @@ class GeneralTab extends React.Component {
             name: nextProps.team.display_name,
             description: nextProps.team.description,
             invite_id: nextProps.team.invite_id,
-            allow_open_invite: nextProps.team.allow_open_invite
+            allow_open_invite: nextProps.team.allow_open_invite,
         });
     }
 
@@ -111,7 +108,7 @@ class GeneralTab extends React.Component {
                     defaultMessage='Team Name must be {min} or more characters up to a maximum of {max}. You can add a longer team description.'
                     values={{
                         min: Constants.MIN_TEAMNAME_LENGTH,
-                        max: Constants.MAX_TEAMNAME_LENGTH
+                        max: Constants.MAX_TEAMNAME_LENGTH,
                     }}
                 />
             );
@@ -283,7 +280,7 @@ class GeneralTab extends React.Component {
                             defaultMessage='When allowed, a link to this team will be included on the landing page allowing anyone with an account to join this team.'
                         />
                     </div>
-                </div>
+                </div>,
             ];
 
             openInviteSection = (
@@ -358,7 +355,7 @@ class GeneralTab extends React.Component {
                                             defaultMessage='Get Team Invite Link'
                                         />
                                     </strong>
-                                )
+                                ),
                             }}
                         />
                     </div>
@@ -526,17 +523,19 @@ class GeneralTab extends React.Component {
                         className='close'
                         data-dismiss='modal'
                         aria-label='Close'
+                        onClick={this.props.closeModal}
                     >
-                        <span aria-hidden='true'>
-                            {'×'}
-                        </span>
+                        <span aria-hidden='true'>{'×'}</span>
                     </button>
                     <h4
                         className='modal-title'
                         ref='title'
                     >
                         <div className='modal-back'>
-                            <i className='fa fa-angle-left'/>
+                            <i
+                                className='fa fa-angle-left'
+                                onClick={this.props.collapseModal}
+                            />
                         </div>
                         <FormattedMessage
                             id='general_tab.title'
@@ -572,7 +571,9 @@ class GeneralTab extends React.Component {
 GeneralTab.propTypes = {
     updateSection: PropTypes.func.isRequired,
     team: PropTypes.object.isRequired,
-    activeSection: PropTypes.string.isRequired
+    activeSection: PropTypes.string.isRequired,
+    closeModal: PropTypes.func.isRequired,
+    collapseModal: PropTypes.func.isRequired,
 };
 
 export default GeneralTab;

@@ -3,7 +3,6 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-
 import {ContextMenu, ContextMenuTrigger, MenuItem} from 'react-contextmenu';
 import {FormattedMessage} from 'react-intl';
 
@@ -25,7 +24,7 @@ export default class CopyUrlContextMenu extends React.Component {
         /**
          * A unique id differentiating this instance of context menu from others on the page. Will be set to a random value if not provided.
          */
-        menuId: PropTypes.string.isRequired
+        menuId: PropTypes.string.isRequired,
     };
 
     render() {

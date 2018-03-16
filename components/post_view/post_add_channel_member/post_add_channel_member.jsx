@@ -4,14 +4,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router';
 
+import {browserHistory} from 'utils/browser_history';
 import store from 'stores/redux_store.jsx';
-
 import {sendAddToChannelEphemeralPost} from 'actions/global_actions.jsx';
-
 import {Constants} from 'utils/constants.jsx';
-
 import AtMention from 'components/at_mention';
 
 const getState = store.getState;
@@ -64,8 +61,8 @@ export default class PostAddChannelMember extends React.PureComponent {
             /*
             * Function to remove post (ephemeral)
             */
-            removePost: PropTypes.func.isRequired
-        }).isRequired
+            removePost: PropTypes.func.isRequired,
+        }).isRequired,
     }
 
     handleAddChannelMember = () => {

@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-
 import {PostTypes, SearchTypes} from 'mattermost-redux/action_types';
 
 import {ActionTypes, RHSStates} from 'utils/constants.jsx';
@@ -113,5 +112,5 @@ export default combineReducers({
     searchTerms,
     isSearchingTerm,
     isSearchingFlaggedPost,
-    isSearchingPinnedPost
+    isSearchingPinnedPost,
 });

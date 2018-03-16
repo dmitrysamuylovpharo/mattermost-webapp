@@ -15,8 +15,9 @@ test: .yarninstall ## Runs tests
 
 .yarninstall: package.json
 	@echo Getting dependencies using yarn
-
-	yarn install
+	
+	yarn cache clean --pattern "mattermost-redux"
+	yarn install --pure-lockfile
 	cd node_modules/mattermost-redux; npm run build
 
 	touch $@

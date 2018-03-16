@@ -8,7 +8,6 @@ import {FormattedMessage} from 'react-intl';
 
 import GlobeIcon from 'components/svg/globe_icon';
 import LockIcon from 'components/svg/lock_icon';
-
 import Constants from 'utils/constants.jsx';
 import * as TextFormatting from 'utils/text_formatting.jsx';
 import {getSiteURL} from 'utils/url.jsx';
@@ -30,7 +29,7 @@ export default class ChannelInfoModal extends React.PureComponent {
         /**
          * Current team object
          */
-        currentTeam: PropTypes.object.isRequired
+        currentTeam: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -57,7 +56,7 @@ export default class ChannelInfoModal extends React.PureComponent {
                 name: notFound,
                 purpose: notFound,
                 header: notFound,
-                id: notFound
+                id: notFound,
             };
         }
 

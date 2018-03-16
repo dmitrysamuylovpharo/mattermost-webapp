@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import ReplyIcon from 'components/svg/reply_icon';
-
 import * as Utils from 'utils/utils.jsx';
 
 export default class CommentIcon extends React.PureComponent {
@@ -16,7 +15,7 @@ export default class CommentIcon extends React.PureComponent {
         searchStyle: PropTypes.string,
         commentCount: PropTypes.number,
         id: PropTypes.string,
-        extraClass: PropTypes.string
+        extraClass: PropTypes.string,
     };
 
     static defaultProps = {
@@ -24,7 +23,7 @@ export default class CommentIcon extends React.PureComponent {
         searchStyle: '',
         commentCount: 0,
         id: '',
-        extraClass: ''
+        extraClass: '',
     };
 
     render() {

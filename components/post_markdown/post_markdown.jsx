@@ -18,11 +18,6 @@ export default class PostMarkdown extends React.PureComponent {
         channelNamesMap: PropTypes.object.isRequired,
 
         /*
-         * An object mapping emoji names to emojis including both custom and system emojis
-         */
-        emojis: PropTypes.object.isRequired,
-
-        /*
          * Whether or not this text is part of the RHS
          */
         isRHS: PropTypes.bool,
@@ -30,7 +25,7 @@ export default class PostMarkdown extends React.PureComponent {
         /*
          * An array of words that can be used to mention a user
          */
-        mentionKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+        mentionKeys: PropTypes.arrayOf(PropTypes.object).isRequired,
 
         /*
          * The post text to be rendered
@@ -55,23 +50,29 @@ export default class PostMarkdown extends React.PureComponent {
         /*
          * The current team
          */
-        team: PropTypes.object.isRequired
+        team: PropTypes.object.isRequired,
 
+        /**
+         * If an image proxy is enabled.
+         */
+        hasImageProxy: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
         options: {},
-        isRHS: false
+        isRHS: false,
     };
 
     render() {
         const options = Object.assign({
-            emojis: this.props.emojis,
             siteURL: this.props.siteURL,
             mentionKeys: this.props.mentionKeys,
             atMentions: true,
             channelNamesMap: this.props.channelNamesMap,
-            team: this.props.team
+            team: this.props.team,
+
+            // Proxy images if we have an image proxy and the server hasn't already rewritten the post's image URLs.
+            proxyImages: this.props.hasImageProxy && (!this.props.post || !this.props.post.message_source || this.props.post.message === this.props.post.message_source),
         }, this.props.options);
 
         if (this.props.post) {
@@ -82,6 +83,6 @@ export default class PostMarkdown extends React.PureComponent {
         }
 
         const htmlFormattedText = TextFormatting.formatText(this.props.message, options);
-        return <span>{PostUtils.postMessageHtmlToComponent(htmlFormattedText, this.props.isRHS)}</span>;
+        return PostUtils.messageHtmlToComponent(htmlFormattedText, this.props.isRHS);
     }
 }

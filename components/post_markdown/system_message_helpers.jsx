@@ -7,12 +7,10 @@ import {FormattedMessage} from 'react-intl';
 import UserStore from 'stores/user_store.jsx';
 import ChannelStore from 'stores/channel_store.jsx';
 import TeamStore from 'stores/team_store.jsx';
-
 import {canManageMembers} from 'utils/channel_utils.jsx';
 import {Constants, PostTypes} from 'utils/constants.jsx';
 import {formatText} from 'utils/text_formatting.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import PostAddChannelMember from 'components/post_view/post_add_channel_member';
 
 function renderUsername(value, options) {
@@ -57,7 +55,7 @@ function renderAddToChannelMessage(post, options) {
             defaultMessage='{addedUsername} added to the channel by {username}.'
             values={{
                 username,
-                addedUsername
+                addedUsername,
             }}
         />
     );
@@ -69,9 +67,9 @@ function renderRemoveFromChannelMessage(post, options) {
     return (
         <FormattedMessage
             id='api.channel.remove_member.removed'
-            defaultMessage='{removedUsername} removed from the channel.'
+            defaultMessage='{removedUsername} was removed from the channel'
             values={{
-                removedUsername
+                removedUsername,
             }}
         />
     );
@@ -111,21 +109,21 @@ function renderAddToTeamMessage(post, options) {
             defaultMessage='{addedUsername} added to the team by {username}.'
             values={{
                 username,
-                addedUsername
+                addedUsername,
             }}
         />
     );
 }
 
 function renderRemoveFromTeamMessage(post, options) {
-    const removedUsername = renderUsername(post.props.removedUsername, options);
+    const removedUsername = renderUsername(post.props.username, options);
 
     return (
         <FormattedMessage
             id='api.team.remove_user_from_team.removed'
-            defaultMessage='{removedUsername} removed from the team.'
+            defaultMessage='{removedUsername} was removed from the team.'
             values={{
-                removedUsername
+                removedUsername,
             }}
         />
     );
@@ -138,7 +136,7 @@ function renderHeaderChangeMessage(post, options) {
 
     const headerOptions = {
         ...options,
-        singleline: true
+        singleline: true,
     };
 
     const username = renderUsername(post.props.username, options);
@@ -154,7 +152,7 @@ function renderHeaderChangeMessage(post, options) {
                     values={{
                         username,
                         old: oldHeader,
-                        new: newHeader
+                        new: newHeader,
                     }}
                 />
             );
@@ -166,7 +164,7 @@ function renderHeaderChangeMessage(post, options) {
                 defaultMessage='{username} updated the channel header to: {new}'
                 values={{
                     username,
-                    new: newHeader
+                    new: newHeader,
                 }}
             />
         );
@@ -177,7 +175,7 @@ function renderHeaderChangeMessage(post, options) {
                 defaultMessage='{username} removed the channel header (was: {old})'
                 values={{
                     username,
-                    old: oldHeader
+                    old: oldHeader,
                 }}
             />
         );
@@ -202,7 +200,7 @@ function renderDisplayNameChangeMessage(post, options) {
             values={{
                 username,
                 old: oldDisplayName,
-                new: newDisplayName
+                new: newDisplayName,
             }}
         />
     );
@@ -226,7 +224,7 @@ function renderPurposeChangeMessage(post, options) {
                     values={{
                         username,
                         old: oldPurpose,
-                        new: newPurpose
+                        new: newPurpose,
                     }}
                 />
             );
@@ -238,7 +236,7 @@ function renderPurposeChangeMessage(post, options) {
                 defaultMessage='{username} updated the channel purpose to: {new}'
                 values={{
                     username,
-                    new: newPurpose
+                    new: newPurpose,
                 }}
             />
         );
@@ -249,7 +247,7 @@ function renderPurposeChangeMessage(post, options) {
                 defaultMessage='{username} removed the channel purpose (was: {old})'
                 values={{
                     username,
-                    old: oldPurpose
+                    old: oldPurpose,
                 }}
             />
         );
@@ -286,7 +284,7 @@ const systemMessageRenderers = {
     [PostTypes.HEADER_CHANGE]: renderHeaderChangeMessage,
     [PostTypes.DISPLAYNAME_CHANGE]: renderDisplayNameChangeMessage,
     [PostTypes.PURPOSE_CHANGE]: renderPurposeChangeMessage,
-    [PostTypes.CHANNEL_DELETED]: renderChannelDeletedMessage
+    [PostTypes.CHANNEL_DELETED]: renderChannelDeletedMessage,
 };
 
 export function renderSystemMessage(post, options) {

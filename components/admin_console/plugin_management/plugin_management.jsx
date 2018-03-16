@@ -4,10 +4,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 
 import * as Utils from 'utils/utils.jsx';
-
 import Banner from 'components/admin_console/banner.jsx';
 import LoadingScreen from 'components/loading_screen.jsx';
 
@@ -49,8 +48,8 @@ export default class PluginManagement extends React.Component {
             /*
              * Function to get installed plugins
              */
-            deactivatePlugin: PropTypes.func.isRequired
-        }).isRequired
+            deactivatePlugin: PropTypes.func.isRequired,
+        }).isRequired,
     }
 
     constructor(props) {
@@ -60,7 +59,7 @@ export default class PluginManagement extends React.Component {
             loading: true,
             fileSelected: false,
             fileName: null,
-            serverError: null
+            serverError: null,
         };
     }
 

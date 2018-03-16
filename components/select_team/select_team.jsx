@@ -4,19 +4,15 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory, Link} from 'react-router';
+import {Link} from 'react-router-dom';
 
-import * as GlobalActions from 'actions/global_actions.jsx';
+import {emitUserLoggedOutEvent} from 'actions/global_actions.jsx';
 import {addUserToTeamFromInvite} from 'actions/team_actions.jsx';
-
 import TeamStore from 'stores/team_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-
 import * as UserAgent from 'utils/user_agent.jsx';
 import * as Utils from 'utils/utils.jsx';
-
 import logoImage from 'images/logo.png';
-
 import AnnouncementBar from 'components/announcement_bar';
 import BackButton from 'components/common/back_button.jsx';
 import LoadingScreen from 'components/loading_screen.jsx';
@@ -26,8 +22,8 @@ import SelectTeamItem from './components/select_team_item.jsx';
 export default class SelectTeam extends React.Component {
     static propTypes = {
         actions: PropTypes.shape({
-            getTeams: PropTypes.func.isRequired
-        }).isRequired
+            getTeams: PropTypes.func.isRequired,
+        }).isRequired,
     }
 
     constructor(props) {
@@ -57,7 +53,7 @@ export default class SelectTeam extends React.Component {
             teams: TeamStore.getAll(),
             teamMembers: TeamStore.getMyTeamMembers(),
             teamListings: TeamStore.getTeamListings(),
-            loaded
+            loaded,
         };
     }
 
@@ -66,22 +62,27 @@ export default class SelectTeam extends React.Component {
 
         addUserToTeamFromInvite('', '', team.invite_id,
             () => {
-                browserHistory.push(`/${team.name}/channels/town-square`);
+                this.props.history.push(`/${team.name}/channels/town-square`);
             },
             (error) => {
                 this.setState({
                     error,
-                    loadingTeamId: ''
+                    loadingTeamId: '',
                 });
             }
         );
     };
 
+    handleLogoutClick = (e) => {
+        e.preventDefault();
+        emitUserLoggedOutEvent('/login');
+    }
+
     clearError = (e) => {
         e.preventDefault();
 
         this.setState({
-            error: null
+            error: null,
         });
     };
 
@@ -116,14 +117,16 @@ export default class SelectTeam extends React.Component {
             for (const id in this.state.teamListings) {
                 if (this.state.teamListings.hasOwnProperty(id) && !isAlreadyMember[id]) {
                     const openTeam = this.state.teamListings[id];
-                    openTeamContents.push(
-                        <SelectTeamItem
-                            key={'team_' + openTeam.name}
-                            team={openTeam}
-                            onTeamClick={this.handleTeamClick}
-                            loading={this.state.loadingTeamId === openTeam.id}
-                        />
-                    );
+                    if (openTeam && openTeam.delete_at === 0) {
+                        openTeamContents.push(
+                            <SelectTeamItem
+                                key={'team_' + openTeam.name}
+                                team={openTeam}
+                                onTeamClick={this.handleTeamClick}
+                                loading={this.state.loadingTeamId === openTeam.id}
+                            />
+                        );
+                    }
                 }
             }
 
@@ -239,7 +242,7 @@ export default class SelectTeam extends React.Component {
                 <div className='signup-header'>
                     <a
                         href='#'
-                        onClick={GlobalActions.emitUserLoggedOutEvent}
+                        onClick={this.handleLogoutClick}
                     >
                         <span className='fa fa-chevron-left'/>
                         <FormattedMessage id='web.header.logout'/>

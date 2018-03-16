@@ -5,11 +5,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import ModalStore from 'stores/modal_store.jsx';
-
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 import {getSiteURL} from 'utils/url.jsx';
-
 import GetLinkModal from 'components/get_link_modal.jsx';
 
 export default class GetTeamInviteLinkModal extends React.PureComponent {
@@ -23,17 +21,17 @@ export default class GetTeamInviteLinkModal extends React.PureComponent {
         /**
          * Global config object
          */
-        config: PropTypes.object.isRequired
+        config: PropTypes.object.isRequired,
     }
 
     static defaultProps = {
-        currentTeam: {}
+        currentTeam: {},
     }
 
     constructor(props) {
         super(props);
         this.state = {
-            show: false
+            show: false,
         };
     }
 
@@ -47,7 +45,7 @@ export default class GetTeamInviteLinkModal extends React.PureComponent {
 
     handleToggle = (value) => {
         this.setState({
-            show: value
+            show: value,
         });
     }
 

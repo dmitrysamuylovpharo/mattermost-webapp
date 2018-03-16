@@ -3,7 +3,6 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-
 import {setStatus} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
 import {getCurrentUser, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
@@ -21,15 +20,15 @@ function mapStateToProps(state) {
     return {
         userId,
         profilePicture: Client4.getProfilePictureUrl(userId, currentUser.last_picture_update),
-        status: getStatusForUserId(state, userId)
+        status: getStatusForUserId(state, userId),
     };
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            setStatus
-        }, dispatch)
+            setStatus,
+        }, dispatch),
     };
 }
 

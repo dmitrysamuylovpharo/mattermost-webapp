@@ -4,11 +4,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-
 import {Posts} from 'mattermost-redux/constants';
 
 import PostMarkdown from 'components/post_markdown';
-
 import * as PostUtils from 'utils/post_utils.jsx';
 import * as Utils from 'utils/utils.jsx';
 
@@ -24,11 +22,6 @@ export default class PostMessageView extends React.PureComponent {
          * Set to enable Markdown formatting
          */
         enableFormatting: PropTypes.bool,
-
-        /*
-         * An array of words that can be used to mention a user
-         */
-        mentionKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
 
         /*
          * Options specific to text formatting
@@ -58,13 +51,13 @@ export default class PostMessageView extends React.PureComponent {
         /*
          * Post type components from plugins
          */
-        pluginPostTypes: PropTypes.object
+        pluginPostTypes: PropTypes.object,
     };
 
     static defaultProps = {
         options: {},
         isRHS: false,
-        pluginPostTypes: {}
+        pluginPostTypes: {},
     };
 
     renderDeletedPost() {
@@ -105,7 +98,7 @@ export default class PostMessageView extends React.PureComponent {
             compactDisplay,
             isRHS,
             theme,
-            lastPostCount
+            lastPostCount,
         } = this.props;
 
         if (post.state === Posts.POST_DELETED) {
@@ -123,7 +116,6 @@ export default class PostMessageView extends React.PureComponent {
                 return (
                     <PluginComponent
                         post={post}
-                        mentionKeys={this.props.mentionKeys}
                         compactDisplay={compactDisplay}
                         isRHS={isRHS}
                         theme={theme}
@@ -154,7 +146,6 @@ export default class PostMessageView extends React.PureComponent {
                     <PostMarkdown
                         message={message}
                         isRHS={isRHS}
-                        mentionKeys={this.props.mentionKeys}
                         options={options}
                         post={post}
                     />

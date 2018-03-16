@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -10,12 +9,11 @@ import * as Utils from 'utils/utils.jsx';
 
 import * as UserAgent from 'utils/user_agent.jsx';
 import deferComponentRender from 'components/deferComponentRender';
-
 import ChannelHeader from 'components/channel_header';
 import CreatePost from 'components/create_post';
 import FileUploadOverlay from 'components/file_upload_overlay.jsx';
 import PostView from 'components/post_view';
-import TutorialView from 'components/tutorial/tutorial_view.jsx';
+import TutorialView from 'components/tutorial';
 import {clearMarks, mark, measure, trackEvent} from 'actions/diagnostics_actions.jsx';
 
 import CreatePostPharo from 'components/create_post_pharo';
@@ -38,11 +36,12 @@ export default class ChannelView extends React.PureComponent {
         /**
          * Set to show the tutorial
          */
-        showTutorial: PropTypes.bool.isRequired
+        showTutorial: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
         super(props);
+
         this.createDeferredPostView();
 
         this.postUI = (<div className='post-create__container' id='post-create'><CreatePost getChannelView={this.getChannelView}/></div>);
@@ -75,7 +74,7 @@ export default class ChannelView extends React.PureComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.channelId !== nextProps.channelId) {
+        if (this.props.match.url !== nextProps.match.url) {
             this.createDeferredPostView();
         }
 
@@ -90,21 +89,24 @@ export default class ChannelView extends React.PureComponent {
         this.isPharoPostUITweetAdminInput = false;
 
         // pharo custom ui injection on channel change
-        if(checkProps.params.channel === 'market-commentary')
+        if(checkProps.location !== undefined && checkProps.location.pathname !== undefined)
         {
-            this.isPharoPostUI = true;
-        }
-        else if(checkProps.params.channel === 'tweets')
-        {
-            this.isPharoPostUITweet = true;
-        }
-        else if(checkProps.params.channel.indexOf('tweets-admin') != -1)
-        {
-            this.isPharoPostUITweetAdminInput = true;
-        }
-        else if(checkProps.params.channel.indexOf('tweets-') != -1)
-        {
-            this.isPharoPostUITweetInput = true;
+            if(checkProps.location.pathname.indexOf('market-commentary') > -1)
+            {
+                this.isPharoPostUI = true;
+            }
+            else if(checkProps.location.pathname.indexOf('tweets-admin') > -1)
+            {
+                this.isPharoPostUITweetAdminInput = true;
+            }
+            else if(checkProps.location.pathname.indexOf('tweets-') > -1)
+            {
+                this.isPharoPostUITweetInput = true;
+            }
+            else if(checkProps.location.pathname.indexOf('tweets') > -1)
+            {
+                this.isPharoPostUITweet = true;
+            }
         }
     }
 
@@ -122,7 +124,7 @@ export default class ChannelView extends React.PureComponent {
             clearMarks([
                 'SidebarChannelLink#click',
                 'ChannelView#componentDidUpdate',
-                'TeamLink#click'
+                'TeamLink#click',
             ]);
 
             if (dur1 !== -1) {

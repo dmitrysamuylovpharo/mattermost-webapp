@@ -4,7 +4,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 
 export default class BackButton extends React.PureComponent {
     static propTypes = {
@@ -17,11 +17,11 @@ export default class BackButton extends React.PureComponent {
         /**
          * An optional click handler that will trigger when the user clicks on the back button
          */
-        onClick: PropTypes.func
+        onClick: PropTypes.func,
     };
 
     static defaultProps = {
-        url: '/'
+        url: '/',
     };
 
     render() {

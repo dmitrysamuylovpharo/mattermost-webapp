@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import {combineReducers} from 'redux';
-
 import {General} from 'mattermost-redux/constants';
 
 import {StorageTypes} from 'utils/constants';
@@ -76,5 +75,5 @@ function initialized(state = false, action) {
 
 export default combineReducers({
     storage,
-    initialized
+    initialized,
 });

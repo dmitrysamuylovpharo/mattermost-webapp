@@ -4,13 +4,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedHTMLMessage} from 'react-intl';
-
 import {Client4} from 'mattermost-redux/client';
 
 import UserStore from 'stores/user_store.jsx';
-
 import * as Utils from 'utils/utils.jsx';
-
 import ProfilePicture from 'components/profile_picture.jsx';
 
 export default class UserListRowWithError extends React.Component {
@@ -20,14 +17,14 @@ export default class UserListRowWithError extends React.Component {
         actions: PropTypes.arrayOf(PropTypes.func),
         actionProps: PropTypes.object,
         actionUserProps: PropTypes.object,
-        userCount: PropTypes.number
+        userCount: PropTypes.number,
     };
 
     static defaultProps = {
         extraInfo: [],
         actions: [],
         actionProps: {},
-        actionUserProps: {}
+        actionUserProps: {},
     };
 
     constructor(props) {
@@ -39,7 +36,7 @@ export default class UserListRowWithError extends React.Component {
 
     onError(errorObj) {
         this.setState({
-            error: errorObj
+            error: errorObj,
         });
     }
 
@@ -69,7 +66,7 @@ export default class UserListRowWithError extends React.Component {
                     id='admin.user_item.emailTitle'
                     defaultMessage='<strong>Email:</strong> {email}'
                     values={{
-                        email: this.props.user.email
+                        email: this.props.user.email,
                     }}
                 />
             );

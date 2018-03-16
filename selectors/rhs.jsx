@@ -38,7 +38,7 @@ export const getSelectedPost = createSelector(
             type: PostTypes.FAKE_PARENT_DELETED,
             message: localizeMessage('rhs_thread.rootPostDeletedMessage.body', 'Part of this thread has been deleted due to a data retention policy. You can no longer reply to this thread.'),
             channel_id: selectedPostChannelId,
-            user_id: currentUserId
+            user_id: currentUserId,
         };
     }
 );
@@ -67,9 +67,19 @@ export function getIsSearchingPinnedPost(state) {
     return state.views.rhs.isSearchingPinnedPost;
 }
 
-export function makeGetCommentDraft(rootId) {
-    const defaultValue = {message: '', fileInfos: [], uploadsInProgress: []};
-    return makeGetGlobalItem(`${StoragePrefixes.COMMENT_DRAFT}${rootId}`, defaultValue);
+export function getPostDraft(state, prefixId, suffixId) {
+    const defaultDraft = {message: '', fileInfos: [], uploadsInProgress: []};
+    const draft = makeGetGlobalItem(prefixId + suffixId, defaultDraft)(state);
+
+    if (
+        typeof draft.message !== 'undefined' &&
+        typeof draft.uploadsInProgress !== 'undefined' &&
+        typeof draft.fileInfos !== 'undefined'
+    ) {
+        return draft;
+    }
+
+    return defaultDraft;
 }
 
 export function makeGetPostsEmbedVisibleObj() {

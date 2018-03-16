@@ -9,9 +9,7 @@ import BrowserStore from 'stores/browser_store.jsx';
 import ChannelStore from 'stores/channel_store.jsx';
 import store from 'stores/redux_store.jsx';
 import UserStore from 'stores/user_store.jsx';
-
 import {Constants} from 'utils/constants.jsx';
-
 import AppDispatcher from '../dispatcher/app_dispatcher.jsx';
 
 const ActionTypes = Constants.ActionTypes;
@@ -111,7 +109,7 @@ class PostStoreClass extends EventEmitter {
         let draft = {
             message: '',
             uploadsInProgress: [],
-            fileInfos: []
+            fileInfos: [],
         };
 
         // Make sure that the post draft is non-null and has all the required fields
@@ -119,7 +117,7 @@ class PostStoreClass extends EventEmitter {
             draft = {
                 message: originalDraft.message || draft.message,
                 uploadsInProgress: originalDraft.uploadsInProgress || draft.uploadsInProgress,
-                fileInfos: originalDraft.fileInfos || draft.fileInfos
+                fileInfos: originalDraft.fileInfos || draft.fileInfos,
             };
         }
 

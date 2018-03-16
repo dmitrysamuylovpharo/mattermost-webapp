@@ -6,6 +6,7 @@ exports[`components/NewChannelFlow should match snapshot, with base props 1`] = 
     channelData={
       Object {
         "displayName": "",
+        "header": "",
         "name": "",
         "purpose": "",
       }
@@ -13,7 +14,7 @@ exports[`components/NewChannelFlow should match snapshot, with base props 1`] = 
     channelType="O"
     onChangeURLPressed={[Function]}
     onDataChanged={[Function]}
-    onModalDismissed={[Function]}
+    onModalDismissed={[MockFunction]}
     onModalExited={[Function]}
     onSubmitChannel={[Function]}
     onTypeSwitched={[Function]}
@@ -24,6 +25,7 @@ exports[`components/NewChannelFlow should match snapshot, with base props 1`] = 
     channelData={
       Object {
         "displayName": "",
+        "header": "",
         "name": "",
         "purpose": "",
       }
@@ -31,7 +33,7 @@ exports[`components/NewChannelFlow should match snapshot, with base props 1`] = 
     channelType="P"
     onChangeURLPressed={[Function]}
     onDataChanged={[Function]}
-    onModalDismissed={[Function]}
+    onModalDismissed={[MockFunction]}
     onModalExited={[Function]}
     onSubmitChannel={[Function]}
     onTypeSwitched={[Function]}

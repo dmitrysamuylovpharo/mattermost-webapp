@@ -2,15 +2,14 @@
 // See License.txt for license information.
 
 import $ from 'jquery';
-
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
 
-import * as Utils from 'utils/utils.jsx';
-
+import QuickInput from 'components/quick_input';
 import UserList from 'components/user_list.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 const NEXT_BUTTON_TIMEOUT = 500;
 
@@ -35,7 +34,7 @@ export default class SearchableUserList extends React.Component {
         onTermChange: PropTypes.func.isRequired,
 
         // the type of user list row to render
-        rowComponentType: PropTypes.func
+        rowComponentType: PropTypes.func,
     };
 
     static defaultProps = {
@@ -46,7 +45,7 @@ export default class SearchableUserList extends React.Component {
         actionProps: {},
         actionUserProps: {},
         showTeamToggle: false,
-        focusOnMount: false
+        focusOnMount: false,
     };
 
     constructor(props) {
@@ -63,7 +62,7 @@ export default class SearchableUserList extends React.Component {
         this.nextTimeoutId = 0;
 
         this.state = {
-            nextDisabled: false
+            nextDisabled: false,
         };
     }
 
@@ -142,7 +141,7 @@ export default class SearchableUserList extends React.Component {
                         defaultMessage='{count, number} {count, plural, one {member} other {members}} of {total, number} total'
                         values={{
                             count,
-                            total
+                            total,
                         }}
                     />
                 );
@@ -156,7 +155,7 @@ export default class SearchableUserList extends React.Component {
                         count,
                         startCount: startCount + 1,
                         endCount,
-                        total
+                        total,
                     }}
                 />
             );
@@ -213,7 +212,7 @@ export default class SearchableUserList extends React.Component {
         } else {
             filterRow = (
                 <div className='col-xs-12'>
-                    <input
+                    <QuickInput
                         ref='filter'
                         className='form-control filter-textbox'
                         placeholder={Utils.localizeMessage('filtered_user_list.search', 'Search users')}

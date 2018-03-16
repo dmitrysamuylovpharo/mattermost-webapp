@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import {connect} from 'react-redux';
-
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import {getSiteURL} from 'utils/url.jsx';
@@ -14,7 +13,7 @@ function mapStateToProps(state, ownProps) {
     const currentTeamUrl = `${getSiteURL()}/${currentTeam.name}`;
     return {
         ...ownProps,
-        currentTeamUrl
+        currentTeamUrl,
     };
 }
 

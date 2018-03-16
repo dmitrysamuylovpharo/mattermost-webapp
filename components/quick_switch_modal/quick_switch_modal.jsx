@@ -5,17 +5,14 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
-import {browserHistory} from 'react-router';
-
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
 
+import {browserHistory} from 'utils/browser_history';
 import {goToChannel, openDirectChannelToUser} from 'actions/channel_actions.jsx';
 import store from 'stores/redux_store.jsx';
-
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 import * as UserAgent from 'utils/user_agent.jsx';
-
 import SuggestionBox from 'components/suggestion/suggestion_box.jsx';
 import SuggestionList from 'components/suggestion/suggestion_list.jsx';
 import SwitchChannelProvider from 'components/suggestion/switch_channel_provider.jsx';
@@ -47,11 +44,11 @@ export default class QuickSwitchModal extends React.PureComponent {
         /**
          * Set to show team switcher
          */
-        showTeamSwitcher: PropTypes.bool
+        showTeamSwitcher: PropTypes.bool,
     }
 
     static defaultProps = {
-        initialMode: CHANNEL_MODE
+        initialMode: CHANNEL_MODE,
     }
 
     constructor(props) {
@@ -76,7 +73,7 @@ export default class QuickSwitchModal extends React.PureComponent {
 
         this.state = {
             text: '',
-            mode: props.initialMode
+            mode: props.initialMode,
         };
     }
 
@@ -105,13 +102,13 @@ export default class QuickSwitchModal extends React.PureComponent {
 
     onShow() {
         this.setState({
-            text: ''
+            text: '',
         });
     }
 
     onHide() {
         this.setState({
-            text: ''
+            text: '',
         });
         this.props.onHide();
     }
@@ -319,7 +316,6 @@ export default class QuickSwitchModal extends React.PureComponent {
                     <SuggestionBox
                         ref={this.setSwitchBoxRef}
                         className='form-control focused'
-                        type='input'
                         onChange={this.onChange}
                         value={this.state.text}
                         onKeyDown={this.handleKeyDown}
@@ -330,6 +326,7 @@ export default class QuickSwitchModal extends React.PureComponent {
                         listStyle='bottom'
                         completeOnTab={false}
                         renderDividers={renderDividers}
+                        delayInputUpdate={true}
                     />
                 </Modal.Body>
             </Modal>

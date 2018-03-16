@@ -5,7 +5,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import {Constants} from 'utils/constants.jsx';
-
 import StatusIcon from 'components/status_icon.jsx';
 import ArchiveIcon from 'components/svg/archive_icon';
 import GlobeIcon from 'components/svg/globe_icon';
@@ -18,7 +17,7 @@ export default class SidebarChannelButtonOrLinkIcon extends React.PureComponent 
         membersCount: PropTypes.number,
         channelStatus: PropTypes.string,
         teammateId: PropTypes.string,
-        teammateDeletedAt: PropTypes.number
+        teammateDeletedAt: PropTypes.number,
     }
 
     render() {

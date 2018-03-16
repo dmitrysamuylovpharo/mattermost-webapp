@@ -5,7 +5,6 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import Constants from 'utils/constants.jsx';
-
 import SettingItemMax from 'components/setting_item_max.jsx';
 
 describe('components/SettingItemMin', () => {
@@ -20,7 +19,7 @@ describe('components/SettingItemMin', () => {
         submit: jest.fn(),
         saving: false,
         title: 'title',
-        width: 'full'
+        width: 'full',
     };
 
     test('should match snapshot', () => {

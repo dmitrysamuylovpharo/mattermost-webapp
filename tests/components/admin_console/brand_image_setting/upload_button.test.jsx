@@ -5,7 +5,6 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import {UploadStatuses} from 'utils/constants.jsx';
-
 import UploadButton from 'components/admin_console/brand_image_setting/upload_button.jsx';
 
 describe('components/admin_console/brand_image_setting/UploadButton', () => {
@@ -13,7 +12,7 @@ describe('components/admin_console/brand_image_setting/UploadButton', () => {
         status: UploadStatuses.DEFAULT,
         primaryClass: 'btn btn-primary',
         disabled: false,
-        onClick: () => {}         //eslint-disable-line no-empty-function
+        onClick: () => {},         //eslint-disable-line no-empty-function
     };
 
     test('should match snapshot', () => {

@@ -3,7 +3,6 @@
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-
 import {getProfilesInChannel} from 'mattermost-redux/actions/users';
 import {getAllChannelStats} from 'mattermost-redux/selectors/entities/channels';
 import {getCurrentUserId, makeGetProfilesInChannel} from 'mattermost-redux/selectors/entities/users';
@@ -21,7 +20,7 @@ function makeMapStateToProps() {
             ...ownProps,
             memberCount: stats.member_count,
             members,
-            currentUserId: getCurrentUserId(state)
+            currentUserId: getCurrentUserId(state),
         };
     };
 }
@@ -29,8 +28,8 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch) {
     return {
         actions: bindActionCreators({
-            getProfilesInChannel
-        }, dispatch)
+            getProfilesInChannel,
+        }, dispatch),
     };
 }
 

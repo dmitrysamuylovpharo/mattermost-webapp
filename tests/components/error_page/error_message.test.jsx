@@ -5,14 +5,13 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import {ErrorPageTypes} from 'utils/constants.jsx';
-
 import ErrorMessage from 'components/error_page/error_message.jsx';
 
 describe('components/error_page/ErrorMessage', () => {
     const baseProps = {
         type: ErrorPageTypes.LOCAL_STORAGE,
         message: '',
-        service: ''
+        service: '',
     };
 
     test('should match snapshot, local_storage type', () => {

@@ -2,7 +2,6 @@
 // See License.txt for license information.
 
 import React from 'react';
-
 import {shallow} from 'enzyme';
 
 import NotLoggedIn from 'components/header_footer_template/header_footer_template.jsx';
@@ -83,7 +82,7 @@ describe('components/HeaderFooterTemplate', () => {
                     HelpLink: 'http://testhelplink',
                     TermsOfServiceLink: 'http://testtermsofservicelink',
                     PrivacyPolicyLink: 'http://testprivacypolicylink',
-                    AboutLink: 'http://testaboutlink'
+                    AboutLink: 'http://testaboutlink',
                 }}
             />
         );

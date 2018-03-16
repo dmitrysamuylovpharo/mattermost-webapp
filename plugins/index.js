@@ -6,7 +6,6 @@
 import {Client4} from 'mattermost-redux/client';
 
 import store from 'stores/redux_store.jsx';
-
 import {ActionTypes} from 'utils/constants.jsx';
 import {getSiteURL} from 'utils/url.jsx';
 
@@ -27,7 +26,7 @@ export function registerComponents(id, components = {}, postTypes = {}) {
 
     store.dispatch({
         type: ActionTypes.RECEIVED_PLUGIN_COMPONENTS,
-        data: wrappedComponents
+        data: wrappedComponents,
     });
 
     const wrappedPostTypes = {};
@@ -37,7 +36,7 @@ export function registerComponents(id, components = {}, postTypes = {}) {
 
     store.dispatch({
         type: ActionTypes.RECEIVED_PLUGIN_POST_TYPES,
-        data: wrappedPostTypes
+        data: wrappedPostTypes,
     });
 }
 
