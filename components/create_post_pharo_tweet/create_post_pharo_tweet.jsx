@@ -280,7 +280,7 @@ export default class CreatePostPharoTweet extends React.Component {
             if(event.value === 'topics-question')
             {
                 this.setState({
-                    message: `Please submit your tweets, answer to the survey question, adjustments to the topics list and future survey questions by **Monday 10am, London time**.`
+                    message: `Please submit your tweets, answer to the survey question, adjustments to the topics list and future survey questions by **Tuesday 11am, London time**.`
                 });
             }
         }        
@@ -291,7 +291,7 @@ export default class CreatePostPharoTweet extends React.Component {
             if(event.value === 'ratings-question')
             {
                 this.setState({
-                    message: `Please submit your ratings based on the half SD moves below by **Monday 10am, London time**.
+                    message: `Please submit your ratings based on the half SD moves below by **Tuesday 11am, London time**.
 
 |   | DM | EM |
 | :- |:-:| :-:|

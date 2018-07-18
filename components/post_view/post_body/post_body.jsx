@@ -162,26 +162,26 @@ export default class PostBody extends React.PureComponent {
             let message = '';
             if (parentPost.message) {
                 message = Utils.replaceHtmlEntities(parentPost.message);
+
+                // strip pharo market commentary markdown out of the message
+                message = message.replace('##### ', '').replace('### ', '').replace('## ', '').trim();
+                let messageParts = message.split('\r\n')
+                let subject = '';
+                if(messageParts.length > 1)
+                {
+                    if(messageParts[0].trim().length > 0)
+                        subject = messageParts[0];
+                    else if (messageParts[1].trim().length > 0)
+                        subject = messageParts[1];
+
+                    message = message.replace(subject, subject + ' |');
+                }                
             } else if (parentPost.file_ids && parentPost.file_ids.length > 0) {
                 message = (
                     <CommentedOnFilesMessage
                         parentPostId={parentPost.id}
                     />
                 );
-            }
-
-            // strip pharo market commentary markdown out of the message
-            message = message.replace('##### ', '').replace('### ', '').replace('## ', '').trim();
-            let messageParts = message.split('\r\n')
-            let subject = '';
-            if(messageParts.length > 1)
-            {
-                if(messageParts[0].trim().length > 0)
-                    subject = messageParts[0];
-                else if (messageParts[1].trim().length > 0)
-                    subject = messageParts[1];
-
-                message = message.replace(subject, subject + ' |');
             }
 
             comment = (
