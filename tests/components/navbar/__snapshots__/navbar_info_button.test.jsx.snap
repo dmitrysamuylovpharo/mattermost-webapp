@@ -42,15 +42,15 @@ exports[`components/navbar/NavbarInfoButton should match snapshot, with channel 
       <Popover
         bsClass="popover"
         bsStyle="info"
+        className="navbar__popover"
         id="header-popover"
         placement="bottom"
       >
-        <MessageWrapper
+        <Connect(Markdown)
           message="channel header"
           options={
             Object {
               "mentionHighlight": false,
-              "singleline": true,
             }
           }
         />
@@ -79,7 +79,9 @@ exports[`components/navbar/NavbarInfoButton should match snapshot, with channel 
           className="icon icon__info"
         >
           <svg
+            aria-label="Info Icon"
             height="22px"
+            role="icon"
             viewBox="0 0 22 22"
             width="22px"
           >
@@ -157,29 +159,37 @@ exports[`components/navbar/NavbarInfoButton should match snapshot, without chann
       <Popover
         bsClass="popover"
         bsStyle="info"
+        className="navbar__popover"
         id="header-popover"
         placement="bottom"
       >
         <div>
           <FormattedMessage
-            defaultMessage="No channel header yet.{newline}{link} to add one."
+            defaultMessage="No channel header yet."
             id="navbar.noHeader"
-            values={
-              Object {
-                "link": <a
-                  href="#"
-                  onClick={[Function]}
-                >
-                  <FormattedMessage
-                    defaultMessage="Click here"
-                    id="navbar.click"
-                    values={Object {}}
-                  />
-                </a>,
-                "newline": <br />,
-              }
-            }
+            values={Object {}}
           />
+          <React.Fragment>
+            <br />
+            <FormattedMessage
+              defaultMessage="{clickHere} to add one."
+              id="navbar.clickToAddHeader"
+              values={
+                Object {
+                  "clickHere": <a
+                    href="#"
+                    onClick={[Function]}
+                  >
+                    <FormattedMessage
+                      defaultMessage="Click here"
+                      id="navbar.click"
+                      values={Object {}}
+                    />
+                  </a>,
+                }
+              }
+            />
+          </React.Fragment>
         </div>
         <div
           className="close visible-xs-block"
@@ -206,7 +216,9 @@ exports[`components/navbar/NavbarInfoButton should match snapshot, without chann
           className="icon icon__info"
         >
           <svg
+            aria-label="Info Icon"
             height="22px"
+            role="icon"
             viewBox="0 0 22 22"
             width="22px"
           >

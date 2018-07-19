@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class GetLinkModal extends React.PureComponent {
     static propTypes = {
@@ -93,7 +95,10 @@ export default class GetLinkModal extends React.PureComponent {
         if (this.state.copiedLink) {
             copyLinkConfirm = (
                 <p className='alert alert-success alert--confirm'>
-                    <i className='fa fa-check'/>
+                    <i
+                        className='fa fa-check'
+                        title={localizeMessage('generic_icons.success', 'Success Icon')}
+                    />
                     <FormattedMessage
                         id='get_link.clipboard'
                         defaultMessage=' Link copied'

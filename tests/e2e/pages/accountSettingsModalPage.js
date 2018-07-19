@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {Constants} from '../utils';
 
@@ -36,31 +36,59 @@ const tabList = {
     },
 };
 
+const generalSettings = {
+    selector: '#generalSettings',
+    elements: {
+        generalSettingsTitle: {selector: '#generalSettingsTitle'},
+        nameTitle: {selector: '#nameTitle'},
+        nameEdit: {selector: '#nameEdit'},
+        nameDesc: {selector: '#nameDesc'},
+        usernameTitle: {selector: '#usernameTitle'},
+        usernameEdit: {selector: '#usernameEdit'},
+        usernameDesc: {selector: '#usernameDesc'},
+        nicknameTitle: {selector: '#nicknameTitle'},
+        nicknameEdit: {selector: '#nicknameEdit'},
+        nicknameDesc: {selector: '#nicknameDesc'},
+        positionTitle: {selector: '#positionTitle'},
+        positionEdit: {selector: '#positionEdit'},
+        positionDesc: {selector: '#positionDesc'},
+        emailTitle: {selector: '#emailTitle'},
+        emailEdit: {selector: '#emailEdit'},
+        emailDesc: {selector: '#emailDesc'},
+        pictureTitle: {selector: '#pictureTitle'},
+        pictureEdit: {selector: '#pictureEdit'},
+        pictureDesc: {selector: '#pictureDesc'},
+    },
+};
+
 const displaySettings = {
     selector: '#displaySettings',
     elements: {
         displaySettingsTitle: {selector: '#displaySettingsTitle'},
-        themeTitle: {selector: '#ThemeTitle'},
-        themeEdit: {selector: '#ThemeEdit'},
-        themeDesc: {selector: '#ThemeDesc'},
-        clockTitle: {selector: '#Clock_DisplayTitle'},
-        clockEdit: {selector: '#Clock_DisplayEdit'},
-        clockDesc: {selector: '#Clock_DisplayDesc'},
-        linkPreviewTitle: {selector: '#Website_Link_PreviewsTitle'},
-        linkPreviewEdit: {selector: '#Website_Link_PreviewsEdit'},
-        linkPreviewDesc: {selector: '#Website_Link_PreviewsDesc'},
-        collapseTitle: {selector: '#Default_appearance_of_image_link_previewsTitle'},
-        collapseEdit: {selector: '#Default_appearance_of_image_link_previewsEdit'},
-        collapseDesc: {selector: '#Default_appearance_of_image_link_previewsDesc'},
-        messageDisplayTitle: {selector: '#Message_DisplayTitle'},
-        messageDisplayEdit: {selector: '#Message_DisplayEdit'},
-        messageDisplayDesc: {selector: '#Message_DisplayDesc'},
-        channelDisplayModeTitle: {selector: '#Channel_Display_ModeTitle'},
-        channelDisplayModeEdit: {selector: '#Channel_Display_ModeEdit'},
-        channelDisplayModeDesc: {selector: '#Channel_Display_ModeDesc'},
-        languageTitle: {selector: '#LanguageTitle'},
-        languageEdit: {selector: '#LanguageEdit'},
-        languageDesc: {selector: '#LanguageDesc'},
+        themeTitle: {selector: '#themeTitle'},
+        themeEdit: {selector: '#themeEdit'},
+        themeDesc: {selector: '#themeDesc'},
+        clockTitle: {selector: '#clockTitle'},
+        clockEdit: {selector: '#clockEdit'},
+        clockDesc: {selector: '#clockDesc'},
+        teammateNameDisplayTitle: {selector: '#name_formatTitle'},
+        teammateNameDisplayEdit: {selector: '#name_formatEdit'},
+        teammateNameDisplayDesc: {selector: '#name_formatDesc'},
+        linkPreviewTitle: {selector: '#linkpreviewTitle'},
+        linkPreviewEdit: {selector: '#linkpreviewEdit'},
+        linkPreviewDesc: {selector: '#linkpreviewDesc'},
+        collapseTitle: {selector: '#collapseTitle'},
+        collapseEdit: {selector: '#collapseEdit'},
+        collapseDesc: {selector: '#collapseDesc'},
+        messageDisplayTitle: {selector: '#message_displayTitle'},
+        messageDisplayEdit: {selector: '#message_displayEdit'},
+        messageDisplayDesc: {selector: '#message_displayDesc'},
+        channelDisplayModeTitle: {selector: '#channel_display_modeTitle'},
+        channelDisplayModeEdit: {selector: '#channel_display_modeEdit'},
+        channelDisplayModeDesc: {selector: '#channel_display_modeDesc'},
+        languageTitle: {selector: '#languagesTitle'},
+        languageEdit: {selector: '#languagesEdit'},
+        languageDesc: {selector: '#languagesDesc'},
     },
 };
 
@@ -72,6 +100,7 @@ module.exports = {
             selector: '#accountSettingsModal',
             sections: {
                 tabList,
+                generalSettings,
                 displaySettings,
             },
             elements: {

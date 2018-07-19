@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {Modal} from 'react-bootstrap';
@@ -225,7 +225,7 @@ class InviteMemberModal extends React.Component {
     }
 
     handleKeyDown = (e) => {
-        if (e.keyCode === Constants.KeyCodes.ENTER) {
+        if (utils.isKeyPressed(e, Constants.KeyCodes.ENTER)) {
             e.preventDefault();
             this.handleSubmit();
         }
@@ -266,7 +266,10 @@ class InviteMemberModal extends React.Component {
                                 className='btn btn-link remove__member'
                                 onClick={this.removeInviteFields.bind(this, index)}
                             >
-                                <span className='fa fa-trash'/>
+                                <span
+                                    className='fa fa-trash'
+                                    title={utils.localizeMessage('generic_icons.remove', 'Remove Icon')}
+                                />
                             </button>
                         </div>
                     );
@@ -393,7 +396,11 @@ class InviteMemberModal extends React.Component {
                 );
                 if (this.state.isSendingEmails) {
                     sendButtonLabel = (
-                        <span><i className='fa fa-spinner fa-spin'/>
+                        <span>
+                            <i
+                                className='fa fa-spinner fa-spin'
+                                title={utils.localizeMessage('generic_icons.loading', 'Loading Icon')}
+                            />
                             <FormattedMessage
                                 id='invite_member.sending'
                                 defaultMessage=' Sending'

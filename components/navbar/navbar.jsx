@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Link} from 'react-router-dom';
+import {Permissions} from 'mattermost-redux/constants';
 
 import EditChannelHeaderModal from 'components/edit_channel_header_modal';
 import EditChannelPurposeModal from 'components/edit_channel_purpose_modal';
@@ -21,6 +22,8 @@ import WebrtcStore from 'stores/webrtc_store.jsx';
 import * as ChannelUtils from 'utils/channel_utils.jsx';
 import {ActionTypes, Constants, ModalIdentifiers, RHSStates, UserStatuses} from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
+
+import ConvertChannelModal from 'components/convert_channel_modal';
 import ChannelInfoModal from 'components/channel_info_modal';
 import ChannelInviteModal from 'components/channel_invite_modal';
 import ChannelMembersModal from 'components/channel_members_modal';
@@ -35,6 +38,9 @@ import MenuIcon from 'components/svg/menu_icon';
 import SearchIcon from 'components/svg/search_icon';
 import ToggleModalButton from 'components/toggle_modal_button.jsx';
 import ToggleModalButtonRedux from 'components/toggle_modal_button_redux';
+import ChannelPermissionGate from 'components/permissions_gates/channel_permission_gate';
+import TeamPermissionGate from 'components/permissions_gates/team_permission_gate';
+
 import Pluggable from 'plugins/pluggable';
 
 import NavbarInfoButton from './navbar_info_button.jsx';
@@ -44,10 +50,15 @@ export default class Navbar extends React.Component {
         teamDisplayName: PropTypes.string,
         isPinnedPosts: PropTypes.bool,
         enableWebrtc: PropTypes.bool.isRequired,
+        isReadOnly: PropTypes.bool,
         actions: PropTypes.shape({
-            closeRightHandSide: PropTypes.func,
             updateRhsState: PropTypes.func,
             showPinnedPosts: PropTypes.func,
+            toggleLhs: PropTypes.func.isRequired,
+            closeLhs: PropTypes.func.isRequired,
+            closeRhs: PropTypes.func.isRequired,
+            toggleRhsMenu: PropTypes.func.isRequired,
+            closeRhsMenu: PropTypes.func.isRequired,
         }),
     };
 
@@ -137,27 +148,22 @@ export default class Navbar extends React.Component {
     hideSidebars = (e) => {
         var windowWidth = $(window).outerWidth();
         if (windowWidth <= 768) {
-            this.props.actions.closeRightHandSide();
+            this.props.actions.closeRhs();
 
             if (e.target.className !== 'navbar-toggle' && e.target.className !== 'icon-bar') {
-                $('.app__body .inner-wrap').removeClass('move--right move--left move--left-small');
-                $('.app__body .sidebar--left').removeClass('move--right');
-                $('.multi-teams .team-sidebar').removeClass('move--right');
-                $('.app__body .sidebar--right').removeClass('move--left');
-                $('.app__body .sidebar--menu').removeClass('move--left');
+                this.props.actions.closeLhs();
+                this.props.actions.closeRhs();
+                this.props.actions.closeRhsMenu();
             }
         }
     }
 
     toggleLeftSidebar = () => {
-        $('.app__body .inner-wrap').toggleClass('move--right');
-        $('.app__body .sidebar--left').toggleClass('move--right');
-        $('.multi-teams .team-sidebar').toggleClass('move--right');
+        this.props.actions.toggleLhs();
     }
 
     toggleRightSidebar = () => {
-        $('.app__body .inner-wrap').toggleClass('move--left-small');
-        $('.app__body .sidebar--menu').toggleClass('move--left');
+        this.props.actions.toggleRhsMenu();
     }
 
     showSearch = () => {
@@ -229,7 +235,7 @@ export default class Navbar extends React.Component {
     }
 
     handleQuickSwitchKeyPress = (e) => {
-        if (Utils.cmdOrCtrlPressed(e) && !e.shiftKey && e.keyCode === Constants.KeyCodes.K) {
+        if (Utils.cmdOrCtrlPressed(e) && !e.shiftKey && Utils.isKeyPressed(e, Constants.KeyCodes.K)) {
             if (!e.altKey) {
                 e.preventDefault();
                 this.toggleQuickSwitchModal('channel');
@@ -282,9 +288,7 @@ export default class Navbar extends React.Component {
     }
 
     isWebrtcEnabled() {
-        const userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-        const PreReleaseFeatures = Constants.PRE_RELEASE_FEATURES;
-        return this.props.enableWebrtc && userMedia && Utils.isFeatureEnabled(PreReleaseFeatures.WEBRTC_PREVIEW);
+        return this.props.enableWebrtc && Utils.isUserMediaAvailable();
     }
 
     initWebrtc = () => {
@@ -309,17 +313,16 @@ export default class Navbar extends React.Component {
                 role='presentation'
                 className='webrtc__option'
             >
-                <a
+                <button
                     role='menuitem'
-                    href='#'
                     onClick={this.initWebrtc}
-                    className={linkClass}
+                    className={'style--none ' + linkClass}
                 >
                     <FormattedMessage
                         id='navbar_dropdown.webrtc.call'
                         defaultMessage='Start Video Call'
                     />
-                </a>
+                </button>
             </li>
         );
     }
@@ -350,7 +353,7 @@ export default class Navbar extends React.Component {
         }
     }
 
-    createDropdown = (channel, channelTitle, isSystemAdmin, isTeamAdmin, isChannelAdmin, isDirect, isGroup) => {
+    createDropdown = (teamId, channel, channelTitle, isDirect, isGroup) => {
         if (channel) {
             let viewInfoOption;
             let webrtcOption;
@@ -361,22 +364,23 @@ export default class Navbar extends React.Component {
             let setChannelPurposeOption;
             let notificationPreferenceOption;
             let renameChannelOption;
+            let convertChannelOption;
             let deleteChannelOption;
             let leaveChannelOption;
 
             if (isDirect) {
                 setChannelHeaderOption = (
                     <li role='presentation'>
-                        <a
+                        <button
                             role='menuitem'
-                            href='#'
+                            className='style--none'
                             onClick={this.showEditChannelHeaderModal}
                         >
                             <FormattedMessage
                                 id='channel_header.channelHeader'
                                 defaultMessage='Edit Channel Header'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
 
@@ -384,31 +388,31 @@ export default class Navbar extends React.Component {
             } else if (isGroup) {
                 setChannelHeaderOption = (
                     <li role='presentation'>
-                        <a
+                        <button
                             role='menuitem'
-                            href='#'
+                            className='style--none'
                             onClick={this.showEditChannelHeaderModal}
                         >
                             <FormattedMessage
                                 id='channel_header.channelHeader'
                                 defaultMessage='Edit Channel Header'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
 
                 notificationPreferenceOption = (
                     <li role='presentation'>
-                        <a
+                        <button
                             role='menuitem'
-                            href='#'
+                            className='style--none'
                             onClick={this.showChannelNotificationsModal}
                         >
                             <FormattedMessage
                                 id='navbar.preferences'
                                 defaultMessage='Notification Preferences'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
 
@@ -429,6 +433,7 @@ export default class Navbar extends React.Component {
                     </li>
                 );
             } else {
+                const isPrivate = channel.type === Constants.PRIVATE_CHANNEL;
                 viewInfoOption = (
                     <li role='presentation'>
                         <ToggleModalButtonRedux
@@ -447,16 +452,16 @@ export default class Navbar extends React.Component {
 
                 viewPinnedPostsOption = (
                     <li role='presentation'>
-                        <a
+                        <button
                             role='menuitem'
-                            href='#'
+                            className='style--none'
                             onClick={this.getPinnedPosts}
                         >
                             <FormattedMessage
                                 id='navbar.viewPinnedPosts'
                                 defaultMessage='View Pinned Posts'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
 
@@ -466,166 +471,217 @@ export default class Navbar extends React.Component {
                             key='view_members'
                             role='presentation'
                         >
-                            <a
+                            <button
                                 role='menuitem'
-                                href='#'
+                                className='style--none'
                                 onClick={this.showMembersModal}
                             >
                                 <FormattedMessage
                                     id='channel_header.viewMembers'
                                     defaultMessage='View Members'
                                 />
-                            </a>
+                            </button>
                         </li>
                     );
                 } else {
                     addMembersOption = (
-                        <li role='presentation'>
-                            <ToggleModalButton
-                                ref='channelInviteModalButton'
-                                role='menuitem'
-                                dialogType={ChannelInviteModal}
-                                dialogProps={{channel, currentUser: this.state.currentUser}}
-                            >
-                                <FormattedMessage
-                                    id='navbar.addMembers'
-                                    defaultMessage='Add Members'
-                                />
-                            </ToggleModalButton>
-                        </li>
+                        <ChannelPermissionGate
+                            channelId={channel.id}
+                            teamId={teamId}
+                            permissions={[isPrivate ? Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS : Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS]}
+                            key='add_members_permission'
+                        >
+                            <li role='presentation'>
+                                <ToggleModalButton
+                                    ref='channelInviteModalButton'
+                                    role='menuitem'
+                                    dialogType={ChannelInviteModal}
+                                    dialogProps={{channel, currentUser: this.state.currentUser}}
+                                >
+                                    <FormattedMessage
+                                        id='navbar.addMembers'
+                                        defaultMessage='Add Members'
+                                    />
+                                </ToggleModalButton>
+                            </li>
+                        </ChannelPermissionGate>
                     );
 
-                    if (ChannelUtils.canManageMembers(channel, isChannelAdmin, isTeamAdmin, isSystemAdmin)) {
-                        manageMembersOption = (
-                            <li
-                                key='manage_members'
-                                role='presentation'
+                    manageMembersOption = (
+                        <li
+                            key='manage_members'
+                            role='presentation'
+                        >
+                            <button
+                                role='menuitem'
+                                className='style--none'
+                                onClick={this.showMembersModal}
                             >
-                                <a
-                                    role='menuitem'
-                                    href='#'
-                                    onClick={this.showMembersModal}
+                                <ChannelPermissionGate
+                                    channelId={channel.id}
+                                    teamId={teamId}
+                                    permissions={[isPrivate ? Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS : Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS]}
                                 >
                                     <FormattedMessage
                                         id='channel_header.manageMembers'
                                         defaultMessage='Manage Members'
                                     />
-                                </a>
-                            </li>
-                        );
-                    } else {
-                        manageMembersOption = (
-                            <li
-                                key='view_members'
-                                role='presentation'
-                            >
-                                <a
-                                    role='menuitem'
-                                    href='#'
-                                    onClick={this.showMembersModal}
+                                </ChannelPermissionGate>
+                                <ChannelPermissionGate
+                                    channelId={channel.id}
+                                    teamId={teamId}
+                                    invert={true}
+                                    permissions={[isPrivate ? Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS : Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS]}
                                 >
                                     <FormattedMessage
                                         id='channel_header.viewMembers'
                                         defaultMessage='View Members'
                                     />
-                                </a>
-                            </li>
-                        );
-                    }
+                                </ChannelPermissionGate>
+                            </button>
+                        </li>
+                    );
                 }
 
                 notificationPreferenceOption = (
                     <li role='presentation'>
-                        <a
+                        <button
                             role='menuitem'
-                            href='#'
+                            className='style--none'
                             onClick={this.showChannelNotificationsModal}
                         >
                             <FormattedMessage
                                 id='navbar.preferences'
                                 defaultMessage='Notification Preferences'
                             />
-                        </a>
+                        </button>
                     </li>
                 );
 
-                if (ChannelUtils.showManagementOptions(channel, isChannelAdmin, isTeamAdmin, isSystemAdmin)) {
+                if (!this.props.isReadOnly) {
                     setChannelHeaderOption = (
-                        <li role='presentation'>
-                            <a
-                                role='menuitem'
-                                href='#'
-                                onClick={this.showEditChannelHeaderModal}
-                            >
-                                <FormattedMessage
-                                    id='channel_header.setHeader'
-                                    defaultMessage='Edit Channel Header'
-                                />
-                            </a>
-                        </li>
+                        <ChannelPermissionGate
+                            channelId={channel.id}
+                            teamId={teamId}
+                            permissions={[isPrivate ? Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES : Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES]}
+                        >
+                            <li role='presentation'>
+                                <button
+                                    role='menuitem'
+                                    className='style--none'
+                                    onClick={this.showEditChannelHeaderModal}
+                                >
+                                    <FormattedMessage
+                                        id='channel_header.setHeader'
+                                        defaultMessage='Edit Channel Header'
+                                    />
+                                </button>
+                            </li>
+                        </ChannelPermissionGate>
                     );
 
                     setChannelPurposeOption = (
-                        <li role='presentation'>
-                            <a
-                                role='menuitem'
-                                href='#'
-                                onClick={this.showChannelPurposeModal}
-                            >
-                                <FormattedMessage
-                                    id='channel_header.setPurpose'
-                                    defaultMessage='Edit Channel Purpose'
-                                />
-                            </a>
-                        </li>
+                        <ChannelPermissionGate
+                            channelId={channel.id}
+                            teamId={teamId}
+                            permissions={[isPrivate ? Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES : Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES]}
+                        >
+                            <li role='presentation'>
+                                <button
+                                    role='menuitem'
+                                    className='style--none'
+                                    onClick={this.showChannelPurposeModal}
+                                >
+                                    <FormattedMessage
+                                        id='channel_header.setPurpose'
+                                        defaultMessage='Edit Channel Purpose'
+                                    />
+                                </button>
+                            </li>
+                        </ChannelPermissionGate>
                     );
+
+                    if (!ChannelStore.isDefault(channel) && channel.type === Constants.OPEN_CHANNEL) {
+                        convertChannelOption = (
+                            <TeamPermissionGate
+                                teamId={teamId}
+                                permissions={[Permissions.MANAGE_TEAM]}
+                            >
+                                <li role='presentation'>
+                                    <ToggleModalButton
+                                        role='menuitem'
+                                        dialogType={ConvertChannelModal}
+                                        dialogProps={{
+                                            channelId: channel.id,
+                                            channelDisplayName: channel.display_name,
+                                        }}
+                                    >
+                                        <FormattedMessage
+                                            id='channel_header.convert'
+                                            defaultMessage='Convert to Private Channel'
+                                        />
+                                    </ToggleModalButton>
+                                </li>
+                            </TeamPermissionGate>
+                        );
+                    }
 
                     renameChannelOption = (
-                        <li role='presentation'>
-                            <a
-                                role='menuitem'
-                                href='#'
-                                onClick={this.showRenameChannelModal}
-                            >
-                                <FormattedMessage
-                                    id='channel_header.rename'
-                                    defaultMessage='Rename Channel'
-                                />
-                            </a>
-                        </li>
-                    );
-                }
-
-                if (ChannelUtils.showDeleteOptionForCurrentUser(channel, isChannelAdmin, isTeamAdmin, isSystemAdmin)) {
-                    deleteChannelOption = (
-                        <li role='presentation'>
-                            <ToggleModalButton
-                                role='menuitem'
-                                dialogType={DeleteChannelModal}
-                                dialogProps={{channel}}
-                            >
-                                <FormattedMessage
-                                    id='channel_header.delete'
-                                    defaultMessage='Delete Channel'
-                                />
-                            </ToggleModalButton>
-                        </li>
+                        <ChannelPermissionGate
+                            channelId={channel.id}
+                            teamId={teamId}
+                            permissions={[isPrivate ? Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES : Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES]}
+                        >
+                            <li role='presentation'>
+                                <button
+                                    role='menuitem'
+                                    className='style--none'
+                                    onClick={this.showRenameChannelModal}
+                                >
+                                    <FormattedMessage
+                                        id='channel_header.rename'
+                                        defaultMessage='Rename Channel'
+                                    />
+                                </button>
+                            </li>
+                        </ChannelPermissionGate>
                     );
                 }
 
                 if (!ChannelStore.isDefault(channel)) {
+                    deleteChannelOption = (
+                        <ChannelPermissionGate
+                            channelId={channel.id}
+                            teamId={teamId}
+                            permissions={[isPrivate ? Permissions.DELETE_PRIVATE_CHANNEL : Permissions.DELETE_PUBLIC_CHANNEL]}
+                        >
+                            <li role='presentation'>
+                                <ToggleModalButton
+                                    role='menuitem'
+                                    dialogType={DeleteChannelModal}
+                                    dialogProps={{channel}}
+                                >
+                                    <FormattedMessage
+                                        id='channel_header.delete'
+                                        defaultMessage='Archive Channel'
+                                    />
+                                </ToggleModalButton>
+                            </li>
+                        </ChannelPermissionGate>
+                    );
+
                     leaveChannelOption = (
                         <li role='presentation'>
-                            <a
+                            <button
                                 role='menuitem'
-                                href='#'
+                                className='style--none'
                                 onClick={this.handleLeave}
                             >
                                 <FormattedMessage
                                     id='channel_header.leave'
                                     defaultMessage='Leave Channel'
                                 />
-                            </a>
+                            </button>
                         </li>
                     );
                 }
@@ -636,9 +692,9 @@ export default class Navbar extends React.Component {
                     key='toggle_favorite'
                     role='presentation'
                 >
-                    <a
+                    <button
                         role='menuitem'
-                        href='#'
+                        className='style--none'
                         onClick={this.toggleFavorite}
                     >
                         {this.state.isFavorite ?
@@ -650,7 +706,7 @@ export default class Navbar extends React.Component {
                                 id='channelHeader.addToFavorites'
                                 defaultMessage='Add to Favorites'
                             />}
-                    </a>
+                    </button>
                 </li>
             );
 
@@ -666,7 +722,10 @@ export default class Navbar extends React.Component {
                             aria-expanded='true'
                         >
                             <span className='heading'><StatusIcon status={this.getTeammateStatus()}/>{channelTitle} </span>
-                            <span className='fa fa-angle-down header-dropdown__icon'/>
+                            <span
+                                className='fa fa-angle-down header-dropdown__icon'
+                                title={Utils.localizeMessage('generic_icons.dropdown', 'Dropdown Icon')}
+                            />
                         </a>
                         <ul
                             className='dropdown-menu'
@@ -681,6 +740,7 @@ export default class Navbar extends React.Component {
                             {setChannelHeaderOption}
                             {setChannelPurposeOption}
                             {renameChannelOption}
+                            {convertChannelOption}
                             {deleteChannelOption}
                             {leaveChannelOption}
                             {toggleFavoriteOption}
@@ -797,11 +857,9 @@ export default class Navbar extends React.Component {
         var currentId = this.state.currentUser.id;
         var channel = this.state.channel;
         var channelTitle = this.props.teamDisplayName;
-        var isTeamAdmin = TeamStore.isTeamAdminForCurrentTeam();
-        var isSystemAdmin = UserStore.isSystemAdminForCurrentUser();
-        var isChannelAdmin = false;
         var isDirect = false;
         let isGroup = false;
+        const teamId = channel && channel.team_id;
 
         var editChannelHeaderModal = null;
         var editChannelPurposeModal = null;
@@ -811,7 +869,6 @@ export default class Navbar extends React.Component {
         let quickSwitchModal = null;
 
         if (channel) {
-            isChannelAdmin = ChannelStore.isChannelAdminForCurrentChannel();
             channelTitle = channel.display_name;
 
             if (channel.type === Constants.DM_CHANNEL) {
@@ -823,12 +880,12 @@ export default class Navbar extends React.Component {
                             id='channel_header.directchannel.you'
                             defaultMessage='{displayname} (you) '
                             values={{
-                                displayname: Utils.displayUsername(teammateId),
+                                displayname: Utils.getDisplayNameByUserId(teammateId),
                             }}
                         />
                     );
                 } else {
-                    channelTitle = Utils.displayUsername(teammateId);
+                    channelTitle = Utils.getDisplayNameByUserId(teammateId);
                 }
             } else if (channel.type === Constants.GM_CHANNEL) {
                 isGroup = true;
@@ -904,7 +961,7 @@ export default class Navbar extends React.Component {
             </button>
         );
 
-        var channelMenuDropdown = this.createDropdown(channel, channelTitle, isSystemAdmin, isTeamAdmin, isChannelAdmin, isDirect, isGroup);
+        var channelMenuDropdown = this.createDropdown(teamId, channel, channelTitle, isDirect, isGroup);
 
         return (
             <div>
@@ -920,6 +977,7 @@ export default class Navbar extends React.Component {
                                 ref='headerOverlay'
                                 channel={channel}
                                 showEditChannelHeaderModal={this.showEditChannelHeaderModal}
+                                isReadOnly={this.props.isReadOnly}
                             />
                             <Pluggable pluggableName='MobileChannelHeaderButton'/>
                             {channelMenuDropdown}

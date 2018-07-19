@@ -1,7 +1,9 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class StatusOnlineIcon extends React.PureComponent {
     render() {
@@ -12,6 +14,8 @@ export default class StatusOnlineIcon extends React.PureComponent {
                     height='100%'
                     viewBox='0 0 20 20'
                     style={style}
+                    role='icon'
+                    aria-label={localizeMessage('mobile.set_status.online.icon', 'Online Icon')}
                 >
                     <path
                         className='online--icon'

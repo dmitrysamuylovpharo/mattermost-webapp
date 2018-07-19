@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -32,6 +32,13 @@ export default class ChannelView extends React.PureComponent {
          * Set if this channel is deactivated, primarily used for DMs with inactive users
          */
         deactivatedChannel: PropTypes.bool.isRequired,
+
+        /**
+         * Object from react-router
+         */
+        match: PropTypes.shape({
+            url: PropTypes.string.isRequired,
+        }).isRequired,
 
         /**
          * Set to show the tutorial
@@ -73,7 +80,7 @@ export default class ChannelView extends React.PureComponent {
         $('body').removeClass('app__body');
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         if (this.props.match.url !== nextProps.match.url) {
             this.createDeferredPostView();
         }

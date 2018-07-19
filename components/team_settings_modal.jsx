@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import React from 'react';
@@ -77,18 +77,26 @@ class TeamSettingsModal extends React.Component {
         this.props.onModalDismissed();
     }
 
+    // called after the dialog is fully hidden and faded out
+    handleHidden = () => {
+        this.setState({
+            activeTab: 'general',
+            activeSection: '',
+        });
+    }
+
     render() {
         const {formatMessage} = this.props.intl;
         const tabs = [];
-        tabs.push({name: 'general', uiName: formatMessage(holders.generalTab), icon: 'icon fa fa-cog'});
-        tabs.push({name: 'import', uiName: formatMessage(holders.importTab), icon: 'icon fa fa-upload'});
+        tabs.push({name: 'general', uiName: formatMessage(holders.generalTab), icon: 'icon fa fa-cog', iconTitle: Utils.localizeMessage('generic_icons.settings', 'Settings Icon')});
+        tabs.push({name: 'import', uiName: formatMessage(holders.importTab), icon: 'icon fa fa-upload', iconTitle: Utils.localizeMessage('generic_icons.upload', 'Upload Icon')});
 
         return (
             <Modal
                 dialogClassName='settings-modal settings-modal--action'
                 show={this.props.show}
                 onHide={this.handleHide}
-                onExited={this.handleHide}
+                onExited={this.handleHidden}
             >
                 <Modal.Header closeButton={true}>
                     <Modal.Title>

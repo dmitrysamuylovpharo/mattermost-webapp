@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -90,11 +90,17 @@ export default class SuggestionBox extends React.Component {
          */
         openOnFocus: PropTypes.bool,
 
-        isTweetAdmin: PropTypes.bool,
         /**
          * If true, the suggestion box is disabled
          */
         disabled: PropTypes.bool,
+
+        /**
+         * If true, it displays allow to display a default list when empty
+         */
+        openWhenEmpty: PropTypes.bool,
+
+        isTweetAdmin: PropTypes.bool,
     }
 
     static defaultProps = {
@@ -105,6 +111,7 @@ export default class SuggestionBox extends React.Component {
         requiredCharacters: 1,
         openOnFocus: false,
         isTweetAdmin: false
+        openWhenEmpty: false,
     }
 
     constructor(props) {
@@ -186,12 +193,12 @@ export default class SuggestionBox extends React.Component {
     }
 
     handleFocus() {
-        if (this.props.openOnFocus) {
+        if (this.props.openOnFocus || this.props.openWhenEmpty) {
             setTimeout(() => {
                 const textbox = this.getTextbox();
                 if (textbox) {
                     const pretext = textbox.value.substring(0, textbox.selectionEnd);
-                    if (pretext.length >= this.props.requiredCharacters) {
+                    if (this.props.openWhenEmpty || pretext.length >= this.props.requiredCharacters) {
                         GlobalActions.emitSuggestionPretextChanged(this.suggestionId, pretext);
                     }
                 }
@@ -207,7 +214,10 @@ export default class SuggestionBox extends React.Component {
         const textbox = this.getTextbox();
         const pretext = textbox.value.substring(0, textbox.selectionEnd);
 
-        if (!this.composing && SuggestionStore.getPretext(this.suggestionId) !== pretext && pretext.length >= this.props.requiredCharacters) {
+        if (!this.composing &&
+            SuggestionStore.getPretext(this.suggestionId) !== pretext &&
+            (this.props.openWhenEmpty || pretext.length >= this.props.requiredCharacters)
+        ) {
             GlobalActions.emitSuggestionPretextChanged(this.suggestionId, pretext);
         }
 
@@ -323,20 +333,20 @@ export default class SuggestionBox extends React.Component {
     }
 
     handleKeyDown(e) {
-        if (this.props.value && SuggestionStore.hasSuggestions(this.suggestionId)) {
-            if (e.which === KeyCodes.UP) {
+        if ((this.props.openWhenEmpty || this.props.value) && SuggestionStore.hasSuggestions(this.suggestionId)) {
+            if (Utils.isKeyPressed(e, KeyCodes.UP)) {
                 GlobalActions.emitSelectPreviousSuggestion(this.suggestionId);
                 e.preventDefault();
-            } else if (e.which === KeyCodes.DOWN) {
+            } else if (Utils.isKeyPressed(e, KeyCodes.DOWN)) {
                 GlobalActions.emitSelectNextSuggestion(this.suggestionId);
                 e.preventDefault();
-            } else if (e.which === KeyCodes.ENTER || (this.props.completeOnTab && e.which === KeyCodes.TAB)) {
+            } else if (Utils.isKeyPressed(e, KeyCodes.ENTER) || (this.props.completeOnTab && Utils.isKeyPressed(e, KeyCodes.TAB))) {
                 this.handleCompleteWord(SuggestionStore.getSelection(this.suggestionId), SuggestionStore.getSelectedMatchedPretext(this.suggestionId));
                 if (this.props.onKeyDown) {
                     this.props.onKeyDown(e);
                 }
                 e.preventDefault();
-            } else if (e.which === KeyCodes.ESCAPE) {
+            } else if (Utils.isKeyPressed(e, KeyCodes.ESCAPE)) {
                 GlobalActions.emitClearSuggestions(this.suggestionId);
                 e.preventDefault();
                 e.stopPropagation();
@@ -385,6 +395,7 @@ export default class SuggestionBox extends React.Component {
         Reflect.deleteProperty(props, 'requiredCharacters');
         Reflect.deleteProperty(props, 'openOnFocus');
         Reflect.deleteProperty(props, 'isTweetAdmin');
+        Reflect.deleteProperty(props, 'openWhenEmpty');
 
         // This needs to be upper case so React doesn't think it's an html tag
         const SuggestionListComponent = listComponent;
@@ -403,7 +414,7 @@ export default class SuggestionBox extends React.Component {
                     onCompositionEnd={this.handleCompositionEnd}
                     onKeyDown={this.handleKeyDown}
                 />
-                {this.props.value.length >= this.props.requiredCharacters &&
+                {(this.props.openWhenEmpty || this.props.value.length >= this.props.requiredCharacters) &&
                     <SuggestionListComponent
                         suggestionId={this.suggestionId}
                         location={listStyle}

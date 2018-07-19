@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -12,27 +12,19 @@ jest.mock('actions/post_actions.jsx', () => ({
 }));
 
 describe('components/post_view/Reaction', () => {
-    global.window.mm_config = {};
-
-    beforeEach(() => {
-        global.window.mm_config.TeammateNameDisplay = 'username';
-    });
-
-    afterEach(() => {
-        global.window.mm_config = {};
-    });
-
     const post = {id: 'post_id_1'};
     const profiles = [{id: 'user_id_2', username: 'username_2'}];
     const reactions = [{user_id: 'user_id_2'}, {user_id: 'user_id_3'}];
     const emojiName = 'smile';
     const actions = {
-        addReaction: () => {},              //eslint-disable-line no-empty-function
-        getMissingProfilesByIds: () => {},   //eslint-disable-line no-empty-function
-        removeReaction: () => {},            //eslint-disable-line no-empty-function
+        addReaction: () => {}, //eslint-disable-line no-empty-function
+        getMissingProfilesByIds: () => {}, //eslint-disable-line no-empty-function
+        removeReaction: () => {}, //eslint-disable-line no-empty-function
     };
 
     const baseProps = {
+        canAddReaction: true,
+        canRemoveReaction: true,
         post,
         currentUserId: 'user_id_1',
         emojiName,
@@ -64,6 +56,18 @@ describe('components/post_view/Reaction', () => {
 
     test('should return null/empty if no emojiImageUrl', () => {
         const props = {...baseProps, emojiImageUrl: ''};
+        const wrapper = shallow(<Reaction {...props}/>);
+        expect(wrapper).toMatchSnapshot();
+    });
+
+    test('should disable add reaction when you do not have permissions', () => {
+        const props = {...baseProps, canAddReaction: false};
+        const wrapper = shallow(<Reaction {...props}/>);
+        expect(wrapper).toMatchSnapshot();
+    });
+
+    test('should disable remove reaction when you do not have permissions', () => {
+        const props = {...baseProps, canRemoveReaction: false, currentUserId: 'user_id_2'};
         const wrapper = shallow(<Reaction {...props}/>);
         expect(wrapper).toMatchSnapshot();
     });

@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -33,7 +33,7 @@ describe('components/integrations/AbstractCommand', () => {
         name: 'test',
         id: command.team_id,
     };
-    const action = jest.genMockFunction().mockImplementation(
+    const action = jest.fn().mockImplementation(
         () => {
             return new Promise((resolve) => {
                 process.nextTick(() => resolve());
@@ -154,7 +154,7 @@ describe('components/integrations/AbstractCommand', () => {
     });
 
     test('should match state when handleSubmit is called', () => {
-        const newAction = jest.genMockFunction().mockImplementation(
+        const newAction = jest.fn().mockImplementation(
             () => {
                 return new Promise((resolve) => {
                     process.nextTick(() => resolve());

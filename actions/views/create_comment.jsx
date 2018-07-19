@@ -1,5 +1,5 @@
-// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {createSelector} from 'reselect';
 import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
@@ -201,8 +201,9 @@ export function makeOnEditLatestPost(channelId, rootId) {
         dispatch(PostActions.setEditingPost(
             lastPost.id,
             getCommentCount(state, {post: lastPost}),
-            '#reply_textbox',
-            Utils.localizeMessage('create_comment.commentTitle', 'Comment')
+            'reply_textbox',
+            Utils.localizeMessage('create_comment.commentTitle', 'Comment'),
+            true
         ));
     };
 }

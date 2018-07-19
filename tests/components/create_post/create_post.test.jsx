@@ -1,14 +1,16 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
 import {Posts} from 'mattermost-redux/constants';
 
-import Constants, {StoragePrefixes} from 'utils/constants.jsx';
-import CreatePost from 'components/create_post/create_post.jsx';
-import * as Utils from 'utils/utils.jsx';
 import * as GlobalActions from 'actions/global_actions.jsx';
+
+import Constants, {StoragePrefixes} from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
+
+import CreatePost from 'components/create_post/create_post.jsx';
 
 jest.mock('actions/global_actions.jsx', () => ({
     emitLocalUserTypingEvent: jest.fn(),
@@ -72,6 +74,7 @@ const actionsProp = {
     selectPostFromRightHandSideSearchByPostId: emptyFunction,
     setDraft: emptyFunction,
     setEditingPost: emptyFunction,
+    openModal: emptyFunction,
 };
 
 function createPost({
@@ -111,6 +114,9 @@ function createPost({
             enableTutorial={true}
             enableConfirmNotificationsToChannel={true}
             enableEmojiPicker={true}
+            enableGifPicker={true}
+            maxPostSize={Constants.DEFAULT_CHARACTER_LIMIT}
+            userIsOutOfOffice={false}
         />
     );
 }
@@ -220,7 +226,7 @@ describe('components/create_post', () => {
         const wrapper = shallow(createPost());
 
         const postTextbox = wrapper.find('#post_textbox');
-        postTextbox.simulate('KeyPress', {which: KeyCodes.ENTER, preventDefault: jest.fn()});
+        postTextbox.simulate('KeyPress', {key: KeyCodes.ENTER[0], preventDefault: jest.fn()});
         expect(GlobalActions.emitLocalUserTypingEvent).toHaveBeenCalledWith(currentChannelProp.id, '');
     });
 
@@ -375,8 +381,7 @@ describe('components/create_post', () => {
         instance.focusTextbox = jest.fn();
 
         instance.handleFileUploadChange();
-        expect(instance.focusTextbox).toBeCalled();
-        expect(instance.focusTextbox).toBeCalledWith(true);
+        expect(instance.focusTextbox).toHaveBeenCalledTimes(1);
     });
 
     it('check for handleFileUploadStart callback', () => {
@@ -510,9 +515,13 @@ describe('components/create_post', () => {
     it('Should call Shortcut modal on FORWARD_SLASH+cntrl/meta', () => {
         const wrapper = shallow(createPost());
         const instance = wrapper.instance();
-        instance.showShortcuts({ctrlKey: true, keyCode: Constants.KeyCodes.BACK_SLASH, preventDefault: jest.fn()});
+        instance.showShortcuts({ctrlKey: true, key: Constants.KeyCodes.BACK_SLASH[0], keyCode: Constants.KeyCodes.BACK_SLASH[1], preventDefault: jest.fn});
         expect(GlobalActions.toggleShortcutsModal).not.toHaveBeenCalled();
-        instance.showShortcuts({ctrlKey: true, keyCode: Constants.KeyCodes.FORWARD_SLASH, preventDefault: jest.fn()});
+        instance.showShortcuts({ctrlKey: true, key: 'ù', keyCode: Constants.KeyCodes.FORWARD_SLASH[1], preventDefault: jest.fn});
+        expect(GlobalActions.toggleShortcutsModal).not.toHaveBeenCalled();
+        instance.showShortcuts({ctrlKey: true, key: '/', keyCode: Constants.KeyCodes.SEVEN[1], preventDefault: jest.fn});
+        expect(GlobalActions.toggleShortcutsModal).toHaveBeenCalled();
+        instance.showShortcuts({ctrlKey: true, key: Constants.KeyCodes.FORWARD_SLASH[0], keyCode: Constants.KeyCodes.FORWARD_SLASH[1], preventDefault: jest.fn});
         expect(GlobalActions.toggleShortcutsModal).toHaveBeenCalled();
     });
 
@@ -521,8 +530,10 @@ describe('components/create_post', () => {
             ctrlSend: true,
         }));
         const instance = wrapper.instance();
-        instance.handleKeyDown({ctrlKey: true, keyCode: Constants.KeyCodes.ENTER});
-        expect(GlobalActions.emitLocalUserTypingEvent).toHaveBeenCalledWith(currentChannelProp.id, '');
+        instance.handleKeyDown({ctrlKey: true, key: Constants.KeyCodes.ENTER[0], keyCode: Constants.KeyCodes.ENTER[1], preventDefault: jest.fn, persist: jest.fn});
+        setTimeout(() => {
+            expect(GlobalActions.emitLocalUserTypingEvent).toHaveBeenCalledWith(currentChannelProp.id, '');
+        }, 0);
     });
 
     it('Should call edit action as comment for arrow up', () => {
@@ -535,7 +546,7 @@ describe('components/create_post', () => {
         }));
         const instance = wrapper.instance();
         const type = Utils.localizeMessage('create_post.comment', Posts.MESSAGE_TYPES.COMMENT);
-        instance.handleKeyDown({keyCode: Constants.KeyCodes.UP, preventDefault: jest.fn()});
+        instance.handleKeyDown({key: Constants.KeyCodes.UP[0], preventDefault: jest.fn()});
         expect(setEditingPost).toHaveBeenCalledWith(currentUsersLatestPostProp.id, commentCountForPostProp, 'post_textbox', type);
     });
 
@@ -554,7 +565,7 @@ describe('components/create_post', () => {
         });
 
         const type = Utils.localizeMessage('create_post.post', Posts.MESSAGE_TYPES.POST);
-        instance.handleKeyDown({keyCode: Constants.KeyCodes.UP, preventDefault: jest.fn()});
+        instance.handleKeyDown({key: Constants.KeyCodes.UP[0], preventDefault: jest.fn()});
         expect(setEditingPost).toHaveBeenCalledWith(currentUsersLatestPostProp.id, commentCountForPostProp, 'post_textbox', type);
     });
 
@@ -574,7 +585,7 @@ describe('components/create_post', () => {
         }));
         const instance = wrapper.instance();
 
-        instance.handleKeyDown({keyCode: Constants.KeyCodes.DOWN, ctrlKey: true, preventDefault: jest.fn()});
+        instance.handleKeyDown({key: Constants.KeyCodes.DOWN[0], ctrlKey: true, preventDefault: jest.fn()});
         expect(moveHistoryIndexForward).toHaveBeenCalled();
     });
 
@@ -594,7 +605,7 @@ describe('components/create_post', () => {
         }));
         const instance = wrapper.instance();
 
-        instance.handleKeyDown({keyCode: Constants.KeyCodes.UP, ctrlKey: true, preventDefault: jest.fn()});
+        instance.handleKeyDown({key: Constants.KeyCodes.UP[0], ctrlKey: true, preventDefault: jest.fn()});
         expect(moveHistoryIndexBack).toHaveBeenCalled();
     });
 
@@ -602,7 +613,7 @@ describe('components/create_post', () => {
         const wrapper = shallow(createPost({
             showTutorialTip: true,
         }));
-        expect(wrapper.find('TutorialTip').length).toBe(1);
+        expect(wrapper).toMatchSnapshot();
     });
 
     it('Toggle showPostDeletedModal state', () => {

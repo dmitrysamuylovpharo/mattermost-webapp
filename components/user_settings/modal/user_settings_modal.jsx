@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import React from 'react';
@@ -70,8 +70,13 @@ class UserSettingsModal extends React.Component {
             show: false,
         };
 
-        this.requireConfirm = false;
         this.mounted = false;
+        this.requireConfirm = false;
+
+        // Used when settings want to override the default confirm modal with their own
+        // If set by a child, it will be called in place of showing the regular confirm
+        // modal. It will be passed a function to call on modal confirm
+        this.customConfirmAction = null;
     }
 
     onUserChanged = () => {
@@ -101,7 +106,7 @@ class UserSettingsModal extends React.Component {
     }
 
     handleKeyDown = (e) => {
-        if (Utils.cmdOrCtrlPressed(e) && e.shiftKey && e.keyCode === Constants.KeyCodes.A) {
+        if (Utils.cmdOrCtrlPressed(e) && e.shiftKey && Utils.isKeyPressed(e, Constants.KeyCodes.A)) {
             this.setState({
                 show: !this.state.show,
             });
@@ -117,9 +122,7 @@ class UserSettingsModal extends React.Component {
     // Called when the close button is pressed on the main modal
     handleHide = () => {
         if (this.requireConfirm) {
-            this.afterConfirm = () => this.handleHide();
-            this.showConfirmModal();
-
+            this.showConfirmModal(() => this.handleHide());
             return;
         }
 
@@ -155,6 +158,7 @@ class UserSettingsModal extends React.Component {
         });
 
         this.requireConfirm = false;
+        this.customConfirmAction = null;
 
         if (this.afterConfirm) {
             this.afterConfirm();
@@ -171,15 +175,20 @@ class UserSettingsModal extends React.Component {
         this.afterConfirm = null;
     }
 
-    showConfirmModal(afterConfirm) {
+    showConfirmModal = (afterConfirm) => {
+        if (afterConfirm) {
+            this.afterConfirm = afterConfirm;
+        }
+
+        if (this.customConfirmAction) {
+            this.customConfirmAction(this.handleConfirm);
+            return;
+        }
+
         this.setState({
             showConfirmModal: true,
             enforceFocus: false,
         });
-
-        if (afterConfirm) {
-            this.afterConfirm = afterConfirm;
-        }
     }
 
     // Called by settings tabs when their close button is pressed
@@ -230,15 +239,15 @@ class UserSettingsModal extends React.Component {
         }
         var tabs = [];
 
-        tabs.push({name: 'general', uiName: formatMessage(holders.general), icon: 'icon fa fa-gear'});
-        tabs.push({name: 'security', uiName: formatMessage(holders.security), icon: 'icon fa fa-lock'});
-        tabs.push({name: 'notifications', uiName: formatMessage(holders.notifications), icon: 'icon fa fa-exclamation-circle'});
-        tabs.push({name: 'display', uiName: formatMessage(holders.display), icon: 'icon fa fa-eye'});
+        tabs.push({name: 'general', uiName: formatMessage(holders.general), icon: 'icon fa fa-gear', iconTitle: Utils.localizeMessage('user.settings.general.icon', 'General Settings Icon')});
+        tabs.push({name: 'security', uiName: formatMessage(holders.security), icon: 'icon fa fa-lock', iconTitle: Utils.localizeMessage('user.settings.security.icon', 'Security Settings Icon')});
+        tabs.push({name: 'notifications', uiName: formatMessage(holders.notifications), icon: 'icon fa fa-exclamation-circle', iconTitle: Utils.localizeMessage('user.settings.notifications.icon', 'Notification Settings Icon')});
+        tabs.push({name: 'display', uiName: formatMessage(holders.display), icon: 'icon fa fa-eye', iconTitle: Utils.localizeMessage('user.settings.display.icon', 'Display Settings Icon')});
         if (this.props.closeUnusedDirectMessages ||
             this.props.experimentalGroupUnreadChannels !== GroupUnreadChannels.DISABLED) {
-            tabs.push({name: 'sidebar', uiName: formatMessage(holders.sidebar), icon: 'icon fa fa-columns'});
+            tabs.push({name: 'sidebar', uiName: formatMessage(holders.sidebar), icon: 'icon fa fa-columns', iconTitle: Utils.localizeMessage('user.settings.sidebar.icon', 'Sidebar Settings Icon')});
         }
-        tabs.push({name: 'advanced', uiName: formatMessage(holders.advanced), icon: 'icon fa fa-list-alt'});
+        tabs.push({name: 'advanced', uiName: formatMessage(holders.advanced), icon: 'icon fa fa-list-alt', iconTitle: Utils.localizeMessage('user.settings.advance.icon', 'Advanced Settings Icon')});
 
         return (
             <Modal
@@ -283,8 +292,9 @@ class UserSettingsModal extends React.Component {
                                 collapseModal={this.collapseModal}
                                 setEnforceFocus={(enforceFocus) => this.setState({enforceFocus})}
                                 setRequireConfirm={
-                                    (requireConfirm) => {
+                                    (requireConfirm, customConfirmAction) => {
                                         this.requireConfirm = requireConfirm;
+                                        this.customConfirmAction = customConfirmAction;
                                     }
                                 }
                             />

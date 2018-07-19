@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -33,6 +33,22 @@ export default function ErrorTitle({type, title}) {
                 <FormattedMessage
                     id='error.oauth_missing_code.title'
                     defaultMessage='Mattermost needs your help'
+                />
+            );
+            break;
+        case ErrorPageTypes.TEAM_NOT_FOUND:
+            errorTitle = (
+                <FormattedMessage
+                    id='error.team_not_found.title'
+                    defaultMessage='Team Not Found'
+                />
+            );
+            break;
+        case ErrorPageTypes.CHANNEL_NOT_FOUND:
+            errorTitle = (
+                <FormattedMessage
+                    id='error.channel_not_found.title'
+                    defaultMessage='Channel Not Found'
                 />
             );
             break;

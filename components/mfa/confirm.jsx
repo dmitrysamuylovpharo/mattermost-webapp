@@ -1,11 +1,12 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {FormattedHTMLMessage, FormattedMessage} from 'react-intl';
 
 import {loadMe} from 'actions/user_actions.jsx';
 import Constants from 'utils/constants.jsx';
+import Utils from 'utils/utils.jsx';
 
 const KeyCodes = Constants.KeyCodes;
 
@@ -26,7 +27,7 @@ export default class Confirm extends React.Component {
     }
 
     onKeyPress = (e) => {
-        if (e.which === KeyCodes.ENTER) {
+        if (Utils.isKeyPressed(e, KeyCodes.ENTER)) {
             this.submit(e);
         }
     }

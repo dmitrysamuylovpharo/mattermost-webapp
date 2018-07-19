@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import * as UserUtils from 'mattermost-redux/utils/user_utils';
+import {Permissions} from 'mattermost-redux/constants';
 
 import {adminResetMfa} from 'actions/admin_actions.jsx';
 import {updateActive, revokeAllSessions} from 'actions/user_actions.jsx';
@@ -14,6 +15,8 @@ import {Constants} from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
 import {clientLogout} from 'actions/global_actions.jsx';
 import ConfirmModal from 'components/confirm_modal.jsx';
+import SystemPermissionGate from 'components/permissions_gates/system_permission_gate';
+import {browserHistory} from 'utils/browser_history';
 
 export default class SystemUsersDropdown extends React.Component {
     static propTypes = {
@@ -42,6 +45,11 @@ export default class SystemUsersDropdown extends React.Component {
          * Function to open password reset, takes user as an argument
          */
         doPasswordReset: PropTypes.func.isRequired,
+
+        /*
+         * Function to open email reset, takes user as an argument
+         */
+        doEmailReset: PropTypes.func.isRequired,
 
         /*
          * Function to open manage teams, takes user as an argument
@@ -104,6 +112,11 @@ export default class SystemUsersDropdown extends React.Component {
         this.props.doPasswordReset(this.props.user);
     }
 
+    handleResetEmail = (e) => {
+        e.preventDefault();
+        this.props.doEmailReset(this.props.user);
+    }
+
     handleResetMfa = (e) => {
         e.preventDefault();
         adminResetMfa(this.props.user.id, null, this.props.onError);
@@ -134,9 +147,9 @@ export default class SystemUsersDropdown extends React.Component {
         const teamUrl = TeamStore.getCurrentTeamUrl();
         if (teamUrl) {
             // the channel is added to the URL cause endless loading not being fully fixed
-            window.location.href = teamUrl + `/channels/${Constants.DEFAULT_CHANNEL}`;
+            browserHistory.push(teamUrl + `/channels/${Constants.DEFAULT_CHANNEL}`);
         } else {
-            window.location.href = '/';
+            browserHistory.push('/');
         }
     }
 
@@ -341,7 +354,7 @@ export default class SystemUsersDropdown extends React.Component {
         let showMakeActive = false;
         let showMakeNotActive = !Utils.isSystemAdmin(user.roles);
         let showManageTeams = true;
-        let showRevokeSessions = UserStore.isSystemAdminForCurrentUser();
+        let showRevokeSessions = true;
         const showMfaReset = this.props.mfaEnabled && user.mfa_active;
 
         if (user.delete_at > 0) {
@@ -486,22 +499,43 @@ export default class SystemUsersDropdown extends React.Component {
             );
         }
 
-        let revokeSessions;
-        if (showRevokeSessions) {
-            revokeSessions = (
+        let emailReset;
+        if (!user.auth_service) {
+            emailReset = (
                 <li role='presentation'>
                     <a
-                        id='revokeSessions'
-                        role='menuItem'
+                        id='resetEmail'
+                        role='menuitem'
                         href='#'
-                        onClick={this.handleShowRevokeSessionsModal}
+                        onClick={this.handleResetEmail}
                     >
                         <FormattedMessage
-                            id='admin.user_item.revokeSessions'
-                            defaultMessage='Revoke Sessions'
+                            id='admin.user_item.resetEmail'
+                            defaultMessage='Reset Email'
                         />
                     </a>
                 </li>
+            );
+        }
+
+        let revokeSessions;
+        if (showRevokeSessions) {
+            revokeSessions = (
+                <SystemPermissionGate permissions={[Permissions.REVOKE_USER_ACCESS_TOKEN]}>
+                    <li role='presentation'>
+                        <a
+                            id='revokeSessions'
+                            role='menuItem'
+                            href='#'
+                            onClick={this.handleShowRevokeSessionsModal}
+                        >
+                            <FormattedMessage
+                                id='admin.user_item.revokeSessions'
+                                defaultMessage='Revoke Sessions'
+                            />
+                        </a>
+                    </li>
+                </SystemPermissionGate>
             );
         }
 
@@ -610,6 +644,7 @@ export default class SystemUsersDropdown extends React.Component {
                     {manageTokens}
                     {mfaReset}
                     {passwordReset}
+                    {emailReset}
                     {revokeSessions}
                 </ul>
                 {makeDemoteModal}

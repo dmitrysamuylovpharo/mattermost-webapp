@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -10,6 +10,7 @@ import {trackEvent} from 'actions/diagnostics_actions.jsx';
 import Constants from 'utils/constants.jsx';
 import {cleanUpUrlable} from 'utils/url.jsx';
 import logoImage from 'images/logo.png';
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class TeamSignupDisplayNamePage extends React.PureComponent {
     static propTypes = {
@@ -126,7 +127,11 @@ export default class TeamSignupDisplayNamePage extends React.PureComponent {
                         <FormattedMessage
                             id='create_team.display_name.next'
                             defaultMessage='Next'
-                        /><i className='fa fa-chevron-right'/>
+                        />
+                        <i
+                            className='fa fa-chevron-right'
+                            title={localizeMessage('generic_icons.next', 'Next Icon')}
+                        />
                     </button>
                 </form>
             </div>

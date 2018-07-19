@@ -1,13 +1,16 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
 const childProcess = require('child_process');
 const path = require('path');
+const url = require('url');
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const extractCSS = new ExtractTextPlugin('[name].[contentHash].css');
-const extractSCSS = new ExtractTextPlugin('[name].[contentHash].css');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
 
 const NPM_TARGET = process.env.npm_lifecycle_event; //eslint-disable-line no-process-env
 
@@ -129,11 +132,21 @@ var MYSTATS = {
     warningsFilter: '',
 };
 
+let publicPath = '/static/';
+
+// Allow overriding the publicPath in dev from the exported SiteURL.
+if (DEV) {
+    const siteURL = process.env.MM_SERVICESETTINGS_SITEURL || ''; //eslint-disable-line no-process-env
+    if (siteURL) {
+        publicPath = path.join(new url.URL(siteURL).pathname, 'static') + '/';
+    }
+}
+
 var config = {
     entry: ['babel-polyfill', 'whatwg-fetch', 'url-search-params-polyfill', './root.jsx', 'root.html'],
     output: {
         path: path.join(__dirname, 'dist'),
-        publicPath: '/static/',
+        publicPath,
         filename: '[name].[hash].js',
         chunkFilename: '[name].[chunkhash].js',
     },
@@ -158,25 +171,22 @@ var config = {
                 ],
             },
             {
+                type: 'javascript/auto',
                 test: /\.json$/,
-                exclude: /manifest\.json$/,
-                use: [
-                    {
-                        loader: 'json-loader',
-                    },
+                include: [
+                    path.resolve(__dirname, 'i18n'),
                 ],
-            },
-            {
-                test: /manifest\.json$/,
+                exclude: [/en\.json$/],
                 use: [
                     {
-                        loader: 'file-loader?name=files/[hash].[ext]',
+                        loader: 'file-loader?name=i18n/[name].[hash].[ext]',
                     },
                 ],
             },
             {
                 test: /\.scss$/,
-                use: extractSCSS.extract([
+                use: [
+                    MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
                     },
@@ -186,15 +196,16 @@ var config = {
                             includePaths: ['node_modules/compass-mixins/lib'],
                         },
                     },
-                ]),
+                ],
             },
             {
                 test: /\.css$/,
-                use: extractCSS.extract([
+                use: [
+                    MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
                     },
-                ]),
+                ],
             },
             {
                 test: /\.(png|eot|tiff|svg|woff2|woff|ttf|gif|mp3|jpg)$/,
@@ -250,15 +261,13 @@ var config = {
             minimize: !DEV,
             debug: false,
         }),
-        new webpack.optimize.CommonsChunkPlugin({
-            minChunks: 2,
-            children: true,
-        }),
         new webpack.DefinePlugin({
             COMMIT_HASH: JSON.stringify(childProcess.execSync('git rev-parse HEAD || echo dev').toString()),
         }),
-        extractCSS,
-        extractSCSS,
+        new MiniCssExtractPlugin({
+            filename: '[name].[contentHash].css',
+            chunkFilename: '[name].[contentHash].css',
+        }),
     ],
 };
 
@@ -268,6 +277,7 @@ if (NPM_TARGET !== 'stats') {
 
 // Development mode configuration
 if (DEV) {
+    config.mode = 'development';
     if (FULLMAP) {
         config.devtool = 'source-map';
     } else {
@@ -277,32 +287,22 @@ if (DEV) {
 
 // Production mode configuration
 if (!DEV) {
+    config.mode = 'production';
     config.devtool = 'source-map';
-    config.plugins.push(
-        new webpack.optimize.UglifyJsPlugin({
-            'screw-ie8': true,
-            mangle: {
-                toplevel: false,
-            },
-            compress: {
-                warnings: false,
-            },
-            comments: false,
-            sourceMap: true,
-        })
-    );
     config.plugins.push(
         new webpack.optimize.OccurrenceOrderPlugin(true)
     );
-    config.plugins.push(
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: JSON.stringify('production'),
-            },
-        })
-    );
-    config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
 }
+
+const env = {};
+if (DEV) {
+    env.PUBLIC_PATH = JSON.stringify(publicPath);
+} else {
+    env.NODE_ENV = JSON.stringify('production');
+}
+config.plugins.push(new webpack.DefinePlugin({
+    'process.env': env,
+}));
 
 // Test mode configuration
 if (TEST) {
@@ -330,5 +330,73 @@ if (TEST) {
         ])
     );
 }
+
+// Generate manifest.json, honouring any configured publicPath. This also handles injecting
+// <link rel="apple-touch-icon" ... /> and <meta name="apple-*" ... /> tags into root.html.
+config.plugins.push(
+    new WebpackPwaManifest({
+        name: 'Mattermost',
+        short_name: 'Mattermost',
+        description: 'Mattermost is an open source, self-hosted Slack-alternative',
+        background_color: '#ffffff',
+        inject: true,
+        ios: true,
+        fingerprints: false,
+        orientation: 'any',
+        filename: 'manifest.json',
+        icons: [{
+            src: path.resolve('images/favicon/android-chrome-192x192.png'),
+            type: 'image/png',
+            sizes: '192x192',
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-120x120.png'),
+            type: 'image/png',
+            sizes: '120x120',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-144x144.png'),
+            type: 'image/png',
+            sizes: '144x144',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-152x152.png'),
+            type: 'image/png',
+            sizes: '152x152',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-57x57.png'),
+            type: 'image/png',
+            sizes: '57x57',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-60x60.png'),
+            type: 'image/png',
+            sizes: '60x60',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-72x72.png'),
+            type: 'image/png',
+            sizes: '72x72',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/apple-touch-icon-76x76.png'),
+            type: 'image/png',
+            sizes: '76x76',
+            ios: true,
+        }, {
+            src: path.resolve('images/favicon/favicon-16x16.png'),
+            type: 'image/png',
+            sizes: '16x16',
+        }, {
+            src: path.resolve('images/favicon/favicon-32x32.png'),
+            type: 'image/png',
+            sizes: '32x32',
+        }, {
+            src: path.resolve('images/favicon/favicon-96x96.png'),
+            type: 'image/png',
+            sizes: '96x96',
+        }],
+    })
+);
 
 module.exports = config;

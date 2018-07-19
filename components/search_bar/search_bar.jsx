@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -32,6 +32,7 @@ export default class SearchBar extends React.Component {
             showMentions: PropTypes.func,
             showFlaggedPosts: PropTypes.func,
             closeRightHandSide: PropTypes.func,
+            closeWebrtc: PropTypes.func,
         }),
     };
 
@@ -58,20 +59,12 @@ export default class SearchBar extends React.Component {
     }
 
     handleClose = () => {
-        if (Utils.isMobile()) {
-            setTimeout(() => {
-                document.querySelector('.app__body .sidebar--menu').classList.add('visible');
-                document.querySelector('#sidebar-webrtc').classList.remove('webrtc--show');
-                document.querySelector('#inner-wrap-webrtc').classList.remove('webrtc--show');
-                document.querySelector('#inner-wrap-webrtc').classList.remove('move--left');
-            });
-        }
-
+        this.props.actions.closeWebrtc();
         this.props.actions.closeRightHandSide();
     }
 
     handleKeyDown = (e) => {
-        if (e.which === KeyCodes.ESCAPE) {
+        if (Utils.isKeyPressed(e, KeyCodes.ESCAPE)) {
             e.stopPropagation();
             e.preventDefault();
         }
@@ -83,7 +76,11 @@ export default class SearchBar extends React.Component {
     }
 
     handleUserBlur = () => {
-        this.setState({focused: false});
+        // add time out so that the pinned and member buttons are clickable
+        // when focus is released from the search box.
+        setTimeout(() => {
+            this.setState({focused: false});
+        }, 100);
     }
 
     handleClear = () => {
@@ -172,7 +169,12 @@ export default class SearchBar extends React.Component {
     render() {
         var isSearchingTerm = null;
         if (this.props.isSearchingTerm) {
-            isSearchingTerm = <span className={'fa fa-spin fa-spinner'}/>;
+            isSearchingTerm = (
+                <span
+                    className={'fa fa-spin fa-spinner'}
+                    title={Utils.localizeMessage('generic_icons.searching', 'Searching Icon')}
+                />
+            );
         }
 
         let helpClass = 'search-help-popover';
@@ -232,7 +234,10 @@ export default class SearchBar extends React.Component {
                         className='sidebar-collapse'
                         onClick={this.handleClose}
                     >
-                        <span className='fa fa-chevron-left'/>
+                        <span
+                            className='fa fa-chevron-left'
+                            title={Utils.localizeMessage('generic_icons.back', 'Back Icon')}
+                        />
                     </div>
                 </div>
                 <div

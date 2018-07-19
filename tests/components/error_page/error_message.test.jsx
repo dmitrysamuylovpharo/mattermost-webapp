@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -42,6 +42,24 @@ describe('components/error_page/ErrorMessage', () => {
 
     test('should match snapshot, page_not_found type', () => {
         const props = {...baseProps, type: ErrorPageTypes.PAGE_NOT_FOUND};
+        const wrapper = shallow(
+            <ErrorMessage {...props}/>
+        );
+
+        expect(wrapper).toMatchSnapshot();
+    });
+
+    test('should match snapshot, team_not_found type', () => {
+        const props = {...baseProps, type: ErrorPageTypes.TEAM_NOT_FOUND};
+        const wrapper = shallow(
+            <ErrorMessage {...props}/>
+        );
+
+        expect(wrapper).toMatchSnapshot();
+    });
+
+    test('should match snapshot, channel_not_found type', () => {
+        const props = {...baseProps, type: ErrorPageTypes.CHANNEL_NOT_FOUND};
         const wrapper = shallow(
             <ErrorMessage {...props}/>
         );

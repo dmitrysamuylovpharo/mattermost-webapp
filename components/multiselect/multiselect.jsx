@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -97,16 +97,16 @@ export default class MultiSelect extends React.Component {
     }
 
     onInputKeyDown = (e) => {
-        switch (e.keyCode) {
-        case KeyCodes.ENTER:
+        switch (e.key) {
+        case KeyCodes.ENTER[0]:
             e.preventDefault();
             break;
         }
     }
 
     handleEnterPress = (e) => {
-        switch (e.keyCode) {
-        case KeyCodes.ENTER:
+        switch (e.key) {
+        case KeyCodes.ENTER[0]:
             if (this.selected == null) {
                 this.props.handleSubmit();
                 return;
@@ -170,7 +170,12 @@ export default class MultiSelect extends React.Component {
         if (this.props.noteText) {
             noteTextContainer = (
                 <div className='multi-select__note'>
-                    <div className='note__icon'><span className='fa fa-info'/></div>
+                    <div className='note__icon'>
+                        <span
+                            className='fa fa-info'
+                            title={localizeMessage('generic_icons.info', 'Info Icon')}
+                        />
+                    </div>
                     <div>{this.props.noteText}</div>
                 </div>
             );
@@ -241,6 +246,7 @@ export default class MultiSelect extends React.Component {
                             onCloseResetsInput={false}
                             onChange={this.onChange}
                             value={this.props.values}
+                            valueKey={this.props.valueKey}
                             valueRenderer={this.props.valueRenderer}
                             menuRenderer={this.handleRender}
                             arrowRenderer={this.handleRender}
@@ -283,6 +289,7 @@ MultiSelect.propTypes = {
     options: PropTypes.arrayOf(PropTypes.object),
     optionRenderer: PropTypes.func,
     values: PropTypes.arrayOf(PropTypes.object),
+    valueKey: PropTypes.string,
     valueRenderer: PropTypes.func,
     handleInput: PropTypes.func,
     handleDelete: PropTypes.func,

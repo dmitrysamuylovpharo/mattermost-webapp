@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -38,9 +38,9 @@ export default function HelpFormatting() {
     message.push('`' + localizeMessage('help.formatting.linkEx', '[Check out Mattermost!](https://about.mattermost.com/)') + '`');
     message.push(localizeMessage('help.formatting.renders', 'Renders as:') + ' ' + localizeMessage('help.formatting.linkEx', '[Check out Mattermost!](https://about.mattermost.com/)'));
     message.push(localizeMessage('help.formatting.images', '## In-line Images\n\nCreate in-line images using an `!` followed by the alt text in square brackets and the link in normal brackets. Add hover text by placing it in quotes after the link.'));
-    message.push('```\n' + localizeMessage('help.formatting.imagesExample', '![alt text](link "hover text")\n\nand\n\n[![Build Status](https://travis-ci.org/mattermost/platform.svg?branch=master)](https://travis-ci.org/mattermost/platform) [![Github](https://assets-cdn.github.com/favicon.ico)](https://github.com/mattermost/platform)') + '\n```');
+    message.push('```\n' + localizeMessage('help.formatting.imagesExample', '![alt text](link "hover text")\n\nand\n\n[![Build Status](https://travis-ci.org/mattermost/mattermost-server.svg?branch=master)](https://travis-ci.org/mattermost/mattermost-server) [![Github](https://assets-cdn.github.com/favicon.ico)](https://github.com/mattermost/mattermost-server)') + '\n```');
     message.push(localizeMessage('help.formatting.renders', 'Renders as:'));
-    message.push(localizeMessage('help.formatting.imagesExample', '![alt text](link "hover text")\n\nand\n\n[![Build Status](https://travis-ci.org/mattermost/platform.svg?branch=master)](https://travis-ci.org/mattermost/platform) [![Github](https://assets-cdn.github.com/favicon.ico)](https://github.com/mattermost/platform)'));
+    message.push(localizeMessage('help.formatting.imagesExample', '![alt text](link "hover text")\n\nand\n\n[![Build Status](https://travis-ci.org/mattermost/mattermost-server.svg?branch=master)](https://travis-ci.org/mattermost/mattermost-server) [![Github](https://assets-cdn.github.com/favicon.ico)](https://github.com/mattermost/mattermost-server)'));
     message.push(localizeMessage('help.formatting.emojis', '## Emojis\n\nOpen the emoji autocomplete by typing `:`. A full list of emojis can be found [here](http://www.emoji-cheat-sheet.com/). It is also possible to create your own [Custom Emoji](http://docs.mattermost.com/help/settings/custom-emoji.html) if the emoji you want to use doesn\'t exist.'));
     message.push('```\n' + localizeMessage('help.formatting.emojiExample', ':smile: :+1: :sheep:') + '\n```');
     message.push(localizeMessage('help.formatting.renders', 'Renders as:'));
@@ -62,11 +62,11 @@ export default function HelpFormatting() {
     message.push('```\n' + localizeMessage('help.formatting.checklistExample', '- [ ] Item one\n- [ ] Item two\n- [x] Completed item') + '\n```');
     message.push(localizeMessage('help.formatting.renders', 'Renders as:'));
     message.push(localizeMessage('help.formatting.checklistExample', '- [ ] Item one\n- [ ] Item two\n- [x] Completed item'));
-    message.push(localizeMessage('help.formatting.tables', '## Tables\n\nCreate a table by placing a dashed line under the header row and separating the columns with a pipe `|`. (The columns don’t need to line up exactly for it to work). Choose how to align table columns by including colons `:` within the header row.'));
+    message.push(localizeMessage('help.formatting.tables', '## Tables\n\nCreate a table by placing a dashed line under the header row and separating the columns with a pipe `|`. (The columns don\'t need to line up exactly for it to work). Choose how to align table columns by including colons `:` within the header row.'));
     message.push('```\n' + localizeMessage('help.formatting.tableExample', '| Left-Aligned  | Center Aligned  | Right Aligned |\n| :------------ |:---------------:| -----:|\n| Left column 1 | this text       |  $100 |\n| Left column 2 | is              |   $10 |\n| Left column 3 | centered        |    $1 |') + '\n```');
     message.push(localizeMessage('help.formatting.renders', 'Renders as:'));
     message.push(localizeMessage('help.formatting.tableExample', '| Left-Aligned  | Center Aligned  | Right Aligned |\n| :------------ |:---------------:| -----:|\n| Left column 1 | this text       |  $100 |\n| Left column 2 | is              |   $10 |\n| Left column 3 | centered        |    $1 |'));
-    message.push(localizeMessage('help.formatting.headings', '## Headings\n\nMake a heading by typing # and a space before your title. For smaller headings, use more #’s.'));
+    message.push(localizeMessage('help.formatting.headings', '## Headings\n\nMake a heading by typing # and a space before your title. For smaller headings, use more #\'s.'));
     message.push('```\n' + localizeMessage('help.formatting.headingsExample', '## Large Heading\n### Smaller Heading\n#### Even Smaller Heading') + '\n```');
     message.push(localizeMessage('help.formatting.renders', 'Renders as:'));
     message.push(localizeMessage('help.formatting.headingsExample', '## Large Heading\n### Smaller Heading\n#### Even Smaller Heading'));

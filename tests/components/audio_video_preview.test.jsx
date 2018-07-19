@@ -1,11 +1,10 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
 
 import AudioVideoPreview from 'components/audio_video_preview.jsx';
-import FileInfoPreview from 'components/file_info_preview.jsx';
 
 describe('component/AudioVideoPreview', () => {
     const requiredProps = {
@@ -23,12 +22,11 @@ describe('component/AudioVideoPreview', () => {
         expect(wrapper).toMatchSnapshot();
     });
 
-    test('should match snapshot, loaded with FileInfoPreview', () => {
+    test('should match snapshot, cannot play', () => {
         const wrapper = shallow(
             <AudioVideoPreview {...requiredProps}/>
         );
         wrapper.setState({canPlay: false});
         expect(wrapper).toMatchSnapshot();
-        expect(wrapper.find(FileInfoPreview).exists()).toBe(true);
     });
 });

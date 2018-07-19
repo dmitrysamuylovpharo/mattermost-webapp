@@ -1,7 +1,9 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class MattermostLogo extends React.PureComponent {
     render() {
@@ -14,6 +16,8 @@ export default class MattermostLogo extends React.PureComponent {
                     y='0px'
                     viewBox='0 0 500 500'
                     style={style.background}
+                    role='icon'
+                    aria-label={localizeMessage('generic_icons.mattermost', 'Mattermost Logo')}
                 >
                     <g id='XMLID_1_'>
                         <g id='XMLID_3_'>

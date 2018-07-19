@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -45,7 +45,7 @@ class TeamImportTab extends React.Component {
 
     render() {
         const {formatMessage} = this.props.intl;
-        var uploadDocsLink = (
+        const uploadDocsLink = (
             <a
                 href='https://docs.mattermost.com/administration/migrating.html#migrating-from-slack'
                 target='_blank'
@@ -58,16 +58,16 @@ class TeamImportTab extends React.Component {
             </a>
         );
 
-        var uploadExportInstructions = (
+        const uploadExportInstructions = (
             <strong>
                 <FormattedMessage
                     id='team_import_tab.importHelpExportInstructions'
-                    defaultMessage='Slack > Team Settings > Import/Export Data > Export > Start Export'
+                    defaultMessage='Slack > Administration > Workspace settings > Import/Export Data > Export > Start Export'
                 />
             </strong>
         );
 
-        var uploadExporterLink = (
+        const uploadExporterLink = (
             <a
                 href='https://github.com/grundleborg/slack-advanced-exporter'
                 target='_blank'
@@ -80,7 +80,20 @@ class TeamImportTab extends React.Component {
             </a>
         );
 
-        var uploadHelpText = (
+        const importCliLink = (
+            <a
+                href='https://docs.mattermost.com/administration/migrating.html#migrating-from-slack-using-the-mattermost-cli'
+                target='_blank'
+                rel='noopener noreferrer'
+            >
+                <FormattedMessage
+                    id='team_import_tab.importHelpCliDocsLink'
+                    defaultMessage='CLI tool for Slack import'
+                />
+            </a>
+        );
+
+        const uploadHelpText = (
             <div>
                 <p>
                     <FormattedMessage
@@ -107,10 +120,19 @@ class TeamImportTab extends React.Component {
                         }}
                     />
                 </p>
+                <p>
+                    <FormattedMessage
+                        id='team_import_tab.importHelpLine4'
+                        defaultMessage='For Slack teams with over 10,000 messages, we recommend using the {cliLink}.'
+                        values={{
+                            cliLink: importCliLink,
+                        }}
+                    />
+                </p>
             </div>
         );
 
-        var uploadSection = (
+        const uploadSection = (
             <SettingUpload
                 title={formatMessage(holders.importSlack)}
                 submit={this.doImportSlack}
@@ -119,14 +141,18 @@ class TeamImportTab extends React.Component {
             />
         );
 
-        var messageSection;
+        let messageSection;
         switch (this.state.status) {
         case 'ready':
             messageSection = '';
             break;
         case 'in-progress':
             messageSection = (
-                <p className='confirm-import alert alert-warning'><i className='fa fa-spinner fa-pulse'/>
+                <p className='confirm-import alert alert-warning'>
+                    <i
+                        className='fa fa-spinner fa-pulse'
+                        title={utils.localizeMessage('generic_icons.loading', 'Loading Icon')}
+                    />
                     <FormattedMessage
                         id='team_import_tab.importing'
                         defaultMessage=' Importing...'
@@ -137,7 +163,10 @@ class TeamImportTab extends React.Component {
         case 'done':
             messageSection = (
                 <p className='confirm-import alert alert-success'>
-                    <i className='fa fa-check'/>
+                    <i
+                        className='fa fa-check'
+                        title={utils.localizeMessage('generic_icons.success', 'Success Icon')}
+                    />
                     <FormattedMessage
                         id='team_import_tab.successful'
                         defaultMessage=' Import successful: '
@@ -157,7 +186,10 @@ class TeamImportTab extends React.Component {
         case 'fail':
             messageSection = (
                 <p className='confirm-import alert alert-warning'>
-                    <i className='fa fa-warning'/>
+                    <i
+                        className='fa fa-warning'
+                        title={utils.localizeMessage('generic_icons.warning', 'Warning Icon')}
+                    />
                     <FormattedMessage
                         id='team_import_tab.failure'
                         defaultMessage=' Import failure: '
@@ -196,6 +228,7 @@ class TeamImportTab extends React.Component {
                             <i
                                 className='fa fa-angle-left'
                                 onClick={this.props.collapseModal}
+                                title={utils.localizeMessage('generic_icons.back', 'Back Icon')}
                             />
                         </div>
                         <FormattedMessage

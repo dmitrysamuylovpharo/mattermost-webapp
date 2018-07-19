@@ -1,17 +1,21 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class PinIcon extends React.PureComponent {
     render() {
         return (
             <span {...this.props}>
                 <svg
-                    width='16px'
-                    height='16px'
+                    width='14px'
+                    height='14px'
                     viewBox='0 0 16 16'
                     version='1.1'
+                    role='icon'
+                    aria-label={localizeMessage('generic_icons.pin', 'Pin Icon')}
                 >
                     <g
                         id='Symbols'

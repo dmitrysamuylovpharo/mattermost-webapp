@@ -48,10 +48,32 @@
 }
 
 @media screen and (max-width: 960px) {
-    .textarea-wrapper {
-        .textbox-preview-link,
-        .textbox-help-link {
-            display: none;
+    .app__body {
+        .modal {
+            .modal-image {
+                .modal-image__wrapper {
+                    img {
+                        max-height: calc(100vh - 100px);
+                    }
+
+                    > div {
+                        font-size: 12px;
+                        min-width: 250px;
+                    }
+
+                    .modal-close {
+                        @include opacity(1);
+                    }
+                }
+
+                .modal-button-bar {
+                    @include opacity(1);
+                    @include border-radius(0 0 $border-rad $border-rad);
+                    bottom: -40px;
+                    line-height: 30px;
+                    padding: 5px 10px 5px 5px;
+                }
+            }
         }
     }
 
@@ -111,6 +133,18 @@
     }
 }
 
+@media (min-width: 880px) {
+    .post-collapse__show-more {
+        padding-right: 60px;
+    }
+
+    .sidebar--right {
+        .post-collapse__show-more {
+            padding-right: 0;
+        }
+    }
+}
+
 // Tablet and desktop
 @media screen and (min-width: 768px) {
     .col-sm-auto {
@@ -119,6 +153,16 @@
 
     .second-bar {
         display: none;
+    }
+
+    .channel-header{
+        .search-bar__container {
+            .search__form {
+                &.focused {
+                    width: 300px;
+                }
+            }
+        }
     }
 
     .sidebar--right {
@@ -172,6 +216,40 @@
 
     .post {
         &.post--compact {
+            .post-message {
+                &.post-message--overflow {
+                    @include clearfix;
+                    margin-top: 22px;
+                }
+            }
+
+            &.same--root {
+                &.same--user {
+                    .post-message {
+                        &.post-message--overflow {
+                            margin-top: 0
+                        }
+                    }
+                }
+            }
+
+            &.post--comment {
+                &.other--root {
+                    .post-message {
+                        &.post-message--overflow {
+                            margin-top: 0
+                        }
+                    }
+                }
+            }
+
+            &.post--thread {
+                .post-message {
+                    &.post-message--overflow {
+                        margin-top: 0
+                    }
+                }
+            }
 
             .channel__wrap & {
                 .post__time {
@@ -199,10 +277,6 @@
 
             &:not(.post--thread) {
                 padding: 0 .5em 0 77px;
-
-                &.other--root {
-
-                }
 
                 .post__link {
                     margin: 3px 0 7px;

@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -7,32 +7,19 @@ import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
 import Constants from 'utils/constants.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class SearchResultsHeader extends React.Component {
     static propTypes = {
         isMentionSearch: PropTypes.bool,
         isFlaggedPosts: PropTypes.bool,
         isPinnedPosts: PropTypes.bool,
-        toggleSize: PropTypes.func,
-        shrink: PropTypes.func,
         channelDisplayName: PropTypes.string.isRequired,
         actions: PropTypes.shape({
             closeRightHandSide: PropTypes.func,
+            toggleRhsExpanded: PropTypes.func.isRequired,
         }),
     };
-
-    handleClose = (e) => {
-        e.preventDefault();
-
-        this.props.actions.closeRightHandSide();
-
-        this.props.shrink();
-    }
-
-    toggleSize = (e) => {
-        e.preventDefault();
-        this.props.toggleSize();
-    }
 
     render() {
         var title = (
@@ -103,7 +90,7 @@ export default class SearchResultsHeader extends React.Component {
                         type='button'
                         className='sidebar--right__expand'
                         aria-label='Expand'
-                        onClick={this.toggleSize}
+                        onClick={this.props.actions.toggleRhsExpanded}
                     >
                         <OverlayTrigger
                             trigger={['hover', 'focus']}
@@ -111,7 +98,10 @@ export default class SearchResultsHeader extends React.Component {
                             placement='top'
                             overlay={expandSidebarTooltip}
                         >
-                            <i className='fa fa-expand'/>
+                            <i
+                                className='fa fa-expand'
+                                title={localizeMessage('rhs_header.expandSidebarTooltip.icon', 'Expand Sidebar Icon')}
+                            />
                         </OverlayTrigger>
                         <OverlayTrigger
                             trigger={['hover', 'focus']}
@@ -119,7 +109,10 @@ export default class SearchResultsHeader extends React.Component {
                             placement='top'
                             overlay={shrinkSidebarTooltip}
                         >
-                            <i className='fa fa-compress'/>
+                            <i
+                                className='fa fa-compress'
+                                title={localizeMessage('rhs_header.expandTooltip.icon', 'Shrink Sidebar Icon')}
+                            />
                         </OverlayTrigger>
                     </button>
                     <button
@@ -127,7 +120,7 @@ export default class SearchResultsHeader extends React.Component {
                         className='sidebar--right__close'
                         aria-label='Close'
                         title='Close'
-                        onClick={this.handleClose}
+                        onClick={this.props.actions.closeRightHandSide}
                     >
                         <OverlayTrigger
                             trigger={['hover', 'focus']}
@@ -135,7 +128,10 @@ export default class SearchResultsHeader extends React.Component {
                             placement='top'
                             overlay={closeSidebarTooltip}
                         >
-                            <i className='fa fa-sign-out'/>
+                            <i
+                                className='fa fa-sign-out'
+                                title={localizeMessage('rhs_header.closeTooltip.icon', 'Close Sidebar Icon')}
+                            />
                         </OverlayTrigger>
                     </button>
                 </div>

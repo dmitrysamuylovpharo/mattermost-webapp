@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -49,6 +49,26 @@ export default function ErrorMessage({type, message, service}) {
                     <FormattedMessage
                         id='permalink.error.access'
                         defaultMessage='Permalink belongs to a deleted message or to a channel to which you do not have access.'
+                    />
+                </p>
+            );
+            break;
+        case ErrorPageTypes.TEAM_NOT_FOUND:
+            errorMessage = (
+                <p>
+                    <FormattedMessage
+                        id='error.team_not_found.message'
+                        defaultMessage="The team you're requesting is private or does not exist. Please contact your Administrator for an invitation."
+                    />
+                </p>
+            );
+            break;
+        case ErrorPageTypes.CHANNEL_NOT_FOUND:
+            errorMessage = (
+                <p>
+                    <FormattedMessage
+                        id='error.channel_not_found.message'
+                        defaultMessage="The team you're requesting is private or does not exist. Please contact your Administrator for an invitation."
                     />
                 </p>
             );

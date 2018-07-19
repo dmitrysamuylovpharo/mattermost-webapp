@@ -1,7 +1,9 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class GlobeIcon extends React.PureComponent {
     render() {
@@ -11,6 +13,8 @@ export default class GlobeIcon extends React.PureComponent {
                     width='13px'
                     height='13px'
                     viewBox='0 0 14 14'
+                    role='icon'
+                    aria-label={localizeMessage('generic_icons.channel.public', 'Public Channel Icon')}
                 >
                     <g
                         stroke='none'

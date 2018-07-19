@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -11,7 +11,7 @@ import ConfirmModal from 'components/confirm_modal.jsx';
 import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
 import FilePreview from 'components/file_preview.jsx';
 import FileUpload from 'components/file_upload';
-import MsgTyping from 'components/msg_typing.jsx';
+import MsgTyping from 'components/msg_typing';
 import PostDeletedModal from 'components/post_deleted_modal.jsx';
 import EmojiIcon from 'components/svg/emoji_icon';
 import Textbox from 'components/textbox.jsx';
@@ -39,6 +39,11 @@ export default class CreateComment extends React.PureComponent {
          * The id of the parent post
          */
         rootId: PropTypes.string.isRequired,
+
+        /**
+         * True if the root message was deleted
+         */
+        rootDeleted: PropTypes.bool.isRequired,
 
         /**
          * The current history message selected
@@ -133,6 +138,16 @@ export default class CreateComment extends React.PureComponent {
          * Set if the emoji picker is enabled.
          */
         enableEmojiPicker: PropTypes.bool.isRequired,
+
+        /**
+         * Set if the gif picker is enabled.
+         */
+        enableGifPicker: PropTypes.bool.isRequired,
+
+        /**
+         * The maximum length of a post
+         */
+        maxPostSize: PropTypes.number.isRequired,
     }
 
     constructor(props) {
@@ -152,7 +167,7 @@ export default class CreateComment extends React.PureComponent {
         this.lastBlurAt = 0;
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() { // eslint-disable-line camelcase
         this.props.clearCommentDraftUploads();
         this.props.onResetHistoryIndex();
         this.setState({draft: {...this.props.draft, uploadsInProgress: []}});
@@ -166,7 +181,7 @@ export default class CreateComment extends React.PureComponent {
         this.props.resetCreatePostRequest();
     }
 
-    componentWillReceiveProps(newProps) {
+    UNSAFE_componentWillReceiveProps(newProps) { // eslint-disable-line camelcase
         if (newProps.createPostErrorId === 'api.post.create_post.root_id.app_error' && newProps.createPostErrorId !== this.props.createPostErrorId) {
             this.showPostDeletedModal();
         }
@@ -240,6 +255,29 @@ export default class CreateComment extends React.PureComponent {
         this.focusTextbox();
     }
 
+    handleGifClick = (gif) => {
+        const {draft} = this.state;
+
+        let newMessage = '';
+        if (draft.message === '') {
+            newMessage = gif;
+        } else if (/\s+$/.test(draft.message)) {
+            // Check whether there is already a blank at the end of the current message
+            newMessage = `${draft.message}${gif} `;
+        } else {
+            newMessage = `${draft.message} ${gif} `;
+        }
+
+        this.props.onUpdateCommentDraft({...draft, message: newMessage});
+
+        this.setState({
+            showEmojiPicker: false,
+            draft: {...draft, message: newMessage},
+        });
+
+        this.focusTextbox();
+    }
+
     handlePostError = (postError) => {
         this.setState({postError});
     }
@@ -281,6 +319,11 @@ export default class CreateComment extends React.PureComponent {
             return;
         }
 
+        if (this.props.rootDeleted) {
+            this.showPostDeletedModal();
+            return;
+        }
+
         const fasterThanHumanWillClick = 150;
         const forceFocus = (Date.now() - this.lastBlurAt < fasterThanHumanWillClick);
         this.focusTextbox(forceFocus);
@@ -294,6 +337,7 @@ export default class CreateComment extends React.PureComponent {
             });
         } catch (err) {
             this.setState({serverError: err.message});
+            return;
         }
 
         this.setState({draft: {...this.props.draft, uploadsInProgress: []}});
@@ -301,7 +345,7 @@ export default class CreateComment extends React.PureComponent {
 
     commentMsgKeyPress = (e) => {
         if (!UserAgent.isMobile() && ((this.props.ctrlSend && (e.ctrlKey || e.metaKey)) || !this.props.ctrlSend)) {
-            if (e.which === KeyCodes.ENTER && !e.shiftKey && !e.altKey) {
+            if (Utils.isKeyPressed(e, KeyCodes.ENTER) && !e.shiftKey && !e.altKey) {
                 e.preventDefault();
                 this.refs.textbox.blur();
                 this.handleSubmit(e);
@@ -330,7 +374,7 @@ export default class CreateComment extends React.PureComponent {
     }
 
     handleKeyDown = (e) => {
-        if (this.props.ctrlSend && e.keyCode === KeyCodes.ENTER && (e.ctrlKey || e.metaKey)) {
+        if (this.props.ctrlSend && Utils.isKeyPressed(e, Constants.KeyCodes.ENTER) && (e.ctrlKey || e.metaKey)) {
             this.commentMsgKeyPress(e);
             return;
         }
@@ -338,16 +382,19 @@ export default class CreateComment extends React.PureComponent {
         const {draft} = this.state;
         const {message} = draft;
 
-        if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && e.keyCode === KeyCodes.UP && message === '') {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && Utils.isKeyPressed(e, Constants.KeyCodes.UP) && message === '') {
             e.preventDefault();
+            if (this.refs.textbox) {
+                this.refs.textbox.blur();
+            }
             this.props.onEditLatestPost();
         }
 
         if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
-            if (e.keyCode === Constants.KeyCodes.UP) {
+            if (Utils.isKeyPressed(e, Constants.KeyCodes.UP)) {
                 e.preventDefault();
                 this.props.onMoveHistoryIndexBack();
-            } else if (e.keyCode === Constants.KeyCodes.DOWN) {
+            } else if (Utils.isKeyPressed(e, Constants.KeyCodes.DOWN)) {
                 e.preventDefault();
                 this.props.onMoveHistoryIndexForward();
             }
@@ -355,7 +402,7 @@ export default class CreateComment extends React.PureComponent {
     }
 
     handleFileUploadChange = () => {
-        this.focusTextbox(true);
+        this.focusTextbox();
     }
 
     handleUploadStart = (clientIds) => {
@@ -427,7 +474,7 @@ export default class CreateComment extends React.PureComponent {
             if (index !== -1) {
                 uploadsInProgress.splice(index, 1);
 
-                if (this.refs.fileUpload) {
+                if (this.refs.fileUpload && this.refs.fileUpload.getWrappedInstance()) {
                     this.refs.fileUpload.getWrappedInstance().cancelUpload(id);
                 }
             }
@@ -588,6 +635,8 @@ export default class CreateComment extends React.PureComponent {
                         target={this.getCreateCommentControls}
                         onHide={this.hideEmojiPicker}
                         onEmojiClick={this.handleEmojiClick}
+                        onGifClick={this.handleGifClick}
+                        enableGifPicker={this.props.enableGifPicker}
                         rightOffset={15}
                         topOffset={55}
                     />
@@ -630,6 +679,7 @@ export default class CreateComment extends React.PureComponent {
                                 id='reply_textbox'
                                 ref='textbox'
                                 disabled={readOnlyChannel}
+                                characterLimit={this.props.maxPostSize}
                             />
                             <span
                                 ref='createCommentControls'
@@ -642,7 +692,7 @@ export default class CreateComment extends React.PureComponent {
                     </div>
                     <MsgTyping
                         channelId={this.props.channelId}
-                        parentId={this.props.rootId}
+                        postId={this.props.rootId}
                     />
                     <div className='post-create-footer'>
                         <input

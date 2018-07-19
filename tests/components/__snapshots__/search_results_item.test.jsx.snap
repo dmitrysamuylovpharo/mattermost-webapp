@@ -29,12 +29,28 @@ exports[`components/SearchResultsItem should match snapshot for DM 1`] = `
       <div
         className="post__img"
       >
-        <ProfilePicture
-          hasMention={false}
-          height="36"
+        <Connect(PostProfilePicture)
+          compactDisplay={true}
           isBusy={false}
-          isRHS={false}
-          src="Some image path"
+          post={
+            Object {
+              "channel_id": "channel_id",
+              "create_at": 1502715365009,
+              "delete_at": 0,
+              "edit_at": 1502715372443,
+              "id": "id",
+              "is_pinned": true,
+              "message": "post message",
+              "original_id": "",
+              "parent_id": "",
+              "pending_post_id": "",
+              "props": Object {},
+              "root_id": "",
+              "type": "",
+              "update_at": 1502715372443,
+              "user_id": "user_id",
+            }
+          }
           status="hello"
           user={
             Object {
@@ -43,7 +59,6 @@ exports[`components/SearchResultsItem should match snapshot for DM 1`] = `
               "username": "username",
             }
           }
-          width="36"
         />
       </div>
       <div>
@@ -79,7 +94,6 @@ exports[`components/SearchResultsItem should match snapshot for DM 1`] = `
               eventTime={1502715365009}
               isPermalink={true}
               postId="id"
-              useMilitaryTime={true}
             />
             <span
               className="post__pinned-badge"
@@ -99,7 +113,7 @@ exports[`components/SearchResultsItem should match snapshot for DM 1`] = `
             />
           </div>
           <div
-            className="col__controls"
+            className="col__controls col__reply"
           >
             <Connect(DotMenu)
               handleDropdownOpened={[Function]}
@@ -178,6 +192,7 @@ exports[`components/SearchResultsItem should match snapshot for DM 1`] = `
                 options={
                   Object {
                     "mentionHighlight": false,
+                    "searchMatches": undefined,
                     "searchTerm": "test",
                   }
                 }
@@ -229,12 +244,28 @@ exports[`components/SearchResultsItem should match snapshot for channel 1`] = `
       <div
         className="post__img"
       >
-        <ProfilePicture
-          hasMention={false}
-          height="36"
+        <Connect(PostProfilePicture)
+          compactDisplay={true}
           isBusy={false}
-          isRHS={false}
-          src="Some image path"
+          post={
+            Object {
+              "channel_id": "channel_id",
+              "create_at": 1502715365009,
+              "delete_at": 0,
+              "edit_at": 1502715372443,
+              "id": "id",
+              "is_pinned": false,
+              "message": "post message",
+              "original_id": "",
+              "parent_id": "",
+              "pending_post_id": "",
+              "props": Object {},
+              "root_id": "",
+              "type": "",
+              "update_at": 1502715372443,
+              "user_id": "user_id",
+            }
+          }
           status="hello"
           user={
             Object {
@@ -243,7 +274,6 @@ exports[`components/SearchResultsItem should match snapshot for channel 1`] = `
               "username": "username",
             }
           }
-          width="36"
         />
       </div>
       <div>
@@ -279,7 +309,6 @@ exports[`components/SearchResultsItem should match snapshot for channel 1`] = `
               eventTime={1502715365009}
               isPermalink={true}
               postId="id"
-              useMilitaryTime={true}
             />
             <PostFlagIcon
               idCount={-1}
@@ -290,7 +319,7 @@ exports[`components/SearchResultsItem should match snapshot for channel 1`] = `
             />
           </div>
           <div
-            className="col__controls"
+            className="col__controls col__reply"
           >
             <Connect(DotMenu)
               handleDropdownOpened={[Function]}
@@ -369,6 +398,7 @@ exports[`components/SearchResultsItem should match snapshot for channel 1`] = `
                 options={
                   Object {
                     "mentionHighlight": false,
+                    "searchMatches": undefined,
                     "searchTerm": "test",
                   }
                 }
@@ -420,12 +450,36 @@ exports[`components/SearchResultsItem should match snapshot for deleted message 
       <div
         className="post__img"
       >
-        <ProfilePicture
-          hasMention={false}
-          height="36"
+        <Connect(PostProfilePicture)
+          compactDisplay={true}
           isBusy={false}
-          isRHS={false}
-          src="Some image path"
+          post={
+            Object {
+              "channel_id": "channel_id",
+              "create_at": 1502715365009,
+              "delete_at": 0,
+              "edit_at": 1502715372443,
+              "file_ids": Array [
+                "id",
+                "id2",
+              ],
+              "id": "id",
+              "is_pinned": false,
+              "message": "post message",
+              "original_id": "",
+              "parent_id": "",
+              "pending_post_id": "",
+              "props": Object {
+                "from_webhook": true,
+                "override_username": "overridden_username",
+              },
+              "root_id": "",
+              "state": "deleted",
+              "type": "",
+              "update_at": 1502715372443,
+              "user_id": "user_id",
+            }
+          }
           status="hello"
           user={
             Object {
@@ -434,7 +488,6 @@ exports[`components/SearchResultsItem should match snapshot for deleted message 
               "username": "username",
             }
           }
-          width="36"
         />
       </div>
       <div>
@@ -466,7 +519,11 @@ exports[`components/SearchResultsItem should match snapshot for deleted message 
           <div
             className="bot-indicator"
           >
-            BOT
+            <FormattedMessage
+              defaultMessage="BOT"
+              id="post_info.bot"
+              values={Object {}}
+            />
           </div>
           <div
             className="col"
@@ -475,7 +532,6 @@ exports[`components/SearchResultsItem should match snapshot for deleted message 
               eventTime={1502715365009}
               isPermalink={true}
               postId="id"
-              useMilitaryTime={true}
             />
           </div>
         </div>

@@ -1,17 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import {batchActions} from 'redux-batched-actions';
-import {ChannelTypes, EmojiTypes, PostTypes, TeamTypes, UserTypes} from 'mattermost-redux/action_types';
-import {getChannelAndMyMember, getChannelStats, viewChannel} from 'mattermost-redux/actions/channels';
+import {ChannelTypes, EmojiTypes, PostTypes, TeamTypes, UserTypes, RoleTypes, GeneralTypes, AdminTypes} from 'mattermost-redux/action_types';
+import {WebsocketEvents, General} from 'mattermost-redux/constants';
+import {
+    getChannelAndMyMember,
+    getChannelStats,
+    viewChannel,
+} from 'mattermost-redux/actions/channels';
 import {setServerVersion} from 'mattermost-redux/actions/general';
 import {getPosts, getProfilesAndStatusesForPosts, getCustomEmojiForReaction} from 'mattermost-redux/actions/posts';
 import * as TeamActions from 'mattermost-redux/actions/teams';
-import {getMe} from 'mattermost-redux/actions/users';
+import {getMe, getStatusesByIds, getProfilesByIds} from 'mattermost-redux/actions/users';
 import {Client4} from 'mattermost-redux/client';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
 import {getMyTeams} from 'mattermost-redux/selectors/entities/teams';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getChannel} from 'mattermost-redux/selectors/entities/channels';
 
 import {browserHistory} from 'utils/browser_history';
 import {loadChannelsForCurrentUser} from 'actions/channel_actions.jsx';
@@ -30,6 +37,7 @@ import UserStore from 'stores/user_store.jsx';
 import WebSocketClient from 'client/web_websocket_client.jsx';
 import {loadPlugin, loadPluginsIfNecessary, removePlugin} from 'plugins';
 import {ActionTypes, Constants, ErrorBarTypes, Preferences, SocketEvents, UserStatuses} from 'utils/constants.jsx';
+import {fromAutoResponder} from 'utils/post_utils';
 import {getSiteURL} from 'utils/url.jsx';
 
 import * as WebrtcActions from './webrtc_actions.jsx';
@@ -45,27 +53,35 @@ export function initialize() {
         return;
     }
 
+    const config = getConfig(getState());
     let connUrl = '';
-    if (global.window.mm_config.WebsocketURL === '') {
-        connUrl = getSiteURL();
+    if (config.WebsocketURL) {
+        connUrl = config.WebsocketURL;
+    } else {
+        connUrl = new URL(getSiteURL());
 
         // replace the protocol with a websocket one
-        if (connUrl.startsWith('https:')) {
-            connUrl = connUrl.replace(/^https:/, 'wss:');
+        if (connUrl.protocol === 'https:') {
+            connUrl.protocol = 'wss:';
         } else {
-            connUrl = connUrl.replace(/^http:/, 'ws:');
+            connUrl.protocol = 'ws:';
         }
 
         // append a port number if one isn't already specified
-        if (!(/:\d+$/).test(connUrl)) {
-            if (connUrl.startsWith('wss:')) {
-                connUrl += ':' + global.window.mm_config.WebsocketSecurePort;
+        if (!(/:\d+$/).test(connUrl.host)) {
+            if (connUrl.protocol === 'wss:') {
+                connUrl.host += ':' + config.WebsocketSecurePort;
             } else {
-                connUrl += ':' + global.window.mm_config.WebsocketPort;
+                connUrl.host += ':' + config.WebsocketPort;
             }
         }
-    } else {
-        connUrl = global.window.mm_config.WebsocketURL;
+
+        connUrl = connUrl.toString();
+    }
+
+    // Strip any trailing slash before appending the pathname below.
+    if (connUrl.length > 0 && connUrl[connUrl.length - 1] === '/') {
+        connUrl = connUrl.substring(0, connUrl.length - 1);
     }
 
     connUrl += Client4.getUrlVersion() + '/websocket';
@@ -184,8 +200,20 @@ function handleEvent(msg) {
         handleUserUpdatedEvent(msg);
         break;
 
+    case SocketEvents.ROLE_ADDED:
+        handleRoleAddedEvent(msg, dispatch, getState);
+        break;
+
+    case SocketEvents.ROLE_REMOVED:
+        handleRoleRemovedEvent(msg, dispatch, getState);
+        break;
+
     case SocketEvents.MEMBERROLE_UPDATED:
         handleUpdateMemberRoleEvent(msg);
+        break;
+
+    case SocketEvents.ROLE_UPDATED:
+        handleRoleUpdatedEvent(msg, dispatch, getState);
         break;
 
     case SocketEvents.CHANNEL_CREATED:
@@ -196,8 +224,16 @@ function handleEvent(msg) {
         handleChannelDeletedEvent(msg);
         break;
 
+    case SocketEvents.CHANNEL_CONVERTED:
+        handleChannelConvertedEvent(msg);
+        break;
+
     case SocketEvents.CHANNEL_UPDATED:
         handleChannelUpdatedEvent(msg);
+        break;
+
+    case SocketEvents.CHANNEL_MEMBER_UPDATED:
+        handleChannelMemberUpdatedEvent(msg);
         break;
 
     case SocketEvents.DIRECT_ADDED:
@@ -260,7 +296,33 @@ function handleEvent(msg) {
         handleUserRoleUpdated(msg);
         break;
 
+    case SocketEvents.CONFIG_CHANGED:
+        handleConfigChanged(msg);
+        break;
+
+    case SocketEvents.LICENSE_CHANGED:
+        handleLicenseChanged(msg);
+        break;
+
+    case SocketEvents.PLUGIN_STATUSES_CHANGED:
+        handlePluginStatusesChangedEvent(msg);
+        break;
+
     default:
+    }
+}
+
+// handleChannelConvertedEvent handles updating of channel which is converted from public to private
+function handleChannelConvertedEvent(msg) {
+    const channelId = msg.data.channel_id;
+    if (channelId) {
+        const channel = getChannel(getState(), channelId);
+        if (channel) {
+            dispatch({
+                type: ChannelTypes.RECEIVED_CHANNEL,
+                data: {...channel, type: General.PRIVATE_CHANNEL},
+            });
+        }
     }
 }
 
@@ -269,13 +331,18 @@ function handleChannelUpdatedEvent(msg) {
     dispatch({type: ChannelTypes.RECEIVED_CHANNEL, data: channel});
 }
 
+function handleChannelMemberUpdatedEvent(msg) {
+    const channelMember = JSON.parse(msg.data.channelMember);
+    dispatch({type: ChannelTypes.RECEIVED_MY_CHANNEL_MEMBER, data: channelMember});
+}
+
 function handleNewPostEvent(msg) {
     const post = JSON.parse(msg.data.post);
     handleNewPost(post, msg);
 
     getProfilesAndStatusesForPosts([post], dispatch, getState);
 
-    if (post.user_id !== UserStore.getCurrentId()) {
+    if (post.user_id !== UserStore.getCurrentId() && !fromAutoResponder(post)) {
         UserStore.setStatus(post.user_id, UserStatuses.ONLINE);
     }
 }
@@ -344,8 +411,7 @@ function handleLeaveTeamEvent(msg) {
         dispatch(batchActions([
             {
                 type: UserTypes.RECEIVED_PROFILE_NOT_IN_TEAM,
-                data: {user_id: msg.data.user_id},
-                id: msg.data.team_id,
+                data: {id: msg.data.team_id, user_id: msg.data.user_id},
             },
             {
                 type: TeamTypes.REMOVE_MEMBER_FROM_TEAM,
@@ -430,6 +496,10 @@ function handleDirectAddedEvent(msg) {
 function handleUserAddedEvent(msg) {
     if (ChannelStore.getCurrentId() === msg.broadcast.channel_id) {
         getChannelStats(ChannelStore.getCurrentId())(dispatch, getState);
+        dispatch({
+            type: UserTypes.RECEIVED_PROFILE_IN_CHANNEL,
+            data: {id: msg.broadcast.channel_id, user_id: msg.data.user_id},
+        });
     }
 
     if (TeamStore.getCurrentId() === msg.data.team_id && UserStore.getCurrentId() === msg.data.user_id) {
@@ -466,8 +536,7 @@ function handleUserRemovedEvent(msg) {
         getChannelStats(ChannelStore.getCurrentId())(dispatch, getState);
         dispatch({
             type: UserTypes.RECEIVED_PROFILE_NOT_IN_CHANNEL,
-            data: {user_id: msg.data.user_id},
-            id: msg.broadcast.channel_id,
+            data: {id: msg.broadcast.channel_id, user_id: msg.data.user_id},
         });
     }
 }
@@ -485,6 +554,33 @@ function handleUserUpdatedEvent(msg) {
     } else {
         UserStore.saveProfile(user);
     }
+}
+
+function handleRoleAddedEvent(msg) {
+    const role = JSON.parse(msg.data.role);
+
+    dispatch({
+        type: RoleTypes.RECEIVED_ROLE,
+        data: role,
+    });
+}
+
+function handleRoleRemovedEvent(msg) {
+    const role = JSON.parse(msg.data.role);
+
+    dispatch({
+        type: RoleTypes.ROLE_DELETED,
+        data: role,
+    });
+}
+
+function handleRoleUpdatedEvent(msg) {
+    const role = JSON.parse(msg.data.role);
+
+    dispatch({
+        type: RoleTypes.RECEIVED_ROLE,
+        data: role,
+    });
 }
 
 function handleChannelCreatedEvent(msg) {
@@ -522,10 +618,37 @@ function handlePreferencesDeletedEvent(msg) {
 }
 
 function handleUserTypingEvent(msg) {
-    GlobalActions.emitRemoteUserTypingEvent(msg.broadcast.channel_id, msg.data.user_id, msg.data.parent_id);
+    const state = getState();
+    const config = getConfig(state);
+    const currentUserId = getCurrentUserId(state);
+    const currentUser = getCurrentUser(state);
+    const userId = msg.data.user_id;
 
-    if (msg.data.user_id !== UserStore.getCurrentId()) {
-        UserStore.setStatus(msg.data.user_id, UserStatuses.ONLINE);
+    const data = {
+        id: msg.broadcast.channel_id + msg.data.parent_id,
+        userId,
+        now: Date.now(),
+    };
+
+    dispatch({
+        type: WebsocketEvents.TYPING,
+        data,
+    }, getState);
+
+    setTimeout(() => {
+        dispatch({
+            type: WebsocketEvents.STOP_TYPING,
+            data,
+        }, getState);
+    }, parseInt(config.TimeBetweenUserTypingUpdatesMilliseconds, 10));
+
+    if (!currentUser && userId !== currentUserId) {
+        getProfilesByIds([userId])(dispatch, getState);
+    }
+
+    const status = getStatusForUserId(state, userId);
+    if (status !== General.ONLINE) {
+        getStatusesByIds([userId])(dispatch, getState);
     }
 }
 
@@ -605,4 +728,16 @@ function handleUserRoleUpdated(msg) {
             GlobalActions.redirectUserToDefaultTeam();
         }
     }
+}
+
+function handleConfigChanged(msg) {
+    store.dispatch({type: GeneralTypes.CLIENT_CONFIG_RECEIVED, data: msg.data.config});
+}
+
+function handleLicenseChanged(msg) {
+    store.dispatch({type: GeneralTypes.CLIENT_LICENSE_RECEIVED, data: msg.data.license});
+}
+
+function handlePluginStatusesChangedEvent(msg) {
+    store.dispatch({type: AdminTypes.RECEIVED_PLUGIN_STATUSES, data: msg.data.plugin_statuses});
 }

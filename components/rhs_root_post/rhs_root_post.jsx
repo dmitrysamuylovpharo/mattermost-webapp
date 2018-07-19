@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Posts} from 'mattermost-redux/constants';
 import * as ReduxPostUtils from 'mattermost-redux/utils/post_utils';
+import Permissions from 'mattermost-redux/constants/permissions';
 
 import {addReaction, emitEmojiPosted} from 'actions/post_actions.jsx';
 import UserStore from 'stores/user_store.jsx';
@@ -17,14 +18,13 @@ import * as Utils from 'utils/utils.jsx';
 import DotMenu from 'components/dot_menu';
 import EmojiPickerOverlay from 'components/emoji_picker/emoji_picker_overlay.jsx';
 import FileAttachmentListContainer from 'components/file_attachment_list';
-import PostBodyAdditionalContent from 'components/post_view/post_body_additional_content';
+import PostProfilePicture from 'components/post_profile_picture';
 import PostFlagIcon from 'components/post_view/post_flag_icon.jsx';
-import PostMessageContainer from 'components/post_view/post_message_view';
 import ReactionListContainer from 'components/post_view/reaction_list';
 import PostTime from 'components/post_view/post_time.jsx';
-import ProfilePicture from 'components/profile_picture.jsx';
 import EmojiIcon from 'components/svg/emoji_icon';
-import MattermostLogo from 'components/svg/mattermost_logo';
+import ChannelPermissionGate from 'components/permissions_gates/channel_permission_gate';
+import MessageWithAdditionalContent from 'components/message_with_additional_content';
 
 import UserProfile from 'components/user_profile.jsx';
 
@@ -32,9 +32,9 @@ export default class RhsRootPost extends React.Component {
     static propTypes = {
         post: PropTypes.object.isRequired,
         user: PropTypes.object.isRequired,
+        teamId: PropTypes.string.isRequired,
         currentUser: PropTypes.object.isRequired,
         compactDisplay: PropTypes.bool,
-        useMilitaryTime: PropTypes.bool.isRequired,
         commentCount: PropTypes.number.isRequired,
         isFlagged: PropTypes.bool,
         status: PropTypes.string,
@@ -44,6 +44,8 @@ export default class RhsRootPost extends React.Component {
         isEmbedVisible: PropTypes.bool,
         enableEmojiPicker: PropTypes.bool.isRequired,
         enablePostUsernameOverride: PropTypes.bool.isRequired,
+        isReadOnly: PropTypes.bool.isRequired,
+        pluginPostTypes: PropTypes.object,
     };
 
     static defaultProps = {
@@ -71,10 +73,6 @@ export default class RhsRootPost extends React.Component {
         }
 
         if (nextProps.compactDisplay !== this.props.compactDisplay) {
-            return true;
-        }
-
-        if (nextProps.useMilitaryTime !== this.props.useMilitaryTime) {
             return true;
         }
 
@@ -136,7 +134,6 @@ export default class RhsRootPost extends React.Component {
             <PostTime
                 isPermalink={isPermalink}
                 eventTime={post.create_at}
-                useMilitaryTime={this.props.useMilitaryTime}
                 postId={post.id}
             />
         );
@@ -195,8 +192,7 @@ export default class RhsRootPost extends React.Component {
     };
 
     render() {
-        const post = this.props.post;
-        const user = this.props.user;
+        const {post, user, isReadOnly, teamId} = this.props;
         var channel = ChannelStore.get(post.channel_id);
 
         const isEphemeral = Utils.isPostEphemeral(post);
@@ -218,27 +214,32 @@ export default class RhsRootPost extends React.Component {
 
         let react;
 
-        if (!isEphemeral && !post.failed && !isSystemMessage && this.props.enableEmojiPicker) {
+        if (!isReadOnly && !isEphemeral && !post.failed && !isSystemMessage && this.props.enableEmojiPicker) {
             react = (
-                <span>
-                    <EmojiPickerOverlay
-                        show={this.state.showEmojiPicker}
-                        onHide={this.toggleEmojiPicker}
-                        target={this.getDotMenuRef}
-                        onEmojiClick={this.reactEmojiClick}
-                        rightOffset={15}
-                        spaceRequiredAbove={342}
-                        spaceRequiredBelow={342}
-                    />
-                    <button
-                        className='reacticon__container reaction color--link style--none'
-                        onClick={this.toggleEmojiPicker}
-                        ref='rhs_root_reacticon'
-                    >
-                        <EmojiIcon className='icon icon--emoji'/>
-                    </button>
-                </span>
-
+                <ChannelPermissionGate
+                    channelId={post.channel_id}
+                    teamId={teamId}
+                    permissions={[Permissions.ADD_REACTION]}
+                >
+                    <div>
+                        <EmojiPickerOverlay
+                            show={this.state.showEmojiPicker}
+                            onHide={this.toggleEmojiPicker}
+                            target={this.getDotMenuRef}
+                            onEmojiClick={this.reactEmojiClick}
+                            rightOffset={15}
+                            spaceRequiredAbove={342}
+                            spaceRequiredBelow={342}
+                        />
+                        <button
+                            className='reacticon__container reaction color--link style--none'
+                            onClick={this.toggleEmojiPicker}
+                            ref='rhs_root_reacticon'
+                        >
+                            <EmojiIcon className='icon icon--emoji'/>
+                        </button>
+                    </div>
+                </ChannelPermissionGate>
             );
         }
 
@@ -299,66 +300,10 @@ export default class RhsRootPost extends React.Component {
             );
         }
 
-        let status = this.props.status;
-        if (post.props && post.props.from_webhook === 'true') {
-            status = null;
-        }
-
-        let profilePic;
-        if (isSystemMessage) {
-            profilePic = (
-                <MattermostLogo className='icon'/>
-            );
-        } else if (post.props && post.props.from_webhook) {
-            profilePic = (
-                <ProfilePicture
-                    src={PostUtils.getProfilePicSrcForPost(post, user)}
-                    width='36'
-                    height='36'
-                />
-            );
-        } else {
-            profilePic = (
-                <ProfilePicture
-                    src={PostUtils.getProfilePicSrcForPost(post, user)}
-                    status={status}
-                    width='36'
-                    height='36'
-                    user={this.props.user}
-                    isBusy={this.props.isBusy}
-                    isRHS={true}
-                    hasMention={true}
-                />
-            );
-        }
-
-        if (this.props.compactDisplay) {
-            if (post.props && post.props.from_webhook) {
-                profilePic = (
-                    <ProfilePicture
-                        src=''
-                    />
-                );
-            } else {
-                profilePic = (
-                    <ProfilePicture
-                        src=''
-                        status={status}
-                        user={this.props.user}
-                        isBusy={this.props.isBusy}
-                        isRHS={true}
-                        hasMention={true}
-                    />
-                );
-            }
-        }
-
         let postClass = '';
         if (PostUtils.isEdited(this.props.post)) {
             postClass += ' post--edited';
         }
-
-        const profilePicContainer = (<div className='post__img'>{profilePic}</div>);
 
         let pinnedBadge;
         if (post.is_pinned) {
@@ -379,6 +324,7 @@ export default class RhsRootPost extends React.Component {
                 isFlagged={this.props.isFlagged}
                 handleDropdownOpened={this.handleDropdownOpened}
                 commentCount={this.props.commentCount}
+                isReadOnly={isReadOnly}
             />
         );
 
@@ -413,7 +359,16 @@ export default class RhsRootPost extends React.Component {
             >
                 <div className='post-right-channel__name'>{channelName}</div>
                 <div className='post__content'>
-                    {profilePicContainer}
+                    <div className='post__img'>
+                        <PostProfilePicture
+                            compactDisplay={this.props.compactDisplay}
+                            isBusy={this.props.isBusy}
+                            isRHS={true}
+                            post={post}
+                            status={this.props.status}
+                            user={this.props.user}
+                        />
+                    </div>
                     <div>
                         <div className='post__header'>
                             <div className='col__name'>{userProfile}</div>
@@ -427,21 +382,19 @@ export default class RhsRootPost extends React.Component {
                         </div>
                         <div className='post__body'>
                             <div className={postClass}>
-                                <PostBodyAdditionalContent
+                                <MessageWithAdditionalContent
                                     post={post}
                                     previewCollapsed={this.props.previewCollapsed}
                                     previewEnabled={this.props.previewEnabled}
                                     isEmbedVisible={this.props.isEmbedVisible}
-                                >
-                                    <PostMessageContainer
-                                        post={post}
-                                        isRHS={true}
-                                        hasMention={true}
-                                    />
-                                </PostBodyAdditionalContent>
+                                    pluginPostTypes={this.props.pluginPostTypes}
+                                />
                             </div>
                             {fileAttachment}
-                            <ReactionListContainer post={post}/>
+                            <ReactionListContainer
+                                post={post}
+                                isReadOnly={isReadOnly}
+                            />
                         </div>
                     </div>
                 </div>

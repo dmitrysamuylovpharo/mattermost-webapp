@@ -1,16 +1,20 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class SearchIcon extends React.PureComponent {
     render() {
         return (
             <span {...this.props}>
                 <svg
-                    width='19px'
-                    height='18px'
+                    width='14px'
+                    height='14px'
                     viewBox='0 0 19 18'
+                    role='icon'
+                    aria-label={localizeMessage('generic_icons.search', 'Search Icon')}
                 >
                     <g
                         stroke='inherit'

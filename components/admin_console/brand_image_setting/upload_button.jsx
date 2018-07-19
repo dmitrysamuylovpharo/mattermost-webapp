@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -45,13 +45,19 @@ export default class UploadButton extends React.PureComponent {
         switch (status) {
         case UploadStatuses.LOADING:
             buttonIcon = (
-                <i className='fa fa-refresh icon--rotate'/>
+                <i
+                    className='fa fa-refresh icon--rotate'
+                    title={Utils.localizeMessage('generic_icons.loading', 'Loading Icon')}
+                />
             );
             buttonText = Utils.localizeMessage('admin.team.uploading', 'Uploading..');
             break;
         case UploadStatuses.COMPLETE:
             buttonIcon = (
-                <i className='fa fa-check'/>
+                <i
+                    className='fa fa-check'
+                    title={Utils.localizeMessage('generic_icons.success', 'Success Icon')}
+                />
             );
             buttonText = Utils.localizeMessage('admin.team.uploaded', 'Uploaded!');
             break;

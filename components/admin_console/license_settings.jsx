@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -134,7 +134,7 @@ class LicenseSettings extends React.Component {
                         className='btn btn-danger'
                         onClick={this.handleRemove}
                         id='remove-button'
-                        data-loading-text={'<span class=\'fa fa-refresh icon--rotate\'></span> ' + this.props.intl.formatMessage(holders.removing)}
+                        data-loading-text={'<span class=\'fa fa-refresh icon--rotate\' title=\'' + Utils.localizeMessage('generic_icons.reload', 'Reload Icon') + '\'></span> ' + this.props.intl.formatMessage(holders.removing)}
                     >
                         <FormattedMessage
                             id='admin.license.keyRemove'
@@ -198,7 +198,7 @@ class LicenseSettings extends React.Component {
                         disabled={!this.state.fileSelected}
                         onClick={this.handleSubmit}
                         id='upload-button'
-                        data-loading-text={'<span class=\'fa fa-refresh icon--rotate\'></span> ' + this.props.intl.formatMessage(holders.uploading)}
+                        data-loading-text={'<span class=\'fa fa-refresh icon--rotate\' title=\'' + Utils.localizeMessage('generic_icons.reload', 'Reload Icon') + '\'></span> ' + this.props.intl.formatMessage(holders.uploading)}
                     >
                         <FormattedMessage
                             id='admin.license.upload'

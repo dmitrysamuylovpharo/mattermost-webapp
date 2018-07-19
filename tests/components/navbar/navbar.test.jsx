@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -12,30 +12,22 @@ describe('components/navbar/Navbar', () => {
         isPinnedPosts: true,
         actions: {
             showEditChannelHeaderModal: jest.fn(),
+            toggleLhs: jest.fn(),
+            closeLhs: jest.fn(),
+            closeRhs: jest.fn(),
+            toggleRhsMenu: jest.fn(),
+            closeRhsMenu: jest.fn(),
         },
         isLicensed: true,
         enableWebrtc: true,
     };
 
     const validState = {
-        channel: {type: 'O', id: 'channel_id', display_name: 'display_name'},
+        channel: {type: 'O', id: 'channel_id', display_name: 'display_name', team_id: 'team_id'},
         member: {id: 'member_id'},
         users: [{id: 'user_id_1'}],
         currentUser: {id: 'current_user_id'},
     };
-
-    global.window.mm_license = {};
-    global.window.mm_config = {};
-
-    beforeEach(() => {
-        global.window.mm_license.IsLicensed = 'true';
-        global.window.mm_config.EnableWebrtc = 'true';
-    });
-
-    afterEach(() => {
-        global.window.mm_license = {};
-        global.window.mm_config = {};
-    });
 
     test('should match snapshot, invalid state', () => {
         const wrapper = shallow(
@@ -54,8 +46,17 @@ describe('components/navbar/Navbar', () => {
         expect(wrapper).toMatchSnapshot();
     });
 
+    test('should match snapshot, for default channel', () => {
+        const wrapper = shallow(
+            <Navbar {...baseProps}/>
+        );
+
+        const channel = {type: 'O', id: '123', name: 'town-square', display_name: 'Town Square', team_id: 'team_id'};
+        wrapper.setState({...validState, channel});
+        expect(wrapper).toMatchSnapshot();
+    });
+
     test('should match snapshot, if not licensed', () => {
-        global.window.mm_license.IsLicensed = 'false';
         const wrapper = shallow(
             <Navbar
                 {...baseProps}
@@ -68,7 +69,6 @@ describe('components/navbar/Navbar', () => {
     });
 
     test('should match snapshot, if enabled WebRTC and DM channel', () => {
-        global.window.mm_config.EnableWebrtc = 'true';
         const wrapper = shallow(
             <Navbar
                 {...baseProps}
@@ -76,13 +76,12 @@ describe('components/navbar/Navbar', () => {
             />
         );
 
-        const newValidState = {...validState, channel: {type: 'D', id: 'channel_id', name: 'user_id_1__user_id_2', display_name: 'display_name'}};
+        const newValidState = {...validState, channel: {type: 'D', id: 'channel_id', name: 'user_id_1__user_id_2', display_name: 'display_name', team_id: 'team_id'}};
         wrapper.setState(newValidState);
         expect(wrapper).toMatchSnapshot();
     });
 
     test('should match snapshot, if WebRTC is not enabled', () => {
-        global.window.mm_config.EnableWebrtc = 'false';
         const wrapper = shallow(
             <Navbar
                 {...baseProps}
@@ -99,7 +98,7 @@ describe('components/navbar/Navbar', () => {
             <Navbar {...baseProps}/>
         );
 
-        const newValidState = {...validState, channel: {type: 'P', id: 'channel_id', display_name: 'display_name'}};
+        const newValidState = {...validState, channel: {type: 'P', id: 'channel_id', display_name: 'display_name', team_id: 'team_id'}};
         wrapper.setState(newValidState);
         expect(wrapper).toMatchSnapshot();
     });

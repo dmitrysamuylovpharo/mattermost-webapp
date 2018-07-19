@@ -139,6 +139,7 @@
 
 .file-view--single {
     margin: 5px 0;
+    position: relative;
 
     .file__image-loading {
         min-height: 100px;
@@ -147,8 +148,24 @@
     .file__image {
         @include legacy-pie-clearfix;
 
+        .image-name {
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+
+            div {
+                display: inline;
+                margin-left: 5px;
+            }
+        }
+
         .image-container {
             position: relative;
+            max-width: 1024px;
             width: 100%;
             height: 100%;
         }
@@ -172,6 +189,7 @@
             left: 0;
             max-height: 350px;
             max-width: 100%;
+            display: inline-block;
             opacity: 0;
             overflow: hidden;
             position: absolute;
@@ -219,6 +237,7 @@
 .post-image__columns {
     display: flex;
     flex-flow: wrap;
+    position: relative;
 }
 
 .post-image__column {

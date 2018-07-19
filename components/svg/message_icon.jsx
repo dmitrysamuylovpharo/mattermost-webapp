@@ -1,7 +1,9 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class MessageIcon extends React.PureComponent {
     render() {
@@ -11,6 +13,8 @@ export default class MessageIcon extends React.PureComponent {
                     width='18px'
                     height='16px'
                     viewBox='0 0 18 16'
+                    role='icon'
+                    aria-label={localizeMessage('generic_icons.message', 'Message Icon')}
                 >
                     <g
                         stroke='none'

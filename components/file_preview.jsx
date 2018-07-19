@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -37,7 +37,7 @@ export default class FilePreview extends React.PureComponent {
         }
     }
 
-    componentWillReceiveProps(newProps) {
+    UNSAFE_componentWillReceiveProps(newProps) { // eslint-disable-line camelcase
         if (!Utils.areObjectsEqual(this.props.fileInfos, newProps.fileInfos)) {
             this.setState({
                 fileInfos: [...newProps.fileInfos],
@@ -119,7 +119,10 @@ export default class FilePreview extends React.PureComponent {
                                 className='file-preview__remove'
                                 onClick={this.handleRemove.bind(this, info.id)}
                             >
-                                <i className='fa fa-remove'/>
+                                <i
+                                    className='fa fa-remove'
+                                    title={Utils.localizeMessage('generic_icons.remove', 'Remove Icon')}
+                                />
                             </a>
                         </div>
                     </div>
@@ -143,7 +146,10 @@ export default class FilePreview extends React.PureComponent {
                         className='file-preview__remove'
                         onClick={this.handleRemove.bind(this, clientId)}
                     >
-                        <i className='fa fa-remove'/>
+                        <i
+                            className='fa fa-remove'
+                            title={Utils.localizeMessage('generic_icons.remove', 'Remove Icon')}
+                        />
                     </a>
                 </div>
             );

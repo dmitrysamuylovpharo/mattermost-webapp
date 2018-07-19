@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
-import $ from 'jquery';
 import PropTypes from 'prop-types';
 import React from 'react';
+import classNames from 'classnames';
 
 import {trackEvent} from 'actions/diagnostics_actions.jsx';
 import {postListScrollChange} from 'actions/global_actions.jsx';
 import PostStore from 'stores/post_store.jsx';
-import PreferenceStore from 'stores/preference_store.jsx';
 import WebrtcStore from 'stores/webrtc_store.jsx';
 import Constants from 'utils/constants.jsx';
 import * as Utils from 'utils/utils.jsx';
@@ -19,6 +18,8 @@ import SearchResults from 'components/search_results';
 
 export default class SidebarRight extends React.Component {
     static propTypes = {
+        isExpanded: PropTypes.bool.isRequired,
+        isOpen: PropTypes.bool.isRequired,
         currentUser: PropTypes.object,
         channel: PropTypes.object,
         postRightVisible: PropTypes.bool,
@@ -37,81 +38,33 @@ export default class SidebarRight extends React.Component {
         super(props);
 
         this.plScrolledToBottom = true;
-
-        this.state = {
-            expanded: false,
-            useMilitaryTime: PreferenceStore.getBool(Constants.Preferences.CATEGORY_DISPLAY_SETTINGS, Constants.Preferences.USE_MILITARY_TIME, false),
-        };
     }
 
     componentDidMount() {
         PostStore.addPostPinnedChangeListener(this.onPostPinnedChange);
-        PreferenceStore.addChangeListener(this.onPreferenceChange);
-        this.doStrangeThings();
     }
 
     componentWillUnmount() {
         PostStore.removePostPinnedChangeListener(this.onPostPinnedChange);
-        PreferenceStore.removeChangeListener(this.onPreferenceChange);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         const isOpen = this.props.searchVisible || this.props.postRightVisible;
         const willOpen = nextProps.searchVisible || nextProps.postRightVisible;
 
         if (!isOpen && willOpen) {
             trackEvent('ui', 'ui_rhs_opened');
         }
-
-        if (!isOpen && willOpen) {
-            this.setState({
-                expanded: false,
-            });
-        }
-    }
-
-    doStrangeThings = () => {
-        // We should have a better way to do this stuff
-        // Hence the function name.
-        $('.app__body .inner-wrap').removeClass('.move--right');
-        $('.app__body .inner-wrap').addClass('move--left');
-        $('.app__body .sidebar--left').removeClass('move--right');
-        $('.multi-teams .team-sidebar').removeClass('move--right');
-        $('.app__body .sidebar--right').addClass('move--left');
-
-        //$('.sidebar--right').prepend('<div class="sidebar__overlay"></div>');
-        if (!this.props.searchVisible && !this.props.postRightVisible) {
-            $('.app__body .inner-wrap').removeClass('move--left').removeClass('move--right');
-            $('.app__body .sidebar--right').removeClass('move--left');
-            return (
-                <div/>
-            );
-        }
-
-        /*setTimeout(() => {
-            $('.sidebar__overlay').fadeOut('200', () => {
-                $('.sidebar__overlay').remove();
-            });
-            }, 500);*/
-        return null;
     }
 
     componentDidUpdate(prevProps) {
         const isOpen = this.props.searchVisible || this.props.postRightVisible;
-        WebrtcStore.emitRhsChanged(isOpen);
-        this.doStrangeThings();
 
         const wasOpen = prevProps.searchVisible || prevProps.postRightVisible;
 
         if (isOpen && !wasOpen) {
-            setTimeout(() => postListScrollChange(), 0);
+            setTimeout(postListScrollChange, 0);
         }
-    }
-
-    onPreferenceChange = () => {
-        this.setState({
-            useMilitaryTime: PreferenceStore.getBool(Constants.Preferences.CATEGORY_DISPLAY_SETTINGS, Constants.Preferences.USE_MILITARY_TIME, false),
-        });
     }
 
     onPostPinnedChange = () => {
@@ -120,30 +73,29 @@ export default class SidebarRight extends React.Component {
         }
     }
 
-    onShrink = () => {
-        this.setState({
-            expanded: false,
-        });
-    }
-
-    toggleSize = () => {
-        this.setState({expanded: !this.state.expanded});
-    }
-
     render() {
+        const {
+            channel,
+            currentUser,
+            isFlaggedPosts,
+            isMentionSearch,
+            isPinnedPosts,
+            postRightVisible,
+            previousRhsState,
+            searchVisible,
+        } = this.props;
+
         let content = null;
         let expandedClass = '';
 
-        if (this.state.expanded) {
+        if (this.props.isExpanded) {
             expandedClass = 'sidebar--right--expanded';
         }
 
         var searchForm = null;
-        if (this.props.currentUser) {
-            searchForm = <SearchBar isFocus={this.props.searchVisible}/>;
+        if (currentUser) {
+            searchForm = <SearchBar isFocus={searchVisible && !isFlaggedPosts && !isPinnedPosts}/>;
         }
-
-        const channel = this.props.channel;
 
         let channelDisplayName = '';
         if (channel) {
@@ -154,31 +106,29 @@ export default class SidebarRight extends React.Component {
             }
         }
 
-        if (this.props.searchVisible) {
+        if (searchVisible) {
             content = (
                 <div className='sidebar--right__content'>
                     <div className='search-bar__container channel-header alt'>{searchForm}</div>
                     <SearchResults
-                        isMentionSearch={this.props.isMentionSearch}
-                        isFlaggedPosts={this.props.isFlaggedPosts}
-                        isPinnedPosts={this.props.isPinnedPosts}
-                        useMilitaryTime={this.state.useMilitaryTime}
+                        isMentionSearch={isMentionSearch}
+                        isFlaggedPosts={isFlaggedPosts}
+                        isPinnedPosts={isPinnedPosts}
                         toggleSize={this.toggleSize}
                         shrink={this.onShrink}
                         channelDisplayName={channelDisplayName}
                     />
                 </div>
             );
-        } else if (this.props.postRightVisible) {
+        } else if (postRightVisible) {
             content = (
                 <div className='post-right__container'>
                     <FileUploadOverlay overlayType='right'/>
                     <div className='search-bar__container channel-header alt'>{searchForm}</div>
                     <RhsThread
-                        previousRhsState={this.props.previousRhsState}
+                        previousRhsState={previousRhsState}
                         isWebrtc={WebrtcStore.isBusy()}
-                        currentUser={this.props.currentUser}
-                        useMilitaryTime={this.state.useMilitaryTime}
+                        currentUser={currentUser}
                         toggleSize={this.toggleSize}
                         shrink={this.onShrink}
                     />
@@ -190,12 +140,9 @@ export default class SidebarRight extends React.Component {
             expandedClass = '';
         }
 
-        let fontSizeClass = Utils.getSizeClassForUser(this.state.currentUser);
-        let classNames = 'sidebar--right ' + expandedClass + ' ' + fontSizeClass;
-
         return (
             <div
-                className={classNames}
+                className={classNames('sidebar--right', Utils.getSizeClassForUser(currentUser), expandedClass, {'move--left': this.props.isOpen})}
                 id='sidebar-right'
             >
                 <div

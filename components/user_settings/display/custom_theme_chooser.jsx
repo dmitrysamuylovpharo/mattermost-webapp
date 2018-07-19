@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -7,6 +7,7 @@ import React from 'react';
 import {OverlayTrigger, Popover} from 'react-bootstrap';
 import {defineMessages, FormattedMessage, injectIntl, intlShape} from 'react-intl';
 
+import {localizeMessage} from 'utils/utils.jsx';
 import 'bootstrap-colorpicker';
 
 import Constants from 'utils/constants.jsx';
@@ -387,8 +388,14 @@ class CustomThemeChooser extends React.Component {
                             defaultMessage='Sidebar Styles'
                         />
                         <div className='header__icon'>
-                            <i className='fa fa-plus'/>
-                            <i className='fa fa-minus'/>
+                            <i
+                                className='fa fa-plus'
+                                title={localizeMessage('generic_icons.expand', 'Expand Icon')}
+                            />
+                            <i
+                                className='fa fa-minus'
+                                title={localizeMessage('generic_icons.collapse', 'Collapse Icon')}
+                            />
                         </div>
                     </div>
                     <div
@@ -409,8 +416,14 @@ class CustomThemeChooser extends React.Component {
                             defaultMessage='Center Channel Styles'
                         />
                         <div className='header__icon'>
-                            <i className='fa fa-plus'/>
-                            <i className='fa fa-minus'/>
+                            <i
+                                className='fa fa-plus'
+                                title={localizeMessage('generic_icons.expand', 'Expand Icon')}
+                            />
+                            <i
+                                className='fa fa-minus'
+                                title={localizeMessage('generic_icons.collapse', 'Collapse Icon')}
+                            />
                         </div>
                     </div>
                     <div
@@ -431,8 +444,14 @@ class CustomThemeChooser extends React.Component {
                             defaultMessage='Link and Button Styles'
                         />
                         <div className='header__icon'>
-                            <i className='fa fa-plus'/>
-                            <i className='fa fa-minus'/>
+                            <i
+                                className='fa fa-plus'
+                                title={localizeMessage('generic_icons.expand', 'Expand Icon')}
+                            />
+                            <i
+                                className='fa fa-minus'
+                                title={localizeMessage('generic_icons.collapse', 'Collapse Icon')}
+                            />
                         </div>
                     </div>
                     <div

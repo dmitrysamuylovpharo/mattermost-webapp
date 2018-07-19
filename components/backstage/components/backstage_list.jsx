@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -89,7 +89,10 @@ export default class BackstageList extends React.Component {
                 </div>
                 <div className='backstage-filters'>
                     <div className='backstage-filter__search'>
-                        <i className='fa fa-search'/>
+                        <i
+                            className='fa fa-search'
+                            title={Utils.localizeMessage('generic_icons.search', 'Search Icon')}
+                        />
                         <input
                             type='search'
                             className='form-control'

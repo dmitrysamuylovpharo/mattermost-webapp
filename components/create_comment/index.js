@@ -1,5 +1,5 @@
-// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
@@ -38,6 +38,7 @@ function mapStateToProps(state, ownProps) {
     const config = getConfig(state);
     const enableConfirmNotificationsToChannel = config.EnableConfirmNotificationsToChannel === 'true';
     const enableEmojiPicker = config.EnableEmojiPicker === 'true';
+    const enableGifPicker = config.EnableGifPicker === 'true';
 
     return {
         draft,
@@ -49,6 +50,8 @@ function mapStateToProps(state, ownProps) {
         readOnlyChannel: !isCurrentUserSystemAdmin(state) && config.ExperimentalTownSquareIsReadOnly === 'true' && channel.name === Constants.DEFAULT_CHANNEL,
         enableConfirmNotificationsToChannel,
         enableEmojiPicker,
+        enableGifPicker,
+        maxPostSize: parseInt(config.MaxPostSize, 10) || Constants.DEFAULT_CHARACTER_LIMIT,
     };
 }
 

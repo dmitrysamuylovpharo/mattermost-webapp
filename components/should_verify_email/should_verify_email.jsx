@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -7,6 +7,7 @@ import {FormattedMessage} from 'react-intl';
 
 import {resendVerification} from 'actions/user_actions.jsx';
 import BackButton from 'components/common/back_button.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class ShouldVerifyEmail extends React.Component {
     constructor(props) {
@@ -39,7 +40,10 @@ export default class ShouldVerifyEmail extends React.Component {
                 <div>
                     <br/>
                     <p className='alert alert-success'>
-                        <i className='fa fa-check'/>
+                        <i
+                            className='fa fa-check'
+                            title={localizeMessage('generic_icons.success', 'Success Icon')}
+                        />
                         <FormattedMessage
                             id='email_verify.sent'
                             defaultMessage=' Verification email sent.'
@@ -54,7 +58,10 @@ export default class ShouldVerifyEmail extends React.Component {
                 <div>
                     <br/>
                     <p className='alert alert-danger'>
-                        <i className='fa fa-times'/>
+                        <i
+                            className='fa fa-times'
+                            title={localizeMessage('generic_icons.fail', 'Faliure Icon')}
+                        />
                         <FormattedMessage id='email_verify.failed'/>
                     </p>
                 </div>

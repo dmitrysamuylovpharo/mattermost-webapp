@@ -1,7 +1,7 @@
-// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
-/* eslint-disable max-nested-callbacks */
+/* eslint max-nested-callbacks: ["error", 3] */
 
 import localForage from 'localforage';
 import {extendPrototype} from 'localforage-observable';
@@ -14,6 +14,8 @@ import {storageRehydrate} from 'actions/storage';
 import appReducer from 'reducers';
 import {transformSet} from 'store/utils';
 import {detect} from 'utils/network.js';
+import {ActionTypes} from 'utils/constants.jsx';
+import {getBasePath} from 'selectors/general';
 
 function getAppReducer() {
     return require('../reducers'); // eslint-disable-line global-require
@@ -73,7 +75,7 @@ export default function configureStore(initialState) {
             const storage = localforage;
             const KEY_PREFIX = 'reduxPersist:';
 
-            localforage.ready(() => {
+            localforage.ready().then(() => {
                 const persistor = persistStore(store, {storage, keyPrefix: KEY_PREFIX, ...options}, () => {
                     store.dispatch({
                         type: General.STORE_REHYDRATION_COMPLETE,
@@ -97,7 +99,7 @@ export default function configureStore(initialState) {
                         restoredState[keyspace] = value;
                     }
                 }).then(() => {
-                    storageRehydrate(restoredState)(store.dispatch, persistor);
+                    storageRehydrate(restoredState, persistor)(store.dispatch, store.getState);
                 });
 
                 observable.subscribe({
@@ -107,7 +109,7 @@ export default function configureStore(initialState) {
 
                             var statePartial = {};
                             statePartial[keyspace] = args.newValue;
-                            storageRehydrate(statePartial)(store.dispatch, persistor);
+                            storageRehydrate(statePartial, persistor)(store.dispatch, store.getState);
                         }
                     },
                 });
@@ -117,12 +119,14 @@ export default function configureStore(initialState) {
                 // check to see if the logout request was successful
                 store.subscribe(() => {
                     const state = store.getState();
+                    const basePath = getBasePath(state);
+
                     if (state.requests.users.logout.status === RequestStatus.SUCCESS && !purging) {
                         purging = true;
 
                         persistor.purge().then(() => {
                             document.cookie = 'MMUSERID=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                            window.location.href = '/';
+                            window.location.href = basePath;
 
                             store.dispatch({
                                 type: General.OFFLINE_STORE_RESET,
@@ -135,6 +139,11 @@ export default function configureStore(initialState) {
                         });
                     }
                 });
+            }).catch((error) => {
+                store.dispatch({
+                    type: ActionTypes.STORE_REHYDRATION_FAILED,
+                    error,
+                });
             });
         },
         persistOptions: {
@@ -142,7 +151,7 @@ export default function configureStore(initialState) {
                 log: false,
             },
             blacklist: ['errors', 'offline', 'requests', 'entities', 'views', 'plugins'],
-            debounce: 500,
+            debounce: 30,
             transforms: [
                 setTransformer,
             ],

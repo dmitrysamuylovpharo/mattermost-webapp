@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import {Link} from 'react-router-dom';
+import {Permissions} from 'mattermost-redux/constants';
+import classNames from 'classnames';
 
 import * as GlobalActions from 'actions/global_actions.jsx';
 import PreferenceStore from 'stores/preference_store.jsx';
@@ -24,29 +26,37 @@ import LeaveTeamIcon from 'components/svg/leave_team_icon';
 import TeamMembersModal from 'components/team_members_modal';
 import ToggleModalButton from 'components/toggle_modal_button.jsx';
 import TeamSettingsModal from 'components/team_settings_modal.jsx';
-import {createMenuTip} from 'components/tutorial/tutorial_tip.jsx';
+import TeamPermissionGate from 'components/permissions_gates/team_permission_gate';
+import SystemPermissionGate from 'components/permissions_gates/system_permission_gate';
+import MenuTutorialTip from 'components/tutorial/menu_tutorial_tip';
 
 export default class SidebarRightMenu extends React.Component {
     static propTypes = {
+        teamId: PropTypes.string,
+        isOpen: PropTypes.bool.isRequired,
         teamType: PropTypes.string,
         teamDisplayName: PropTypes.string,
         isMentionSearch: PropTypes.bool,
         showTutorialTip: PropTypes.bool.isRequired,
-        isLicensed: PropTypes.bool.isRequired,
         appDownloadLink: PropTypes.string,
-        enableTeamCreation: PropTypes.bool.isRequired,
         enableUserCreation: PropTypes.bool.isRequired,
         experimentalPrimaryTeam: PropTypes.string,
         helpLink: PropTypes.string,
         reportAProblemLink: PropTypes.string,
-        restrictTeamInvite: PropTypes.string,
         siteName: PropTypes.string,
+        pluginMenuItems: PropTypes.arrayOf(PropTypes.object),
         actions: PropTypes.shape({
             showMentions: PropTypes.func,
             showFlaggedPosts: PropTypes.func,
-            closeRightHandSide: PropTypes.func,
+            closeRightHandSide: PropTypes.func.isRequired,
+            openRhsMenu: PropTypes.func.isRequired,
+            closeRhsMenu: PropTypes.func.isRequired,
         }),
     };
+
+    static defaultProps = {
+        pluginMenuItems: [],
+    }
 
     constructor(props) {
         super(props);
@@ -115,7 +125,7 @@ export default class SidebarRightMenu extends React.Component {
     getFlagged = (e) => {
         e.preventDefault();
         this.props.actions.showFlaggedPosts();
-        this.closeRightSidebar();
+        this.props.actions.closeRhsMenu();
     }
 
     getStateFromStores = () => {
@@ -136,35 +146,8 @@ export default class SidebarRightMenu extends React.Component {
         if (this.props.isMentionSearch) {
             this.props.actions.closeRightHandSide();
         } else {
-            this.closeRightSidebar();
+            this.props.actions.closeRhsMenu();
             this.props.actions.showMentions();
-        }
-    }
-
-    closeLeftSidebar = () => {
-        if (Utils.isMobile()) {
-            setTimeout(() => {
-                document.querySelector('.app__body .inner-wrap').classList.remove('move--right');
-                document.querySelector('.app__body .sidebar--left').classList.remove('move--right');
-            });
-        }
-    }
-
-    openRightSidebar = () => {
-        if (Utils.isMobile()) {
-            setTimeout(() => {
-                document.querySelector('.app__body .inner-wrap').classList.add('move--left-small');
-                document.querySelector('.app__body .sidebar--menu').classList.add('move--left');
-            });
-        }
-    }
-
-    closeRightSidebar = () => {
-        if (Utils.isMobile()) {
-            setTimeout(() => {
-                document.querySelector('.app__body .inner-wrap').classList.remove('move--left-small');
-                document.querySelector('.app__body .sidebar--menu').classList.remove('move--left');
-            });
         }
     }
 
@@ -181,76 +164,92 @@ export default class SidebarRightMenu extends React.Component {
         let teamLink;
         let inviteLink;
         let addUserToTeamLink;
-        let teamSettingsLink;
         let manageLink;
         let consoleLink;
         let joinAnotherTeamLink;
-        let isAdmin = false;
-        let isSystemAdmin = false;
         let createTeam = null;
 
         if (currentUser != null) {
-            isAdmin = TeamStore.isTeamAdminForCurrentTeam() || UserStore.isSystemAdminForCurrentUser();
-            isSystemAdmin = UserStore.isSystemAdminForCurrentUser();
-
             inviteLink = (
-                <li>
-                    <a
-                        href='#'
-                        onClick={GlobalActions.showInviteMemberModal}
+                <TeamPermissionGate
+                    teamId={this.props.teamId}
+                    permissions={[Permissions.INVITE_USER]}
+                >
+                    <TeamPermissionGate
+                        teamId={this.props.teamId}
+                        permissions={[Permissions.ADD_USER_TO_TEAM]}
                     >
-                        <i className='icon fa fa-user-plus'/>
-                        <FormattedMessage
-                            id='sidebar_right_menu.inviteNew'
-                            defaultMessage='Send Email Invite'
-                        />
-                    </a>
-                </li>
+                        <li>
+                            <a
+                                href='#'
+                                onClick={GlobalActions.showInviteMemberModal}
+                            >
+                                <i
+                                    className='icon fa fa-user-plus'
+                                    title={Utils.localizeMessage('sidebar_right_menu.inviteNew.icon', 'Send Email Invite Icon')}
+                                />
+                                <FormattedMessage
+                                    id='sidebar_right_menu.inviteNew'
+                                    defaultMessage='Send Email Invite'
+                                />
+                            </a>
+                        </li>
+                    </TeamPermissionGate>
+                </TeamPermissionGate>
             );
 
             addUserToTeamLink = (
-                <li>
-                    <a
-                        id='addUsersToTeam'
-                        href='#'
-                        onClick={this.showAddUsersToTeamModal}
-                    >
-                        <i className='icon fa fa-user-plus'/>
-                        <FormattedMessage
-                            id='sidebar_right_menu.addMemberToTeam'
-                            defaultMessage='Add Members to Team'
-                        />
-                    </a>
-                </li>
+                <TeamPermissionGate
+                    teamId={this.props.teamId}
+                    permissions={[Permissions.ADD_USER_TO_TEAM]}
+                >
+                    <li>
+                        <a
+                            id='addUsersToTeam'
+                            href='#'
+                            onClick={this.showAddUsersToTeamModal}
+                        >
+                            <i
+                                className='icon fa fa-user-plus'
+                                title={Utils.localizeMessage('sidebar_right_menu.addMemberToTeam.icon', 'Add Members to Team Icon')}
+                            />
+                            <FormattedMessage
+                                id='sidebar_right_menu.addMemberToTeam'
+                                defaultMessage='Add Members to Team'
+                            />
+                        </a>
+                    </li>
+                </TeamPermissionGate>
             );
 
             if (this.props.teamType === Constants.OPEN_TEAM && this.props.enableUserCreation) {
                 teamLink = (
-                    <li>
-                        <a
-                            href='#'
-                            onClick={GlobalActions.showGetTeamInviteLinkModal}
+                    <TeamPermissionGate
+                        teamId={this.props.teamId}
+                        permissions={[Permissions.INVITE_USER]}
+                    >
+                        <TeamPermissionGate
+                            teamId={this.props.teamId}
+                            permissions={[Permissions.ADD_USER_TO_TEAM]}
                         >
-                            <i className='icon fa fa-link'/>
-                            <FormattedMessage
-                                id='sidebar_right_menu.teamLink'
-                                defaultMessage='Get Team Invite Link'
-                            />
-                        </a>
-                    </li>
+                            <li>
+                                <a
+                                    href='#'
+                                    onClick={GlobalActions.showGetTeamInviteLinkModal}
+                                >
+                                    <i
+                                        className='icon fa fa-link'
+                                        title={Utils.localizeMessage('sidebar_right_menu.teamLink.icon', 'Get Team Invite Link Icon')}
+                                    />
+                                    <FormattedMessage
+                                        id='sidebar_right_menu.teamLink'
+                                        defaultMessage='Get Team Invite Link'
+                                    />
+                                </a>
+                            </li>
+                        </TeamPermissionGate>
+                    </TeamPermissionGate>
                 );
-            }
-
-            if (this.props.isLicensed) {
-                if (this.props.restrictTeamInvite === Constants.PERMISSIONS_SYSTEM_ADMIN && !isSystemAdmin) {
-                    teamLink = null;
-                    inviteLink = null;
-                    addUserToTeamLink = null;
-                } else if (this.props.restrictTeamInvite === Constants.PERMISSIONS_TEAM_ADMIN && !isAdmin) {
-                    teamLink = null;
-                    inviteLink = null;
-                    addUserToTeamLink = null;
-                }
             }
 
             let moreTeams = false;
@@ -270,7 +269,10 @@ export default class SidebarRightMenu extends React.Component {
                 joinAnotherTeamLink = (
                     <li key='joinTeam_li'>
                         <Link to='/select_team'>
-                            <i className='icon fa fa-plus-square'/>
+                            <i
+                                className='icon fa fa-plus-square'
+                                title={Utils.localizeMessage('navbar_dropdown.join.icon', 'Join Another Team Icon')}
+                            />
                             <FormattedMessage
                                 id='navbar_dropdown.join'
                                 defaultMessage='Join Another Team'
@@ -280,8 +282,8 @@ export default class SidebarRightMenu extends React.Component {
                 );
             }
 
-            if (this.props.enableTeamCreation || isSystemAdmin) {
-                createTeam = (
+            createTeam = (
+                <SystemPermissionGate permissions={[Permissions.CREATE_TEAM]}>
                     <li key='newTeam_li'>
                         <Link
                             id='createTeam'
@@ -289,21 +291,27 @@ export default class SidebarRightMenu extends React.Component {
                             to='/create_team'
                             onClick={this.handleClick}
                         >
-                            <i className='icon fa fa-plus-square'/>
+                            <i
+                                className='icon fa fa-plus-square'
+                                title={Utils.localizeMessage('navbar_dropdown.create.icon', 'Create a New Team Icon')}
+                            />
                             <FormattedMessage
                                 id='navbar_dropdown.create'
                                 defaultMessage='Create a New Team'
                             />
                         </Link>
                     </li>
-                );
-            }
+                </SystemPermissionGate>
+            );
         }
 
         manageLink = (
             <li>
                 <ToggleModalButton dialogType={TeamMembersModal}>
-                    <i className='icon fa fa-users'/>
+                    <i
+                        className='icon fa fa-users'
+                        title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                    />
                     <FormattedMessage
                         id='sidebar_right_menu.viewMembers'
                         defaultMessage='View Members'
@@ -311,6 +319,39 @@ export default class SidebarRightMenu extends React.Component {
                 </ToggleModalButton>
             </li>
         );
+
+        const pluginItems = this.props.pluginMenuItems.map((item) => {
+            const MenuIconMobile = item.mobile_icon;
+            let menuIcon;
+            if (MenuIconMobile) {
+                menuIcon = (<MenuIconMobile/>);
+            } else {
+                menuIcon = (
+                    <i
+                        className='icon fa fa-plus-square'
+                        title={Utils.localizeMessage('generic_icons.add', 'Add Icon')}
+                    />
+                );
+            }
+
+            return (
+                <li key={item.id + '_pluginrightmenuitem'}>
+                    <a
+                        id={item.id + '_pluginrightmenuitem'}
+                        href='#'
+                        onClick={item.action}
+                    >
+                        {menuIcon}
+                        {item.text}
+                    </a>
+                </li>
+            );
+        });
+
+        let pluginDivider = null;
+        if (pluginItems.length > 0) {
+            pluginDivider = <li className='divider'/>;
+        }
 
         let leaveTeam = '';
         if (!this.props.experimentalPrimaryTeam) {
@@ -331,51 +372,69 @@ export default class SidebarRightMenu extends React.Component {
             );
         }
 
-        if (isAdmin) {
-            teamSettingsLink = (
+        const teamSettingsLink = (
+            <TeamPermissionGate
+                teamId={this.props.teamId}
+                permissions={[Permissions.MANAGE_TEAM]}
+            >
                 <li>
                     <a
                         href='#'
                         onClick={this.showTeamSettingsModal}
                     >
-                        <i className='icon fa fa-globe'/>
+                        <i
+                            className='icon fa fa-globe'
+                            title={Utils.localizeMessage('generic_icons.settings', 'Settings Icon')}
+                        />
                         <FormattedMessage
                             id='sidebar_right_menu.teamSettings'
                             defaultMessage='Team Settings'
                         />
                     </a>
                 </li>
-            );
-            manageLink = (
+            </TeamPermissionGate>
+        );
+        manageLink = (
+            <TeamPermissionGate
+                teamId={this.props.teamId}
+                permissions={[Permissions.MANAGE_TEAM]}
+            >
                 <li>
                     <ToggleModalButton
                         dialogType={TeamMembersModal}
-                        dialogProps={{isAdmin}}
                     >
-                        <i className='icon fa fa-users'/>
+                        <i
+                            className='icon fa fa-users'
+                            title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                        />
                         <FormattedMessage
                             id='sidebar_right_menu.manageMembers'
                             defaultMessage='Manage Members'
                         />
                     </ToggleModalButton>
                 </li>
-            );
-        }
+            </TeamPermissionGate>
+        );
 
-        if (isSystemAdmin && !Utils.isMobile()) {
+        if (!Utils.isMobile()) {
             consoleLink = (
-                <li>
-                    <Link
-                        to={'/admin_console'}
-                        onClick={this.handleClick}
-                    >
-                        <i className='icon fa fa-wrench'/>
-                        <FormattedMessage
-                            id='sidebar_right_menu.console'
-                            defaultMessage='System Console'
-                        />
-                    </Link>
-                </li>
+                <SystemPermissionGate permissions={[Permissions.MANAGE_SYSTEM]}>
+                    <li>
+                        <Link
+                            to={'/admin_console'}
+                            onClick={this.handleClick}
+                        >
+                            <i
+                                className='icon fa fa-wrench'
+                                title={Utils.localizeMessage('sidebar_right_menu.console', 'System Console Icon')}
+                            />
+                            <FormattedMessage
+                                id='sidebar_right_menu.console'
+                                defaultMessage='System Console'
+                            />
+                        </Link>
+                    </li>
+                </SystemPermissionGate>
             );
         }
 
@@ -397,7 +456,10 @@ export default class SidebarRightMenu extends React.Component {
                         rel='noopener noreferrer'
                         to={this.props.helpLink}
                     >
-                        <i className='icon fa fa-question'/>
+                        <i
+                            className='icon fa fa-question'
+                            title={Utils.localizeMessage('generic_icons.help', 'Help Icon')}
+                        />
                         <FormattedMessage
                             id='sidebar_right_menu.help'
                             defaultMessage='Help'
@@ -416,7 +478,10 @@ export default class SidebarRightMenu extends React.Component {
                         rel='noopener noreferrer'
                         to={this.props.reportAProblemLink}
                     >
-                        <i className='icon fa fa-phone'/>
+                        <i
+                            className='icon fa fa-phone'
+                            title={Utils.localizeMessage('generic_icons.report', 'Report Icon')}
+                        />
                         <FormattedMessage
                             id='sidebar_right_menu.report'
                             defaultMessage='Report a Problem'
@@ -428,9 +493,8 @@ export default class SidebarRightMenu extends React.Component {
 
         let tutorialTip = null;
         if (this.props.showTutorialTip) {
-            tutorialTip = createMenuTip((e) => e.preventDefault(), true);
-            this.closeLeftSidebar();
-            this.openRightSidebar();
+            tutorialTip = <MenuTutorialTip onBottom={true}/>;
+            this.props.actions.openRhsMenu();
         }
 
         let nativeAppLink = null;
@@ -442,7 +506,10 @@ export default class SidebarRightMenu extends React.Component {
                         rel='noopener noreferrer'
                         to={useSafeUrl(this.props.appDownloadLink)}
                     >
-                        <i className='icon fa fa-mobile'/>
+                        <i
+                            className='icon fa fa-mobile'
+                            title={Utils.localizeMessage('sidebar_right_menu.nativeApps.icon', 'Native Apps Icon')}
+                        />
                         <FormattedMessage
                             id='sidebar_right_menu.nativeApps'
                             defaultMessage='Download Apps'
@@ -471,12 +538,9 @@ export default class SidebarRightMenu extends React.Component {
             consoleDivider = <li className='divider'/>;
         }
 
-        let fontSizeClass = Utils.getSizeClassForUser(currentUser);
-        let classNames = 'sidebar--menu ' + fontSizeClass;
-        
         return (
             <div
-                className={classNames}
+                className={classNames('sidebar--menu', Utils.getSizeClassForUser(currentUser), {'move--left': this.props.isOpen && Utils.isMobile()})}
                 id='sidebar-menu'
             >
                 <div className='team__header theme'>
@@ -508,7 +572,10 @@ export default class SidebarRightMenu extends React.Component {
                                 href='#'
                                 onClick={this.getFlagged}
                             >
-                                <i className='icon fa fa-flag'/>
+                                <i
+                                    className='icon fa fa-flag'
+                                    title={Utils.localizeMessage('generic_icons.flag', 'Flag Icon')}
+                                />
                                 <FormattedMessage
                                     id='sidebar_right_menu.flagged'
                                     defaultMessage='Flagged Posts'
@@ -521,7 +588,10 @@ export default class SidebarRightMenu extends React.Component {
                                 href='#'
                                 onClick={this.showAccountSettingsModal}
                             >
-                                <i className='icon fa fa-cog'/>
+                                <i
+                                    className='icon fa fa-cog'
+                                    title={Utils.localizeMessage('generic_icons.settings', 'Settings Icon')}
+                                />
                                 <FormattedMessage
                                     id='sidebar_right_menu.accountSettings'
                                     defaultMessage='Account Settings'
@@ -538,6 +608,8 @@ export default class SidebarRightMenu extends React.Component {
                         {createTeam}
                         {joinAnotherTeamLink}
                         {leaveTeam}
+                        {pluginDivider}
+                        {pluginItems}
                         {consoleDivider}
                         {consoleLink}
                         <li className='divider'/>
@@ -549,7 +621,10 @@ export default class SidebarRightMenu extends React.Component {
                                 href='#'
                                 onClick={this.handleAboutModal}
                             >
-                                <i className='icon fa fa-info'/>
+                                <i
+                                    className='icon fa fa-info'
+                                    title={Utils.localizeMessage('generic_icons.info', 'Info Icon')}
+                                />
                                 <FormattedMessage
                                     id='navbar_dropdown.about'
                                     defaultMessage='About Mattermost'
@@ -562,7 +637,10 @@ export default class SidebarRightMenu extends React.Component {
                                 href='#'
                                 onClick={this.handleEmitUserLoggedOutEvent}
                             >
-                                <i className='icon fa fa-sign-out'/>
+                                <i
+                                    className='icon fa fa-sign-out'
+                                    title={Utils.localizeMessage('generic_icons.logout', 'Logout Icon')}
+                                />
                                 <FormattedMessage
                                     id='sidebar_right_menu.logout'
                                     defaultMessage='Logout'

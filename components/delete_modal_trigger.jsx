@@ -1,10 +1,11 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
 
 import Constants from 'utils/constants.jsx';
+import * as Utils from 'utils/utils.jsx';
 
 import ConfirmModal from './confirm_modal.jsx';
 
@@ -43,7 +44,7 @@ export default class DeleteModalTrigger extends React.PureComponent {
     }
 
     handleKeyDown = (e) => {
-        if (e.keyCode === Constants.KeyCodes.ENTER) {
+        if (Utils.isKeyPressed(e, Constants.KeyCodes.ENTER)) {
             this.handleConfirm(e);
         }
     }

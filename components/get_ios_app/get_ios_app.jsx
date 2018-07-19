@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -52,7 +52,7 @@ export default function GetIosApp({iosAppDownloadLink}) {
                     defaultMessage='Or {link}'
                     values={{
                         link: (
-                            <Link to='/switch_team'>
+                            <Link to='/'>
                                 <FormattedMessage
                                     id='get_app.continueWithBrowserLink'
                                     defaultMessage='continue with browser'

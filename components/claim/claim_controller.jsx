@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -37,8 +37,9 @@ export default class ClaimController extends React.Component {
                                             currentType={currentType}
                                             email={email}
                                             siteName={this.props.siteName}
+                                            passwordConfig={this.props.passwordConfig}
                                         />
-                                )}
+                                    )}
                                 />
                                 <Route
                                     path={`${this.props.match.url}/email_to_oauth`}
@@ -49,7 +50,7 @@ export default class ClaimController extends React.Component {
                                             email={email}
                                             siteName={this.props.siteName}
                                         />
-                                )}
+                                    )}
                                 />
                                 <Route
                                     path={`${this.props.match.url}/ldap_to_email`}
@@ -58,8 +59,9 @@ export default class ClaimController extends React.Component {
                                             {...props}
                                             siteName={this.props.siteName}
                                             email={email}
+                                            passwordConfig={this.props.passwordConfig}
                                         />
-                                )}
+                                    )}
                                 />
                                 <Route
                                     path={`${this.props.match.url}/email_to_ldap`}
@@ -70,7 +72,7 @@ export default class ClaimController extends React.Component {
                                             siteName={this.props.siteName}
                                             ldapLoginFieldName={this.props.ldapLoginFieldName}
                                         />
-                                )}
+                                    )}
                                 />
                             </Switch>
                         </div>
@@ -85,4 +87,12 @@ ClaimController.propTypes = {
     location: PropTypes.object.isRequired,
     siteName: PropTypes.string,
     ldapLoginFieldName: PropTypes.string,
+    passwordConfig: PropTypes.object,
+
+    /*
+     * Object from react-router
+     */
+    match: PropTypes.shape({
+        url: PropTypes.string.isRequired,
+    }).isRequired,
 };

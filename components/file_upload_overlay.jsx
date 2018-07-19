@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 
 import fileOverlayImage from 'images/filesOverlay.png';
+import {localizeMessage} from 'utils/utils.jsx';
 import overlayLogoImage from 'images/logoWhite.png';
 
 export default function FileUploadOverlay(props) {
@@ -25,7 +26,11 @@ export default function FileUploadOverlay(props) {
                         src={fileOverlayImage}
                         alt='Files'
                     />
-                    <span><i className='fa fa-upload'/>
+                    <span>
+                        <i
+                            className='fa fa-upload'
+                            title={localizeMessage('generic_icons.upload', 'Upload Icon')}
+                        />
                         <FormattedMessage
                             id='upload_overlay.info'
                             defaultMessage='Drop a file to upload it.'

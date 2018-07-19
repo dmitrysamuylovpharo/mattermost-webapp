@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -7,6 +7,7 @@ import {FormattedMessage} from 'react-intl';
 import {Route, Switch} from 'react-router-dom';
 
 import {emitUserLoggedOutEvent} from 'actions/global_actions.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 import logoImage from 'images/logo.png';
 import BackButton from 'components/common/back_button.jsx';
 
@@ -42,7 +43,10 @@ export default class MFAController extends React.Component {
                         className='style--none color--link'
                         onClick={this.handleOnClick}
                     >
-                        <span className='fa fa-chevron-left'/>
+                        <span
+                            className='fa fa-chevron-left'
+                            title={localizeMessage('generic_icons.logout', 'Logout Icon')}
+                        />
                         <FormattedMessage
                             id='web.header.logout'
                             defaultMessage='Logout'
@@ -81,7 +85,7 @@ export default class MFAController extends React.Component {
                                                     updateParent={this.updateParent}
                                                     {...props}
                                                 />
-                                        )}
+                                            )}
                                         />
                                         <Route
                                             path={`${this.props.match.url}/confirm`}
@@ -91,7 +95,7 @@ export default class MFAController extends React.Component {
                                                     updateParent={this.updateParent}
                                                     {...props}
                                                 />
-                                        )}
+                                            )}
                                         />
                                     </Switch>
                                 </div>
@@ -110,4 +114,11 @@ MFAController.propTypes = {
     mfa: PropTypes.bool.isRequired,
     enableMultifactorAuthentication: PropTypes.bool.isRequired,
     enforceMultifactorAuthentication: PropTypes.bool.isRequired,
+
+    /*
+     * Object from react-router
+     */
+    match: PropTypes.shape({
+        url: PropTypes.string.isRequired,
+    }).isRequired,
 };

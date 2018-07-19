@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {RequestStatus} from 'mattermost-redux/constants';
@@ -8,7 +8,6 @@ import {shallowWithIntl} from 'tests/helpers/intl-test-helper';
 import RenameChannelModal from 'components/rename_channel_modal/rename_channel_modal.jsx';
 
 describe('components/RenameChannelModal', () => {
-    global.window.mm_config = {};
     const channel = {
         id: 'fake-id',
         name: 'fake-channel',

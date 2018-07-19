@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -31,7 +31,10 @@ export default class SaveButton extends React.PureComponent {
         if (saving) {
             contents = (
                 <span>
-                    <span className='fa fa-refresh icon--rotate'/>
+                    <span
+                        className='fa fa-refresh icon--rotate'
+                        title={localizeMessage('generic_icons.loading', 'Loading Icon')}
+                    />
                     {savingMessage}
                 </span>
             );

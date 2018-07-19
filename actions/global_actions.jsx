@@ -1,9 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
+
+import debounce from 'lodash/debounce';
 
 import {
+    getChannel,
     createDirectChannel,
-    getChannelAndMyMember,
+    getChannelByNameAndTeamName,
     getChannelStats,
     getMyChannelMember,
     joinChannel,
@@ -13,13 +16,17 @@ import {
 import {getPostThread} from 'mattermost-redux/actions/posts';
 import {removeUserFromTeam} from 'mattermost-redux/actions/teams';
 import {Client4} from 'mattermost-redux/client';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
+import {getCurrentChannelStats} from 'mattermost-redux/selectors/entities/channels';
 
 import {browserHistory} from 'utils/browser_history';
 import {loadChannelsForCurrentUser} from 'actions/channel_actions.jsx';
 import {handleNewPost} from 'actions/post_actions.jsx';
 import {stopPeriodicStatusUpdates} from 'actions/status_actions.jsx';
 import {loadNewDMIfNeeded, loadNewGMIfNeeded, loadProfilesForSidebar} from 'actions/user_actions.jsx';
-import {closeRightHandSide} from 'actions/views/rhs';
+import {closeRightHandSide, closeMenu as closeRhsMenu} from 'actions/views/rhs';
+import {close as closeLhs} from 'actions/views/lhs';
 import * as WebsocketActions from 'actions/websocket_actions.jsx';
 import AppDispatcher from 'dispatcher/app_dispatcher.jsx';
 import BrowserStore from 'stores/browser_store.jsx';
@@ -36,6 +43,7 @@ import {filterAndSortTeamsByDisplayName} from 'utils/team_utils.jsx';
 import * as Utils from 'utils/utils.jsx';
 import en from 'i18n/en.json';
 import * as I18n from 'i18n/i18n.jsx';
+import {equalServerVersions} from 'utils/server_version';
 
 const dispatch = store.dispatch;
 const getState = store.getState;
@@ -54,6 +62,7 @@ export function emitChannelClickEvent(channel) {
     function switchToChannel(chan) {
         const getMyChannelMemberPromise = getMyChannelMember(chan.id)(dispatch, getState);
         const oldChannelId = ChannelStore.getCurrentId();
+        const teamId = chan.team_id || getCurrentTeamId(getState());
 
         getMyChannelMemberPromise.then(() => {
             getChannelStats(chan.id)(dispatch, getState);
@@ -63,14 +72,14 @@ export function emitChannelClickEvent(channel) {
             reloadIfServerVersionChanged();
         });
 
-        BrowserStore.setGlobalItem(Constants.PREV_CHANNEL_KEY + chan.team_id, chan.name);
+        BrowserStore.setGlobalItem(Constants.PREV_CHANNEL_KEY + teamId, chan.name);
 
         loadProfilesForSidebar();
 
         AppDispatcher.handleViewAction({
             type: ActionTypes.CLICK_CHANNEL,
             id: chan.id,
-            team_id: chan.team_id,
+            team_id: teamId,
         });
     }
 
@@ -117,22 +126,38 @@ export function emitCloseRightHandSide() {
 
 export async function emitPostFocusEvent(postId, returnTo = '') {
     loadChannelsForCurrentUser();
-    const {data} = await getPostThread(postId)(dispatch, getState);
+    const {data} = await dispatch(getPostThread(postId));
 
-    if (data) {
-        const channelId = data.posts[data.order[0]].channel_id;
-        const channel = ChannelStore.getChannelById(channelId);
-
-        if (channel && channel.type === Constants.DM_CHANNEL) {
-            loadNewDMIfNeeded(channel.id);
-        } else if (channel && channel.type === Constants.GM_CHANNEL) {
-            loadNewGMIfNeeded(channel.id);
-        }
-
-        await doFocusPost(channelId, postId, data);
-    } else {
+    if (!data) {
         browserHistory.push(`/error?type=${ErrorPageTypes.PERMALINK_NOT_FOUND}&returnTo=${returnTo}`);
+        return;
     }
+
+    const channelId = data.posts[data.order[0]].channel_id;
+    let channel = getState().entities.channels.channels[channelId];
+    const teamId = getCurrentTeamId(getState());
+
+    if (!channel) {
+        const {data: channelData} = await dispatch(getChannel(channelId));
+        if (!channelData) {
+            browserHistory.push(`/error?type=${ErrorPageTypes.PERMALINK_NOT_FOUND}&returnTo=${returnTo}`);
+            return;
+        }
+        channel = channelData;
+    }
+
+    if (channel.team_id && channel.team_id !== teamId) {
+        browserHistory.push(`/error?type=${ErrorPageTypes.PERMALINK_NOT_FOUND}&returnTo=${returnTo}`);
+        return;
+    }
+
+    if (channel && channel.type === Constants.DM_CHANNEL) {
+        loadNewDMIfNeeded(channel.id);
+    } else if (channel && channel.type === Constants.GM_CHANNEL) {
+        loadNewGMIfNeeded(channel.id);
+    }
+
+    await doFocusPost(channelId, postId, data);
 }
 
 export function emitLeaveTeam() {
@@ -164,15 +189,6 @@ export function toggleShortcutsModal() {
     AppDispatcher.handleViewAction({
         type: ActionTypes.TOGGLE_SHORTCUTS_MODAL,
         value: true,
-    });
-}
-
-export function showDeletePostModal(post, commentCount = 0) {
-    AppDispatcher.handleViewAction({
-        type: ActionTypes.TOGGLE_DELETE_POST_MODAL,
-        value: true,
-        post,
-        commentCount,
     });
 }
 
@@ -332,8 +348,7 @@ export function sendEphemeralPost(message, channelId, parentId) {
     handleNewPost(post);
 }
 
-export function sendAddToChannelEphemeralPost(user, addedUsername, channelId, postRootId = '') {
-    const timestamp = Utils.getTimestamp();
+export function sendAddToChannelEphemeralPost(user, addedUsername, addedUserId, channelId, postRootId = '', timestamp) {
     const post = {
         id: Utils.generateId(),
         user_id: user.id,
@@ -347,6 +362,7 @@ export function sendAddToChannelEphemeralPost(user, addedUsername, channelId, po
         props: {
             username: user.username,
             addedUsername,
+            addedUserId,
         },
     };
 
@@ -392,7 +408,8 @@ export function loadCurrentLocale() {
 }
 
 export function loadDefaultLocale() {
-    let locale = global.window.mm_config.DefaultClientLocale;
+    const config = getConfig(getState());
+    let locale = config.DefaultClientLocale;
 
     if (!I18n.getLanguageInfo(locale)) {
         locale = 'en';
@@ -402,21 +419,24 @@ export function loadDefaultLocale() {
 }
 
 let lastTimeTypingSent = 0;
-export function emitLocalUserTypingEvent(channelId, parentId) {
-    const t = Date.now();
-    const membersInChannel = ChannelStore.getStats(channelId).member_count;
+export function emitLocalUserTypingEvent(channelId, parentPostId) {
+    const userTyping = async (actionDispatch, actionGetState) => {
+        const state = actionGetState();
+        const config = getConfig(state);
+        const t = Date.now();
+        const stats = getCurrentChannelStats(state);
+        const membersInChannel = stats ? stats.member_count : 0;
 
-    if (global.mm_license.IsLicensed === 'true' && global.mm_config.ExperimentalTownSquareIsReadOnly === 'true') {
-        const channel = ChannelStore.getChannelById(channelId);
-        if (channel && ChannelStore.isDefault(channel)) {
-            return;
+        if (((t - lastTimeTypingSent) > config.TimeBetweenUserTypingUpdatesMilliseconds) &&
+            (membersInChannel < config.MaxNotificationsPerChannel) && (config.EnableUserTypingMessages === 'true')) {
+            WebSocketClient.userTyping(channelId, parentPostId);
+            lastTimeTypingSent = t;
         }
-    }
 
-    if (((t - lastTimeTypingSent) > global.window.mm_config.TimeBetweenUserTypingUpdatesMilliseconds) && membersInChannel < global.window.mm_config.MaxNotificationsPerChannel && global.window.mm_config.EnableUserTypingMessages === 'true') {
-        WebSocketClient.userTyping(channelId, parentId);
-        lastTimeTypingSent = t;
-    }
+        return {data: true};
+    };
+
+    return dispatch(userTyping);
 }
 
 export function emitRemoteUserTypingEvent(channelId, userId, postParentId) {
@@ -456,11 +476,8 @@ export function clientLogout(redirectTo = '/') {
 
 export function toggleSideBarRightMenuAction() {
     dispatch(closeRightHandSide());
-
-    document.querySelector('.app__body .inner-wrap').classList.remove('move--right', 'move--left', 'move--left-small');
-    document.querySelector('.app__body .sidebar--left').classList.remove('move--right');
-    document.querySelector('.app__body .sidebar--right').classList.remove('move--left');
-    document.querySelector('.app__body .sidebar--menu').classList.remove('move--left');
+    dispatch(closeLhs());
+    dispatch(closeRhsMenu());
 }
 
 export function emitBrowserFocus(focus) {
@@ -498,17 +515,15 @@ export async function redirectUserToDefaultTeam() {
 
     const team = teams[teamId];
     if (team) {
-        const channelId = BrowserStore.getGlobalItem(teamId);
-        const channel = ChannelStore.getChannelById(channelId);
-        let channelName = Constants.DEFAULT_CHANNEL;
+        let channelName = BrowserStore.getGlobalItem(Constants.PREV_CHANNEL_KEY + teamId, Constants.DEFAULT_CHANNEL);
+        const channel = ChannelStore.getChannelNamesMap()[channelName];
         if (channel && channel.team_id === team.id) {
             dispatch(selectChannel(channel.id));
             channelName = channel.name;
-        } else if (channelId) {
-            const {data} = await getChannelAndMyMember(channelId)(dispatch, getState);
+        } else {
+            const {data} = await dispatch(getChannelByNameAndTeamName(team.name, channelName));
             if (data) {
-                dispatch(selectChannel(channelId));
-                channelName = data.channel.name;
+                dispatch(selectChannel(data.id));
             }
         }
 
@@ -518,10 +533,17 @@ export async function redirectUserToDefaultTeam() {
     }
 }
 
-export function postListScrollChange(forceScrollToBottom = false) {
+export const postListScrollChange = debounce(() => {
     AppDispatcher.handleViewAction({
         type: EventTypes.POST_LIST_SCROLL_CHANGE,
-        value: forceScrollToBottom,
+        value: false,
+    });
+});
+
+export function postListScrollChangeToBottom() {
+    AppDispatcher.handleViewAction({
+        type: EventTypes.POST_LIST_SCROLL_CHANGE,
+        value: true,
     });
 }
 
@@ -537,8 +559,9 @@ let serverVersion = '';
 
 export function reloadIfServerVersionChanged() {
     const newServerVersion = Client4.getServerVersion();
-    if (serverVersion && serverVersion !== newServerVersion) {
-        console.log('Detected version update refreshing the page'); //eslint-disable-line no-console
+
+    if (serverVersion && !equalServerVersions(serverVersion, newServerVersion)) {
+        console.log(`Detected version update from ${serverVersion} to ${newServerVersion}; refreshing the page`); //eslint-disable-line no-console
         window.location.reload(true);
     }
 

@@ -1,15 +1,14 @@
-// Copyright (c) 2017 Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
 import {getChannel} from 'mattermost-redux/selectors/entities/channels';
-import {getSearchResults} from 'mattermost-redux/selectors/entities/posts';
+import {getSearchMatches, getSearchResults} from 'mattermost-redux/selectors/entities/posts';
 import * as PreferenceSelectors from 'mattermost-redux/selectors/entities/preferences';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 
-import {selectPostFromRightHandSideSearch} from 'actions/views/rhs';
 import {
-    getSearchTerms,
+    getSearchResultsTerms,
     getIsSearchingTerm,
     getIsSearchingFlaggedPost,
     getIsSearchingPinnedPost,
@@ -69,8 +68,9 @@ function makeMapStateToProps() {
 
         return {
             results: posts,
+            matches: getSearchMatches(state),
             channels,
-            searchTerms: getSearchTerms(state),
+            searchTerms: getSearchResultsTerms(state),
             isFlaggedByPostId,
             isSearchingTerm: getIsSearchingTerm(state),
             isSearchingFlaggedPost: getIsSearchingFlaggedPost(state),
@@ -82,8 +82,4 @@ function makeMapStateToProps() {
     };
 }
 
-const mapDispatchToProps = {
-    selectPost: selectPostFromRightHandSideSearch,
-};
-
-export default connect(makeMapStateToProps, mapDispatchToProps)(SearchResults);
+export default connect(makeMapStateToProps)(SearchResults);

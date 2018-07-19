@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -9,18 +9,6 @@ import {mountWithIntl} from 'tests/helpers/intl-test-helper';
 import ChangeURLModal from 'components/change_url_modal/change_url_modal';
 
 describe('components/ChangeURLModal', () => {
-    global.window.mm_license = {};
-    global.window.mm_config = {};
-
-    beforeEach(() => {
-        global.window.mm_license.IsLicensed = 'false';
-    });
-
-    afterEach(() => {
-        global.window.mm_license = {};
-        global.window.mm_config = {};
-    });
-
     const baseProps = {
         show: true,
         onDataChanged: jest.fn(),
@@ -132,9 +120,9 @@ describe('components/ChangeURLModal', () => {
         const returned = wrapper.instance().getURLError(param);
         expect(returned.length).toEqual(1);
         expect(wrapper.instance().formattedError).toBeCalledWith(
-          'errorlast',
-          'change_url.invalidUrl',
-          'Invalid URL'
+            'errorlast',
+            'change_url.invalidUrl',
+            'Invalid URL'
         );
     });
 
@@ -150,9 +138,9 @@ describe('components/ChangeURLModal', () => {
         const returned = wrapper.instance().getURLError(param);
         expect(returned.length).toEqual(1);
         expect(wrapper.instance().formattedError).toBeCalledWith(
-          'error1',
-          'change_url.longer',
-          'URL must be two or more characters.'
+            'error1',
+            'change_url.longer',
+            'URL must be two or more characters.'
         );
     });
 
@@ -168,19 +156,19 @@ describe('components/ChangeURLModal', () => {
         const returned = wrapper.instance().getURLError(param);
         expect(returned.length).toEqual(3);
         expect(wrapper.instance().formattedError).toBeCalledWith(
-          'error2',
-          'change_url.startWithLetter',
-          'URL must start with a letter or number.'
+            'error2',
+            'change_url.startWithLetter',
+            'URL must start with a letter or number.'
         );
         expect(wrapper.instance().formattedError).toBeCalledWith(
-          'error3',
-          'change_url.endWithLetter',
-          'URL must end with a letter or number.'
+            'error3',
+            'change_url.endWithLetter',
+            'URL must end with a letter or number.'
         );
         expect(wrapper.instance().formattedError).toBeCalledWith(
-          'error4',
-          'change_url.noUnderscore',
-          'URL can not contain two underscores in a row.'
+            'error4',
+            'change_url.noUnderscore',
+            'URL can not contain two underscores in a row.'
         );
     });
 });

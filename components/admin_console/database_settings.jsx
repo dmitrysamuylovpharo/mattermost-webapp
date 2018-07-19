@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -31,6 +31,7 @@ export default class DatabaseSettings extends AdminSettings {
         config.SqlSettings.AtRestEncryptKey = this.state.atRestEncryptKey;
         config.SqlSettings.Trace = this.state.trace;
         config.SqlSettings.QueryTimeout = this.parseIntNonZero(this.state.queryTimeout);
+        config.SqlSettings.ConnMaxLifetimeMilliseconds = this.parseIntNonNegative(this.state.connMaxLifetimeMilliseconds);
 
         return config;
     }
@@ -44,6 +45,7 @@ export default class DatabaseSettings extends AdminSettings {
             atRestEncryptKey: config.SqlSettings.AtRestEncryptKey,
             trace: config.SqlSettings.Trace,
             queryTimeout: config.SqlSettings.QueryTimeout,
+            connMaxLifetimeMilliseconds: config.SqlSettings.ConnMaxLifetimeMilliseconds,
         };
     }
 
@@ -150,7 +152,7 @@ export default class DatabaseSettings extends AdminSettings {
                             defaultMessage='Maximum Idle Connections:'
                         />
                     }
-                    placeholder={Utils.localizeMessage('admin.sql.maxConnectionsExample', 'Ex "10"')}
+                    placeholder={Utils.localizeMessage('admin.sql.maxConnectionsExample', 'E.g.: "10"')}
                     helpText={
                         <FormattedMessage
                             id='admin.sql.maxConnectionsDescription'
@@ -159,6 +161,7 @@ export default class DatabaseSettings extends AdminSettings {
                     }
                     value={this.state.maxIdleConns}
                     onChange={this.handleChange}
+                    setByEnv={this.isSetByEnv('SqlSettings.MaxIdleConns')}
                 />
                 <TextSetting
                     id='maxOpenConns'
@@ -168,7 +171,7 @@ export default class DatabaseSettings extends AdminSettings {
                             defaultMessage='Maximum Open Connections:'
                         />
                     }
-                    placeholder={Utils.localizeMessage('admin.sql.maxOpenExample', 'Ex "10"')}
+                    placeholder={Utils.localizeMessage('admin.sql.maxOpenExample', 'E.g.: "10"')}
                     helpText={
                         <FormattedMessage
                             id='admin.sql.maxOpenDescription'
@@ -177,6 +180,7 @@ export default class DatabaseSettings extends AdminSettings {
                     }
                     value={this.state.maxOpenConns}
                     onChange={this.handleChange}
+                    setByEnv={this.isSetByEnv('SqlSettings.MaxOpenConns')}
                 />
                 <TextSetting
                     id='queryTimeout'
@@ -186,7 +190,7 @@ export default class DatabaseSettings extends AdminSettings {
                             defaultMessage='Query Timeout:'
                         />
                     }
-                    placeholder={Utils.localizeMessage('admin.sql.queryTimeoutExample', 'Ex "30"')}
+                    placeholder={Utils.localizeMessage('admin.sql.queryTimeoutExample', 'E.g.: "30"')}
                     helpText={
                         <FormattedMessage
                             id='admin.sql.queryTimeoutDescription'
@@ -195,6 +199,26 @@ export default class DatabaseSettings extends AdminSettings {
                     }
                     value={this.state.queryTimeout}
                     onChange={this.handleChange}
+                    setByEnv={this.isSetByEnv('SqlSettings.QueryTimeout')}
+                />
+                <TextSetting
+                    id='connMaxLifetimeMilliseconds'
+                    label={
+                        <FormattedMessage
+                            id='admin.sql.connMaxLifetimeTitle'
+                            defaultMessage='Maximum Connection Lifetime:'
+                        />
+                    }
+                    placeholder={Utils.localizeMessage('admin.sql.connMaxLifetimeExample', 'E.g.: "3600000"')}
+                    helpText={
+                        <FormattedMessage
+                            id='admin.sql.connMaxLifetimeDescription'
+                            defaultMessage='Maximum lifetime for a connection to the database in milliseconds.'
+                        />
+                    }
+                    value={this.state.connMaxLifetimeMilliseconds}
+                    onChange={this.handleChange}
+                    setByEnv={this.isSetByEnv('SqlSettings.ConnMaxLifetimeMilliseconds')}
                 />
                 <GeneratedSetting
                     id='atRestEncryptKey'
@@ -204,7 +228,7 @@ export default class DatabaseSettings extends AdminSettings {
                             defaultMessage='At Rest Encrypt Key:'
                         />
                     }
-                    placeholder={Utils.localizeMessage('admin.sql.keyExample', 'Ex "gxHVDcKUyP2y1eiyW8S8na1UYQAfq6J6"')}
+                    placeholder={Utils.localizeMessage('admin.sql.keyExample', 'E.g.: "gxHVDcKUyP2y1eiyW8S8na1UYQAfq6J6"')}
                     helpText={
                         <FormattedMessage
                             id='admin.sql.keyDescription'
@@ -213,6 +237,7 @@ export default class DatabaseSettings extends AdminSettings {
                     }
                     value={this.state.atRestEncryptKey}
                     onChange={this.handleChange}
+                    setByEnv={this.isSetByEnv('SqlSettings.AtRestEncryptKey')}
                 />
                 <BooleanSetting
                     id='trace'
@@ -230,6 +255,7 @@ export default class DatabaseSettings extends AdminSettings {
                     }
                     value={this.state.trace}
                     onChange={this.handleChange}
+                    setByEnv={this.isSetByEnv('SqlSettings.Trace')}
                 />
                 {recycleDbButton}
             </SettingsGroup>

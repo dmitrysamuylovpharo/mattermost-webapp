@@ -1,5 +1,5 @@
-// Copyright (c) 2018-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 import React from 'react';
 import {shallow} from 'enzyme';
 
@@ -53,7 +53,7 @@ describe('/components/create_team/components/display_name', () => {
     });
 
     test('should successfully submit', () => {
-        defaultProps.actions.checkIfTeamExists = jest.genMockFunction().mockImplementation(
+        defaultProps.actions.checkIfTeamExists = jest.fn().mockImplementation(
             () => {
                 defaultProps.actions.createTeam();
             }

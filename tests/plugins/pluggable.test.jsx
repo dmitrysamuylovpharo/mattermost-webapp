@@ -1,12 +1,14 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {mount, shallow} from 'enzyme';
+import configureStore from 'redux-mock-store';
+import {Provider} from 'react-redux';
 
 import Pluggable from 'plugins/pluggable/pluggable.jsx';
 import {mountWithIntl} from 'tests/helpers/intl-test-helper';
-import ProfilePopover from 'components/profile_popover.jsx';
+import ProfilePopover from 'components/profile_popover';
 
 class ProfilePopoverPlugin extends React.PureComponent {
     render() {
@@ -15,39 +17,47 @@ class ProfilePopoverPlugin extends React.PureComponent {
 }
 
 describe('plugins/Pluggable', () => {
-    beforeEach(() => {
-        window.mm_config = {
-            EnableWebrtc: 'true',
-            ShowEmailAddress: 'true',
-        };
+    const mockStore = configureStore();
+    const store = mockStore({
+        entities: {
+            general: {
+                config: {
+                    EnableWebrtc: 'true',
+                },
+            },
+        },
     });
 
     test('should match snapshot with no overridden component', () => {
         const wrapper = mountWithIntl(
-            <Pluggable
-                components={{}}
-                theme={{}}
-            >
-                <ProfilePopover
-                    user={{name: 'name'}}
-                    src='src'
-                />
-            </Pluggable>
+            <Provider store={store}>
+                <Pluggable
+                    components={{}}
+                    theme={{}}
+                >
+                    <ProfilePopover
+                        user={{name: 'name'}}
+                        src='src'
+                    />
+                </Pluggable>
+            </Provider>
         );
         expect(wrapper).toMatchSnapshot();
     });
 
     test('should match snapshot with overridden component', () => {
         const wrapper = mount(
-            <Pluggable
-                components={{ProfilePopover: {component: ProfilePopoverPlugin}}}
-                theme={{id: 'theme_id'}}
-            >
-                <ProfilePopover
-                    user={{name: 'name'}}
-                    src='src'
-                />
-            </Pluggable>
+            <Provider store={store}>
+                <Pluggable
+                    components={{ProfilePopover: {component: ProfilePopoverPlugin}}}
+                    theme={{id: 'theme_id'}}
+                >
+                    <ProfilePopover
+                        user={{name: 'name'}}
+                        src='src'
+                    />
+                </Pluggable>
+            </Provider>
         );
 
         expect(wrapper).toMatchSnapshot();

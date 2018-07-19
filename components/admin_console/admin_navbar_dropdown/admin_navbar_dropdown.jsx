@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -133,7 +133,10 @@ export default class AdminNavbarDropdown extends React.Component {
                     <BlockableLink
                         to={'/select_team'}
                     >
-                        <i className='fa fa-exchange'/>
+                        <i
+                            className='fa fa-exchange'
+                            title={Utils.localizeMessage('select_team.icon', 'Select Team Icon')}
+                        />
                         <FormattedMessage
                             id='admin.nav.switch'
                             defaultMessage='Team Selection'

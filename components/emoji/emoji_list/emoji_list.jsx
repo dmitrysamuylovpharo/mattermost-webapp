@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -197,7 +197,10 @@ export default class EmojiList extends React.Component {
                             id='filtered_user_list.next'
                             defaultMessage='Next'
                         />
-                        <i className='fa fa-chevron-right margin-left'/>
+                        <i
+                            className='fa fa-chevron-right margin-left'
+                            title={localizeMessage('generic_icons.next', 'Next Icon')}
+                        />
                     </span>
                 );
 
@@ -220,7 +223,10 @@ export default class EmojiList extends React.Component {
                         className='btn btn-link'
                         onClick={this.previousPage}
                     >
-                        <i className='fa fa-chevron-left margin-right'/>
+                        <i
+                            className='fa fa-chevron-left margin-right'
+                            title={localizeMessage('generic_icons.previous', 'Previous Icon')}
+                        />
                         <FormattedMessage
                             id='filtered_user_list.prev'
                             defaultMessage='Previous'
@@ -234,7 +240,10 @@ export default class EmojiList extends React.Component {
             <div>
                 <div className='backstage-filters'>
                     <div className='backstage-filter__search'>
-                        <i className='fa fa-search'/>
+                        <i
+                            className='fa fa-search'
+                            title={localizeMessage('generic_icons.search', 'Search Icon')}
+                        />
                         <input
                             type='search'
                             className='form-control'
@@ -248,7 +257,7 @@ export default class EmojiList extends React.Component {
                     <p>
                         <FormattedMessage
                             id='emoji_list.help'
-                            defaultMessage="Custom emoji are available to everyone on your server. Type ':' in a message box to bring up the emoji selection menu. Other users may need to refresh the page before new emojis appear."
+                            defaultMessage="Custom emoji are available to everyone on your server. Type ':' followed by two characters in a message box to bring up the emoji selection menu."
                         />
                     </p>
                     <p>

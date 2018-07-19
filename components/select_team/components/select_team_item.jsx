@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -24,11 +24,17 @@ export default class SelectTeamItem extends React.PureComponent {
         let icon;
         if (this.props.loading) {
             icon = (
-                <span className='fa fa-refresh fa-spin right signup-team__icon'/>
+                <span
+                    className='fa fa-refresh fa-spin right signup-team__icon'
+                    title={Utils.localizeMessage('generic_icons.loading', 'Loading Icon')}
+                />
             );
         } else {
             icon = (
-                <span className='fa fa-angle-right right signup-team__icon'/>
+                <span
+                    className='fa fa-angle-right right signup-team__icon'
+                    title={Utils.localizeMessage('select_team.join.icon', 'Join Team Icon')}
+                />
             );
         }
 

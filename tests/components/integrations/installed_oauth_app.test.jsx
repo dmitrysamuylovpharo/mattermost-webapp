@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -65,7 +65,7 @@ describe('components/integrations/InstalledOAuthApp', () => {
     });
 
     test('should call onRegenerateSecret function', () => {
-        const newOnRegenerateSecret = jest.genMockFunction().mockImplementation(
+        const newOnRegenerateSecret = jest.fn().mockImplementation(
             () => {
                 return new Promise((resolve) => {
                     process.nextTick(() => resolve());
@@ -111,7 +111,7 @@ describe('components/integrations/InstalledOAuthApp', () => {
     });
 
     test('should match on handleRegenerate', () => {
-        const newOnRegenerateSecret = jest.genMockFunction().mockImplementation(
+        const newOnRegenerateSecret = jest.fn().mockImplementation(
             () => {
                 return new Promise((resolve) => {
                     process.nextTick(() => resolve());

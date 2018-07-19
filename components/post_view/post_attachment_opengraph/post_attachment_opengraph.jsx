@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -10,6 +10,7 @@ import * as CommonUtils from 'utils/commons.jsx';
 import {PostTypes} from 'utils/constants.jsx';
 import {useSafeUrl} from 'utils/url';
 import * as Utils from 'utils/utils.jsx';
+import {isSystemMessage} from 'utils/post_utils.jsx';
 
 export default class PostAttachmentOpenGraph extends React.PureComponent {
     static propTypes = {
@@ -54,7 +55,7 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
             height: 80,
             width: 80,
         };
-        this.textMaxLenght = 300;
+        this.textMaxLength = 300;
         this.textEllipsis = '...';
         this.largeImageMinRatio = 16 / 9;
         this.smallImageContainerLeftPadding = 15;
@@ -77,7 +78,7 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
         this.handleRemovePreview = this.handleRemovePreview.bind(this);
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() { // eslint-disable-line camelcase
         const removePreview = this.isRemovePreview(this.props.post, this.props.currentUser);
 
         this.setState({
@@ -89,7 +90,7 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
         this.fetchData(this.props.link);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         if (!Utils.areObjectsEqual(nextProps.post, this.props.post)) {
             const removePreview = this.isRemovePreview(nextProps.post, nextProps.currentUser);
             this.setState({
@@ -156,7 +157,7 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
         img.src = src;
     }
 
-    imageToggleAnchoreTag(imageUrl) {
+    imageToggleAnchorTag(imageUrl) {
         if (imageUrl && this.state.hasLargeImage) {
             return (
                 <a
@@ -227,8 +228,8 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
         return element;
     }
 
-    truncateText(text, maxLength = this.textMaxLenght, ellipsis = this.textEllipsis) {
-        if (text.length > maxLength) {
+    truncateText(text, maxLength = this.textMaxLength, ellipsis = this.textEllipsis) {
+        if (text && text.length > maxLength) {
             return text.substring(0, maxLength - ellipsis.length) + ellipsis;
         }
         return text;
@@ -248,8 +249,8 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
         });
     }
 
-    isRemovePreview(post, currentUser) {
-        if (post && post.props && currentUser.id === post.user_id) {
+    isRemovePreview(post) {
+        if (post && post.props) {
             return post.props[PostTypes.REMOVE_LINK_PREVIEW] && post.props[PostTypes.REMOVE_LINK_PREVIEW] === 'true';
         }
 
@@ -258,7 +259,7 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
 
     render() {
         const data = this.props.openGraphData;
-        if (!data || Utils.isEmptyObject(data.description) || this.state.removePreview) {
+        if (!data || !data.url || this.state.removePreview || isSystemMessage(this.props.post || {})) {
             return null;
         }
 
@@ -280,6 +281,24 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
         const imageUrl = this.getBestImageUrl(data);
         if (imageUrl) {
             this.loadImage(imageUrl);
+        }
+
+        let body;
+        if (data.description || imageUrl) {
+            body = (
+                <React.Fragment>
+                    <div className={'attachment__body attachment__body--opengraph'}>
+                        <div>
+                            <div>
+                                {this.truncateText(data.description)}
+                                {' '}
+                                {this.imageToggleAnchorTag(imageUrl)}
+                            </div>
+                            {this.imageTag(imageUrl, true)}
+                        </div>
+                    </div>
+                </React.Fragment>
+            );
         }
 
         return (
@@ -309,19 +328,7 @@ export default class PostAttachmentOpenGraph extends React.PureComponent {
                                     {this.truncateText(data.title || data.url || this.props.link)}
                                 </a>
                             </h1>
-                            <div >
-                                <div
-                                    className={'attachment__body attachment__body--opengraph'}
-                                >
-                                    <div>
-                                        <div>
-                                            {this.truncateText(data.description)} &nbsp;
-                                            {this.imageToggleAnchoreTag(imageUrl)}
-                                        </div>
-                                        {this.imageTag(imageUrl, true)}
-                                    </div>
-                                </div>
-                            </div>
+                            {body}
                         </div>
                         {this.imageTag(imageUrl, false)}
                     </div>

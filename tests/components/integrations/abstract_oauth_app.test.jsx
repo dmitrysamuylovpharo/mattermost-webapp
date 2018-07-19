@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -24,7 +24,7 @@ describe('components/integrations/AbstractOAuthApp', () => {
         update_at: 1501365458934,
         callback_urls: ['https://test.com/callback', 'https://test.com/callback2'],
     };
-    const action = jest.genMockFunction().mockImplementation(
+    const action = jest.fn().mockImplementation(
         () => {
             return new Promise((resolve) => {
                 process.nextTick(() => resolve());
@@ -33,7 +33,6 @@ describe('components/integrations/AbstractOAuthApp', () => {
     );
     const baseProps = {
         team,
-        isSystemAdmin: false,
         header,
         footer,
         renderExtra: 'renderExtra',
@@ -45,14 +44,6 @@ describe('components/integrations/AbstractOAuthApp', () => {
     test('should match snapshot', () => {
         const wrapper = shallow(
             <AbstractOAuthApp {...baseProps}/>
-        );
-        expect(wrapper).toMatchSnapshot();
-    });
-
-    test('should match snapshot, for system admin', () => {
-        const props = {...baseProps, isSystemAdmin: true};
-        const wrapper = shallow(
-            <AbstractOAuthApp {...props}/>
         );
         expect(wrapper).toMatchSnapshot();
     });

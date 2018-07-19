@@ -1,7 +1,9 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class MenuIcon extends React.PureComponent {
     render() {
@@ -12,6 +14,8 @@ export default class MenuIcon extends React.PureComponent {
                     height='10px'
                     viewBox='0 0 16 10'
                     version='1.1'
+                    role='icon'
+                    title={localizeMessage('generic_icons.menu', 'Menu Icon')}
                 >
                     <g
                         stroke='none'

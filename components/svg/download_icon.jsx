@@ -1,7 +1,9 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
+
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class DownloadIcon extends React.PureComponent {
     render() {
@@ -11,6 +13,8 @@ export default class DownloadIcon extends React.PureComponent {
                     width='40px'
                     height='40px'
                     viewBox='0 0 42 42'
+                    role='icon'
+                    aria-label={localizeMessage('generic_icons.download', 'Download Icon')}
                 >
                     <g
                         stroke='inherit'

@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -7,6 +7,7 @@ import {OverlayTrigger, Tooltip} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
 import Constants, {RHSStates} from 'utils/constants.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class RhsHeaderPost extends React.Component {
     static propTypes = {
@@ -14,33 +15,15 @@ export default class RhsHeaderPost extends React.Component {
         previousRhsState: PropTypes.oneOf(
             Object.values(RHSStates)
         ),
-        toggleSize: PropTypes.func,
-        shrink: PropTypes.func,
         actions: PropTypes.shape({
             showMentions: PropTypes.func,
             showSearchResults: PropTypes.func,
             showFlaggedPosts: PropTypes.func,
             showPinnedPosts: PropTypes.func,
             closeRightHandSide: PropTypes.func,
+            toggleRhsExpanded: PropTypes.func,
         }),
     };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {};
-    }
-
-    handleClose = (e) => {
-        e.preventDefault();
-        this.props.actions.closeRightHandSide();
-        this.props.shrink();
-    }
-
-    toggleSize = (e) => {
-        e.preventDefault();
-        this.props.toggleSize();
-    }
 
     handleBack = (e) => {
         e.preventDefault();
@@ -158,7 +141,10 @@ export default class RhsHeaderPost extends React.Component {
                         placement='top'
                         overlay={backToResultsTooltip}
                     >
-                        <i className='fa fa-angle-left'/>
+                        <i
+                            className='fa fa-angle-left'
+                            title={localizeMessage('generic_icons.back', 'Back Icon')}
+                        />
                     </OverlayTrigger>
                 </a>
             );
@@ -178,7 +164,7 @@ export default class RhsHeaderPost extends React.Component {
                         type='button'
                         className='sidebar--right__expand'
                         aria-label='Expand'
-                        onClick={this.toggleSize}
+                        onClick={this.props.actions.toggleRhsExpanded}
                     >
                         <OverlayTrigger
                             trigger={['hover', 'focus']}
@@ -186,7 +172,10 @@ export default class RhsHeaderPost extends React.Component {
                             placement='top'
                             overlay={expandSidebarTooltip}
                         >
-                            <i className='fa fa-expand'/>
+                            <i
+                                className='fa fa-expand'
+                                title={localizeMessage('rhs_header.expandSidebarTooltip.icon', 'Expand Sidebar Icon')}
+                            />
                         </OverlayTrigger>
                         <OverlayTrigger
                             trigger={['hover', 'focus']}
@@ -194,14 +183,17 @@ export default class RhsHeaderPost extends React.Component {
                             placement='top'
                             overlay={shrinkSidebarTooltip}
                         >
-                            <i className='fa fa-compress'/>
+                            <i
+                                className='fa fa-compress'
+                                title={localizeMessage('rhs_header.expandTooltip.icon', 'Shrink Sidebar Icon')}
+                            />
                         </OverlayTrigger>
                     </button>
                     <button
                         type='button'
                         className='sidebar--right__close'
                         aria-label='Close'
-                        onClick={this.handleClose}
+                        onClick={this.props.actions.closeRightHandSide}
                     >
 
                         <OverlayTrigger
@@ -210,7 +202,10 @@ export default class RhsHeaderPost extends React.Component {
                             placement='top'
                             overlay={closeSidebarTooltip}
                         >
-                            <i className='fa fa-sign-out'/>
+                            <i
+                                className='fa fa-sign-out'
+                                title={localizeMessage('rhs_header.closeTooltip.icon', 'Close Sidebar Icon')}
+                            />
                         </OverlayTrigger>
                     </button>
                 </div>

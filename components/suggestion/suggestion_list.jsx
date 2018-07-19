@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
 
 import SuggestionStore from 'stores/suggestion_store.jsx';
+import {localizeMessage} from 'utils/utils.jsx';
 
 export default class SuggestionList extends React.Component {
     static propTypes = {
@@ -134,7 +135,10 @@ export default class SuggestionList extends React.Component {
                 key={type + '-loading'}
                 className='suggestion-loader'
             >
-                <i className='fa fa-spinner fa-pulse fa-fw margin-bottom'/>
+                <i
+                    className='fa fa-spinner fa-pulse fa-fw margin-bottom'
+                    title={localizeMessage('generic_icons.loading', 'Loading Icon')}
+                />
             </div>
         );
     }

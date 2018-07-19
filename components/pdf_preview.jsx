@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -8,10 +8,9 @@ import PDFJS from 'pdfjs-dist';
 
 import loadingGif from 'images/load.gif';
 
-import FileInfoPreview from './file_info_preview.jsx';
+import FileInfoPreview from 'components/file_info_preview';
 
 const MAX_PDF_PAGES = 5;
-PDFJS.disableWorker = true;
 
 export default class PDFPreview extends React.PureComponent {
     static propTypes = {
@@ -52,7 +51,7 @@ export default class PDFPreview extends React.PureComponent {
         this.updateStateFromProps(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         if (this.props.fileUrl !== nextProps.fileUrl) {
             this.updateStateFromProps(nextProps);
             this.pdfPagesRendered = {};

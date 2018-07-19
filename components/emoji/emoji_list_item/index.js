@@ -1,27 +1,28 @@
-// Copyright (c) 2018-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {getUser, getCurrentUserId, isCurrentUserSystemAdmin} from 'mattermost-redux/selectors/entities/users';
+import {getUser, getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
 import {deleteCustomEmoji} from 'mattermost-redux/actions/emojis';
 
-import {displayUsernameForUser} from 'utils/utils.jsx';
+import {getDisplayNameByUser} from 'utils/utils.jsx';
 
 import EmojiListItem from './emoji_list_item.jsx';
 
 function mapStateToProps(state, ownProps) {
     const emoji = state.entities.emojis.customEmoji[ownProps.emojiId];
-    const creator = getUser(state, emoji.creator_id) || {};
+    const creator = getUser(state, emoji.creator_id);
 
     return {
         emoji,
-        creatorDisplayName: displayUsernameForUser(creator),
-        creatorUsername: creator.username,
+        creatorDisplayName: getDisplayNameByUser(creator),
+        creatorUsername: creator ? creator.username : '',
         currentUserId: getCurrentUserId(state),
-        isSystemAdmin: isCurrentUserSystemAdmin(state),
+        currentTeam: getCurrentTeam(state),
     };
 }
 

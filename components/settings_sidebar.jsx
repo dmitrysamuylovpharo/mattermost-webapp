@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -42,7 +42,10 @@ export default class SettingsSidebar extends React.Component {
                         className='cursor--pointer style--none'
                         onClick={this.handleClick.bind(null, tab)}
                     >
-                        <i className={tab.icon}/>
+                        <i
+                            className={tab.icon}
+                            title={tab.iconTitle}
+                        />
                         {tab.uiName}
                     </button>
                 </li>

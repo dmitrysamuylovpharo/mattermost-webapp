@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -38,7 +38,7 @@ const holders = defineMessages({
     },
     validImage: {
         id: 'user.settings.general.validImage',
-        defaultMessage: 'Only JPG or PNG images may be used for profile pictures',
+        defaultMessage: 'Only BMP, JPG or PNG images may be used for profile pictures',
     },
     imageTooLarge: {
         id: 'user.settings.general.imageTooLarge',
@@ -86,6 +86,8 @@ const prevSections = {
     email: 'position',
     picture: 'email',
 };
+
+const ACCEPTED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/bmp'];
 
 class UserSettingsGeneralTab extends React.Component {
     static propTypes = {
@@ -156,7 +158,7 @@ class UserSettingsGeneralTab extends React.Component {
 
         user.nickname = nickname;
 
-        trackEvent('settings', 'user_settings_update', {field: 'username'});
+        trackEvent('settings', 'user_settings_update', {field: 'nickname'});
 
         this.submitUser(user, false);
     }
@@ -250,7 +252,7 @@ class UserSettingsGeneralTab extends React.Component {
         const {formatMessage} = this.props.intl;
         const file = this.state.pictureFile;
 
-        if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+        if (!ACCEPTED_PROFILE_IMAGE_TYPES.includes(file.type)) {
             this.setState({clientError: formatMessage(holders.validImage), serverError: ''});
             return;
         } else if (file.size > this.props.maxFileSize) {
@@ -724,6 +726,7 @@ class UserSettingsGeneralTab extends React.Component {
                                 type='text'
                                 onChange={this.updateFirstName}
                                 value={this.state.firstName}
+                                onFocus={Utils.moveCursorToEnd}
                             />
                         </div>
                     </div>
@@ -966,6 +969,7 @@ class UserSettingsGeneralTab extends React.Component {
                                 onChange={this.updateUsername}
                                 value={this.state.username}
                                 autoCapitalize='off'
+                                onFocus={Utils.moveCursorToEnd}
                             />
                         </div>
                     </div>
@@ -1056,6 +1060,7 @@ class UserSettingsGeneralTab extends React.Component {
                                 value={this.state.position}
                                 maxLength={Constants.MAX_POSITION_LENGTH}
                                 autoCapitalize='off'
+                                onFocus={Utils.moveCursorToEnd}
                             />
                         </div>
                     </div>
@@ -1124,7 +1129,7 @@ class UserSettingsGeneralTab extends React.Component {
             pictureSection = (
                 <SettingPicture
                     title={formatMessage(holders.profilePicture)}
-                    submit={this.submitPicture}
+                    onSubmit={this.submitPicture}
                     src={Utils.imageURLForUser(user)}
                     serverError={serverError}
                     clientError={clientError}
@@ -1173,7 +1178,7 @@ class UserSettingsGeneralTab extends React.Component {
         }
 
         return (
-            <div>
+            <div id='generalSettings'>
                 <div className='modal-header'>
                     <button
                         id='closeUserSettings'
@@ -1192,6 +1197,7 @@ class UserSettingsGeneralTab extends React.Component {
                         <div className='modal-back'>
                             <i
                                 className='fa fa-angle-left'
+                                title={Utils.localizeMessage('generic_icons.collapse', 'Collapse Icon')}
                                 onClick={this.props.collapseModal}
                             />
                         </div>
@@ -1202,7 +1208,10 @@ class UserSettingsGeneralTab extends React.Component {
                     </h4>
                 </div>
                 <div className='user-settings'>
-                    <h3 className='tab-header'>
+                    <h3
+                        id='generalSettingsTitle'
+                        className='tab-header'
+                    >
                         <FormattedMessage
                             id='user.settings.general.title'
                             defaultMessage='General Settings'

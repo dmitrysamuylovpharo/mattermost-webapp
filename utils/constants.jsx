@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 /* eslint-disable no-magic-numbers */
-
 import keyMirror from 'key-mirror';
 
 import audioIcon from 'images/icons/audio.svg';
@@ -25,6 +24,8 @@ import defaultThemeImage from 'images/themes/organization.png';
 import windows10ThemeImage from 'images/themes/windows_dark.png';
 import logoWebhook from 'images/webhook_icon.jpg';
 
+import Permissions from 'mattermost-redux/constants/permissions';
+
 import githubCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/github.css';
 
 // eslint-disable-line import/order
@@ -36,13 +37,20 @@ import solarizedDarkCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!
 // eslint-disable-line import/order
 import solarizedLightCSS from '!!file-loader?name=files/code_themes/[hash].[ext]!highlight.js/styles/solarized-light.css'; // eslint-disable-line import/order
 
-export const PluginSettings = {
+export const SettingsTypes = {
     TYPE_TEXT: 'text',
+    TYPE_NUMBER: 'number',
+    TYPE_COLOR: 'color',
     TYPE_BOOL: 'bool',
     TYPE_RADIO: 'radio',
+    TYPE_BANNER: 'banner',
     TYPE_DROPDOWN: 'dropdown',
     TYPE_GENERATED: 'generated',
     TYPE_USERNAME: 'username',
+    TYPE_BUTTON: 'button',
+    TYPE_LANGUAGE: 'language',
+    TYPE_JOBSTABLE: 'jobstable',
+    TYPE_CUSTOM: 'custom',
 };
 
 export const Preferences = {
@@ -66,6 +74,7 @@ export const Preferences = {
     COLLAPSE_DISPLAY: 'collapse_previews',
     COLLAPSE_DISPLAY_DEFAULT: 'false',
     USE_MILITARY_TIME: 'use_military_time',
+    USE_MILITARY_TIME_DEFAULT: 'false',
     CATEGORY_THEME: 'theme',
     CATEGORY_FLAGGED_POST: 'flagged_post',
     CATEGORY_NOTIFICATIONS: 'notifications',
@@ -75,11 +84,12 @@ export const Preferences = {
     INTERVAL_FIFTEEN_MINUTES: 15 * 60,
     INTERVAL_HOUR: 60 * 60,
     INTERVAL_NEVER: 0,
+    NAME_NAME_FORMAT: 'name_format',
+    CATEGORY_SYSTEM_NOTICE: 'system_notice',
 };
 
 export const ActionTypes = keyMirror({
     RECEIVED_ERROR: null,
-
     CLICK_CHANNEL: null,
     CREATE_CHANNEL: null,
     CREATE_POST: null,
@@ -113,6 +123,10 @@ export const ActionTypes = keyMirror({
 
     UPDATE_RHS_STATE: null,
     UPDATE_RHS_SEARCH_TERMS: null,
+    UPDATE_RHS_SEARCH_RESULTS_TERMS: null,
+
+    SET_RHS_EXPANDED: null,
+    TOGGLE_RHS_EXPANDED: null,
 
     UPDATE_MOBILE_VIEW: null,
 
@@ -196,8 +210,6 @@ export const ActionTypes = keyMirror({
 
     SHOW_SEARCH: null,
 
-    USER_TYPING: null,
-
     TOGGLE_ACCOUNT_SETTINGS_MODAL: null,
     TOGGLE_SHORTCUTS_MODAL: null,
     TOGGLE_IMPORT_THEME_MODAL: null,
@@ -228,6 +240,7 @@ export const ActionTypes = keyMirror({
 
     RECEIVED_PLUGIN_COMPONENTS: null,
     RECEIVED_PLUGIN_POST_TYPES: null,
+    RECEIVED_PLUGIN_MENU_ACTIONS: null,
     RECEIVED_WEBAPP_PLUGINS: null,
     RECEIVED_WEBAPP_PLUGIN: null,
     REMOVED_WEBAPP_PLUGIN: null,
@@ -240,6 +253,21 @@ export const ActionTypes = keyMirror({
     SELECT_CHANNEL_WITH_MEMBER: null,
 
     INCREMENT_EMOJI_PICKER_PAGE: null,
+
+    TOGGLE_LHS: null,
+    OPEN_LHS: null,
+    CLOSE_LHS: null,
+
+    TOGGLE_RHS_MENU: null,
+    OPEN_RHS_MENU: null,
+    CLOSE_RHS_MENU: null,
+
+    INIT_WEBRTC: null,
+    CLOSE_WEBRTC: null,
+
+    STORE_REHYDRATION_FAILED: null,
+
+    DISMISS_NOTICE: null,
 });
 
 export const WebrtcActionTypes = keyMirror({
@@ -256,7 +284,6 @@ export const WebrtcActionTypes = keyMirror({
     MUTED: null,
     IN_PROGRESS: null,
     DISABLED: null,
-    RHS: null,
 });
 
 export const ModalIdentifiers = {
@@ -266,20 +293,17 @@ export const ModalIdentifiers = {
     CHANNEL_INVITE: 'channel_invite',
     CREATE_DM_CHANNEL: 'create_dm_channel',
     EDIT_CHANNEL_HEADER: 'edit_channel_header',
+    DELETE_POST: 'delete_post',
+    CONVERT_CHANNEL: 'convert_channel',
+    RESET_STATUS: 'reset_status',
 };
 
 export const UserStatuses = {
+    OUT_OF_OFFICE: 'ooo',
     OFFLINE: 'offline',
     AWAY: 'away',
     ONLINE: 'online',
     DND: 'dnd',
-};
-
-export const UserStatusesWeight = {
-    online: 0,
-    away: 1,
-    offline: 2,
-    dnd: 3,
 };
 
 export const UserSearchOptions = {
@@ -292,10 +316,12 @@ export const SocketEvents = {
     POST_EDITED: 'post_edited',
     POST_DELETED: 'post_deleted',
     POST_UPDATED: 'post_updated',
+    CHANNEL_CONVERTED: 'channel_converted',
     CHANNEL_CREATED: 'channel_created',
     CHANNEL_DELETED: 'channel_deleted',
     CHANNEL_UPDATED: 'channel_updated',
     CHANNEL_VIEWED: 'channel_viewed',
+    CHANNEL_MEMBER_UPDATED: 'channel_member_updated',
     DIRECT_ADDED: 'direct_added',
     NEW_USER: 'new_user',
     ADDED_TO_TEAM: 'added_to_team',
@@ -308,6 +334,9 @@ export const SocketEvents = {
     USER_UPDATED: 'user_updated',
     USER_ROLE_UPDATED: 'user_role_updated',
     MEMBERROLE_UPDATED: 'memberrole_updated',
+    ROLE_ADDED: 'role_added',
+    ROLE_REMOVED: 'role_removed',
+    ROLE_UPDATED: 'role_updated',
     TYPING: 'typing',
     PREFERENCE_CHANGED: 'preference_changed',
     PREFERENCES_CHANGED: 'preferences_changed',
@@ -321,6 +350,9 @@ export const SocketEvents = {
     EMOJI_ADDED: 'emoji_added',
     PLUGIN_ACTIVATED: 'plugin_activated',
     PLUGIN_DEACTIVATED: 'plugin_deactivated',
+    LICENSE_CHANGED: 'license_changed',
+    CONFIG_CHANGED: 'config_changed',
+    PLUGIN_STATUSES_CHANGED: 'plugin_statuses_changed',
 };
 
 export const TutorialSteps = {
@@ -344,6 +376,7 @@ export const PostTypes = {
     REMOVE_FROM_TEAM: 'system_remove_from_team',
     HEADER_CHANGE: 'system_header_change',
     DISPLAYNAME_CHANGE: 'system_displayname_change',
+    CONVERT_CHANNEL: 'system_convert_channel',
     PURPOSE_CHANGE: 'system_purpose_change',
     CHANNEL_DELETED: 'system_channel_deleted',
     FAKE_PARENT_DELETED: 'system_fake_parent_deleted',
@@ -375,6 +408,16 @@ export const StatTypes = keyMirror({
     MONTHLY_ACTIVE_USERS: null,
 });
 
+export const SearchUserTeamFilter = {
+    ALL_USERS: '',
+    NO_TEAM: 'no_team',
+};
+
+export const SearchTypes = keyMirror({
+    SET_MODAL_SEARCH: null,
+    SET_SYSTEM_USERS_SEARCH: null,
+});
+
 export const StorageTypes = keyMirror({
     SET_ITEM: null,
     REMOVE_ITEM: null,
@@ -400,6 +443,8 @@ export const ErrorPageTypes = {
     OAUTH_MISSING_CODE: 'oauth_missing_code',
     PAGE_NOT_FOUND: 'page_not_found',
     PERMALINK_NOT_FOUND: 'permalink_not_found',
+    TEAM_NOT_FOUND: 'team_not_found',
+    CHANNEL_NOT_FOUND: 'channel_not_found',
 };
 
 export const JobTypes = {
@@ -474,8 +519,115 @@ export const GroupUnreadChannels = {
     DEFAULT_OFF: 'default_off',
 };
 
+export const PermissionsScope = {
+    [Permissions.INVITE_USER]: 'team_scope',
+    [Permissions.ADD_USER_TO_TEAM]: 'team_scope',
+    [Permissions.USE_SLASH_COMMANDS]: 'channel_scope',
+    [Permissions.MANAGE_SLASH_COMMANDS]: 'team_scope',
+    [Permissions.MANAGE_OTHERS_SLASH_COMMANDS]: 'team_scope',
+    [Permissions.CREATE_PUBLIC_CHANNEL]: 'team_scope',
+    [Permissions.CREATE_PRIVATE_CHANNEL]: 'team_scope',
+    [Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS]: 'channel_scope',
+    [Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS]: 'channel_scope',
+    [Permissions.ASSIGN_SYSTEM_ADMIN_ROLE]: 'system_scope',
+    [Permissions.MANAGE_ROLES]: 'system_scope',
+    [Permissions.MANAGE_TEAM_ROLES]: 'team_scope',
+    [Permissions.MANAGE_CHANNEL_ROLES]: 'chanel_scope',
+    [Permissions.MANAGE_SYSTEM]: 'system_scope',
+    [Permissions.CREATE_DIRECT_CHANNEL]: 'system_scope',
+    [Permissions.CREATE_GROUP_CHANNEL]: 'system_scope',
+    [Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES]: 'channel_scope',
+    [Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES]: 'channel_scope',
+    [Permissions.LIST_TEAM_CHANNELS]: 'team_scope',
+    [Permissions.JOIN_PUBLIC_CHANNELS]: 'team_scope',
+    [Permissions.DELETE_PUBLIC_CHANNEL]: 'channel_scope',
+    [Permissions.DELETE_PRIVATE_CHANNEL]: 'channel_scope',
+    [Permissions.EDIT_OTHER_USERS]: 'system_scope',
+    [Permissions.READ_CHANNEL]: 'channel_scope',
+    [Permissions.READ_PUBLIC_CHANNEL]: 'team_scope',
+    [Permissions.ADD_REACTION]: 'channel_scope',
+    [Permissions.REMOVE_REACTION]: 'channel_scope',
+    [Permissions.REMOVE_OTHERS_REACTIONS]: 'channel_scope',
+    [Permissions.PERMANENT_DELETE_USER]: 'system_scope',
+    [Permissions.UPLOAD_FILE]: 'channel_scope',
+    [Permissions.GET_PUBLIC_LINK]: 'system_scope',
+    [Permissions.MANAGE_WEBHOOKS]: 'team_scope',
+    [Permissions.MANAGE_OTHERS_WEBHOOKS]: 'team_scope',
+    [Permissions.MANAGE_OAUTH]: 'system_scope',
+    [Permissions.MANAGE_SYSTEM_WIDE_OAUTH]: 'system_scope',
+    [Permissions.CREATE_POST]: 'channel_scope',
+    [Permissions.CREATE_POST_PUBLIC]: 'channel_scope',
+    [Permissions.EDIT_POST]: 'channel_scope',
+    [Permissions.EDIT_OTHERS_POSTS]: 'channel_scope',
+    [Permissions.DELETE_POST]: 'channel_scope',
+    [Permissions.DELETE_OTHERS_POSTS]: 'channel_scope',
+    [Permissions.REMOVE_USER_FROM_TEAM]: 'team_scope',
+    [Permissions.CREATE_TEAM]: 'system_scope',
+    [Permissions.MANAGE_TEAM]: 'team_scope',
+    [Permissions.IMPORT_TEAM]: 'team_scope',
+    [Permissions.VIEW_TEAM]: 'team_scope',
+    [Permissions.LIST_USERS_WITHOUT_TEAM]: 'system_scope',
+    [Permissions.CREATE_USER_ACCESS_TOKEN]: 'system_scope',
+    [Permissions.READ_USER_ACCESS_TOKEN]: 'system_scope',
+    [Permissions.REVOKE_USER_ACCESS_TOKEN]: 'system_scope',
+    [Permissions.MANAGE_JOBS]: 'system_scope',
+    [Permissions.MANAGE_EMOJIS]: 'team_scope',
+    [Permissions.MANAGE_OTHERS_EMOJIS]: 'team_scope',
+};
+
+export const DefaultRolePermissions = {
+    all_users: [
+        Permissions.CREATE_DIRECT_CHANNEL,
+        Permissions.CREATE_GROUP_CHANNEL,
+        Permissions.PERMANENT_DELETE_USER,
+        Permissions.CREATE_TEAM,
+        Permissions.LIST_TEAM_CHANNELS,
+        Permissions.JOIN_PUBLIC_CHANNELS,
+        Permissions.READ_PUBLIC_CHANNEL,
+        Permissions.VIEW_TEAM,
+        Permissions.CREATE_PUBLIC_CHANNEL,
+        Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES,
+        Permissions.DELETE_PUBLIC_CHANNEL,
+        Permissions.CREATE_PRIVATE_CHANNEL,
+        Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES,
+        Permissions.DELETE_PRIVATE_CHANNEL,
+        Permissions.INVITE_USER,
+        Permissions.ADD_USER_TO_TEAM,
+        Permissions.READ_CHANNEL,
+        Permissions.ADD_REACTION,
+        Permissions.REMOVE_REACTION,
+        Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS,
+        Permissions.UPLOAD_FILE,
+        Permissions.GET_PUBLIC_LINK,
+        Permissions.CREATE_POST,
+        Permissions.USE_SLASH_COMMANDS,
+        Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS,
+        Permissions.DELETE_POST,
+        Permissions.EDIT_POST,
+        Permissions.MANAGE_EMOJIS,
+    ],
+    channel_admin: [
+        Permissions.MANAGE_CHANNEL_ROLES,
+    ],
+    team_admin: [
+        Permissions.EDIT_OTHERS_POSTS,
+        Permissions.REMOVE_USER_FROM_TEAM,
+        Permissions.MANAGE_TEAM,
+        Permissions.IMPORT_TEAM,
+        Permissions.MANAGE_TEAM_ROLES,
+        Permissions.MANAGE_CHANNEL_ROLES,
+        Permissions.MANAGE_OTHERS_WEBHOOKS,
+        Permissions.MANAGE_SLASH_COMMANDS,
+        Permissions.MANAGE_OTHERS_SLASH_COMMANDS,
+        Permissions.MANAGE_WEBHOOKS,
+        Permissions.DELETE_POST,
+        Permissions.DELETE_OTHERS_POSTS,
+    ],
+};
+
 export const Constants = {
-    PluginSettings,
+    SettingsTypes,
+    JobTypes,
     Preferences,
     SocketEvents,
     ActionTypes,
@@ -511,7 +663,7 @@ export const Constants = {
 
     SPECIAL_MENTIONS: ['all', 'channel', 'here'],
     NOTIFY_ALL_MEMBERS: 5,
-    CHARACTER_LIMIT: 4000,
+    DEFAULT_CHARACTER_LIMIT: 4000,
     IMAGE_TYPE_GIF: 'gif',
     IMAGE_TYPES: ['jpg', 'gif', 'bmp', 'png', 'jpeg'],
     AUDIO_TYPES: ['mp3', 'wav', 'wma', 'm4a', 'flac', 'aac', 'ogg', 'm4r'],
@@ -550,8 +702,6 @@ export const Constants = {
     MAX_FILENAME_LENGTH: 35,
     THUMBNAIL_WIDTH: 128,
     THUMBNAIL_HEIGHT: 100,
-    PROFILE_WIDTH: 128,
-    PROFILE_HEIGHT: 128,
     WEB_VIDEO_WIDTH: 640,
     WEB_VIDEO_HEIGHT: 480,
     MOBILE_VIDEO_WIDTH: 480,
@@ -582,6 +732,7 @@ export const Constants = {
     POST_DELETED: 'deleted',
     POST_UPDATED: 'updated',
     SYSTEM_MESSAGE_PREFIX: 'system_',
+    AUTO_RESPONDER: 'system_auto_responder',
     SYSTEM_MESSAGE_PROFILE_IMAGE: logoImage,
     RESERVED_TEAM_NAMES: [
         'signup',
@@ -866,102 +1017,112 @@ export const Constants = {
         },
     ],
     DEFAULT_CODE_THEME: 'github',
+
+    // KeyCodes
+    //  key[0]: used for KeyboardEvent.key
+    //  key[1]: used for KeyboardEvent.keyCode
+    //  key[2]: used for KeyboardEvent.code
+
+    //  KeyboardEvent.code is used as primary check to support multiple keyborad layouts
+    //  support of KeyboardEvent.code is just in chrome and firefox so using key and keyCode for better browser support
+
     KeyCodes: {
-        BACKSPACE: 8,
-        TAB: 9,
-        ENTER: 13,
-        SHIFT: 16,
-        CTRL: 17,
-        ALT: 18,
-        CAPS_LOCK: 20,
-        ESCAPE: 27,
-        SPACE: 32,
-        PAGE_UP: 33,
-        PAGE_DOWN: 34,
-        END: 35,
-        HOME: 36,
-        LEFT: 37,
-        UP: 38,
-        RIGHT: 39,
-        DOWN: 40,
-        INSERT: 45,
-        DELETE: 46,
-        ZERO: 48,
-        ONE: 49,
-        TWO: 50,
-        THREE: 51,
-        FOUR: 52,
-        FIVE: 53,
-        SIX: 54,
-        SEVEN: 55,
-        EIGHT: 56,
-        NINE: 57,
-        A: 65,
-        B: 66,
-        C: 67,
-        D: 68,
-        E: 69,
-        F: 70,
-        G: 71,
-        H: 72,
-        I: 73,
-        J: 74,
-        K: 75,
-        L: 76,
-        M: 77,
-        N: 78,
-        O: 79,
-        P: 80,
-        Q: 81,
-        R: 82,
-        S: 83,
-        T: 84,
-        U: 85,
-        V: 86,
-        W: 87,
-        X: 88,
-        Y: 89,
-        Z: 90,
-        CMD: 91,
-        MENU: 93,
-        NUMPAD_0: 96,
-        NUMPAD_1: 97,
-        NUMPAD_2: 98,
-        NUMPAD_3: 99,
-        NUMPAD_4: 100,
-        NUMPAD_5: 101,
-        NUMPAD_6: 102,
-        NUMPAD_7: 103,
-        NUMPAD_8: 104,
-        NUMPAD_9: 105,
-        MULTIPLY: 106,
-        ADD: 107,
-        SUBTRACT: 109,
-        DECIMAL: 110,
-        DIVIDE: 111,
-        F1: 112,
-        F2: 113,
-        F3: 114,
-        F4: 115,
-        F5: 116,
-        F6: 117,
-        F7: 118,
-        F8: 119,
-        F9: 120,
-        F10: 121,
-        F11: 122,
-        F12: 123,
-        NUM_LOCK: 144,
-        SEMICOLON: 186,
-        EQUAL: 187,
-        COMMA: 188,
-        DASH: 189,
-        PERIOD: 190,
-        FORWARD_SLASH: 191,
-        TILDE: 192,
-        OPEN_BRACKET: 219,
-        BACK_SLASH: 220,
-        CLOSE_BRACKET: 221,
+        BACKSPACE: ['Backspace', 8, 'Backspace'],
+        TAB: ['Tab', 9, 'Tab'],
+        ENTER: ['Enter', 13, 'Enter'],
+        SHIFT: ['Shift', 16, (key) => (key === 'ShiftLeft') || (key === 'ShiftRight')],
+        CTRL: ['Control', 17, (key) => (key === 'ControlLeft') || (key === 'ControlRight')],
+        ALT: ['Alt', 18, (key) => (key === 'AltLeft') || (key === 'AltRight')],
+        CAPS_LOCK: ['CapsLock', 20, 'CapsLock'],
+        ESCAPE: ['Escape', 27, 'Escape'],
+        SPACE: [' ', 32, 'Space'],
+        PAGE_UP: ['PageUp', 33, 'PageUp'],
+        PAGE_DOWN: ['PageDown', 34, 'PageDown'],
+        END: ['End', 35, 'End'],
+        HOME: ['Home', 36, 'Home'],
+        LEFT: ['ArrowLeft', 37, 'ArrowLeft'],
+        UP: ['ArrowUp', 38, 'ArrowUp'],
+        RIGHT: ['ArrowRight', 39, 'ArrowRight'],
+        DOWN: ['ArrowDown', 40, 'ArrowDown'],
+        INSERT: ['Insert', 45, 'Insert'],
+        DELETE: ['Delete', 46, 'Delete'],
+        ZERO: ['0', 48, 'Digit0'],
+        ONE: ['1', 49, 'Digit1'],
+        TWO: ['2', 50, 'Digit2'],
+        THREE: ['3', 51, 'Digit3'],
+        FOUR: ['4', 52, 'Digit4'],
+        FIVE: ['5', 53, 'Digit5'],
+        SIX: ['6', 54, 'Digit6'],
+        SEVEN: ['7', 55, 'Digit7'],
+        EIGHT: ['8', 56, 'Digit8'],
+        NINE: ['9', 57, 'Digit9'],
+        A: ['a', 65, 'KeyA'],
+        B: ['b', 66, 'KeyB'],
+        C: ['c', 67, 'KeyC'],
+        D: ['d', 68, 'KeyD'],
+        E: ['e', 69, 'KeyE'],
+        F: ['f', 70, 'KeyF'],
+        G: ['g', 71, 'KeyG'],
+        H: ['h', 72, 'KeyH'],
+        I: ['i', 73, 'KeyI'],
+        J: ['j', 74, 'KeyJ'],
+        K: ['k', 75, 'KeyK'],
+        L: ['l', 76, 'KeyL'],
+        M: ['m', 77, 'KeyM'],
+        N: ['n', 78, 'KeyN'],
+        O: ['o', 79, 'KeyO'],
+        P: ['p', 80, 'KeyP'],
+        Q: ['q', 81, 'KeyQ'],
+        R: ['r', 82, 'KeyR'],
+        S: ['s', 83, 'KeyS'],
+        T: ['t', 84, 'KeyT'],
+        U: ['u', 85, 'KeyU'],
+        V: ['v', 86, 'KeyV'],
+        W: ['w', 87, 'KeyW'],
+        X: ['x', 88, 'KeyX'],
+        Y: ['y', 89, 'KeyY'],
+        Z: ['z', 90, 'KeyZ'],
+        CMD: ['Meta', 91, (key) => (key === 'OSRight' || key === 'MetaRight' || key === 'OSLeft' || key === 'MetaLeft')],
+        MENU: ['ContextMenu', 93, 'ContextMenu'],
+        NUMPAD_0: ['0', 96, 'Numpad0'],
+        NUMPAD_1: ['1', 97, 'Numpad1'],
+        NUMPAD_2: ['2', 98, 'Numpad2'],
+        NUMPAD_3: ['3', 99, 'Numpad3'],
+        NUMPAD_4: ['4', 100, 'Numpad4'],
+        NUMPAD_5: ['5', 101, 'Numpad5'],
+        NUMPAD_6: ['6', 102, 'Numpad6'],
+        NUMPAD_7: ['7', 103, 'Numpad7'],
+        NUMPAD_8: ['8', 104, 'Numpad8'],
+        NUMPAD_9: ['9', 105, 'Numpad9'],
+        MULTIPLY: ['*', 106, 'NumpadMultiply'],
+        ADD: ['+', 107, 'NumpadAdd'],
+        SUBTRACT: ['-', 109, 'NumpadSubtract'],
+        DECIMAL: ['.', 110, 'NumpadDecimal'],
+        DIVIDE: ['/', 111, 'NumpadDivide'],
+        F1: ['F1', 112, 'F1'],
+        F2: ['F2', 113, 'F2'],
+        F3: ['F3', 114, 'F3'],
+        F4: ['F4', 115, 'F4'],
+        F5: ['F5', 116, 'F5'],
+        F6: ['F6', 117, 'F6'],
+        F7: ['F7', 118, 'F7'],
+        F8: ['F8', 119, 'F8'],
+        F9: ['F9', 120, 'F9'],
+        F10: ['F10', 121, 'F10'],
+        F11: ['F11', 122, 'F11'],
+        F12: ['F12', 123, 'F12'],
+        NUM_LOCK: ['NumLock', 144, 'NumLock'],
+        SEMICOLON: [';', 186, 'Semicolon'],
+        EQUAL: ['=', 187, 'Equal'],
+        COMMA: [',', 188, 'Comma'],
+        DASH: ['-', 189, 'Minus'],
+        PERIOD: ['.', 190, 'Period'],
+        FORWARD_SLASH: ['/', 191, 'Slash'],
+        TILDE: ['~', 192], // coudnt find the key or even get code from browser - no reference in code as of now
+        OPEN_BRACKET: ['[', 219, 'BracketLeft'],
+        BACK_SLASH: ['\\', 220, 'Backslash'],
+        CLOSE_BRACKET: [']', 221, 'BracketRight'],
+        COMPOSING: ['Composing', 229],
     },
     CODE_PREVIEW_MAX_FILE_SIZE: 500000, // 500 KB
     HighlightedLanguages: {
@@ -1046,10 +1207,6 @@ export const Constants = {
             label: 'markdown_preview', // github issue: https://github.com/mattermost/platform/pull/1389
             description: 'Show markdown preview option in message input box',
         },
-        WEBRTC_PREVIEW: {
-            label: 'webrtc_preview',
-            description: 'Enable WebRTC one on one calls',
-        },
     },
     OVERLAY_TIME_DELAY_SMALL: 100,
     OVERLAY_TIME_DELAY: 400,
@@ -1079,7 +1236,6 @@ export const Constants = {
     DEFAULT_WEBHOOK_LOGO: logoWebhook,
     MHPNS: 'https://push.mattermost.com',
     MTPNS: 'http://push-test.mattermost.com',
-    BOT_NAME: 'BOT',
     MAX_PREV_MSGS: 100,
     POST_COLLAPSE_TIMEOUT: 1000 * 60 * 5, // five minutes
     PERMISSIONS_ALL: 'all',
@@ -1092,9 +1248,10 @@ export const Constants = {
     ALLOW_EDIT_POST_ALWAYS: 'always',
     ALLOW_EDIT_POST_NEVER: 'never',
     ALLOW_EDIT_POST_TIME_LIMIT: 'time_limit',
-    DEFAULT_POST_EDIT_TIME_LIMIT: 300,
+    UNSET_POST_EDIT_TIME_LIMIT: -1,
     MENTION_CHANNELS: 'mention.channels',
     MENTION_MORE_CHANNELS: 'mention.morechannels',
+    MENTION_UNREAD_CHANNELS: 'mention.unread.channels',
     MENTION_MEMBERS: 'mention.members',
     MENTION_NONMEMBERS: 'mention.nonmembers',
     MENTION_SPECIAL: 'mention.special',

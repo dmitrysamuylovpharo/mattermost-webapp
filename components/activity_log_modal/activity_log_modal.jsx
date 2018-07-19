@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import $ from 'jquery';
 import PropTypes from 'prop-types';
@@ -9,11 +9,13 @@ import {FormattedDate, FormattedMessage, FormattedTime} from 'react-intl';
 import {General} from 'mattermost-redux/constants';
 
 import UserStore from 'stores/user_store.jsx';
+import {getMonthLong} from 'utils/i18n';
 import * as Utils from 'utils/utils.jsx';
 import LoadingScreen from 'components/loading_screen.jsx';
 
 export default class ActivityLogModal extends React.Component {
     static propTypes = {
+        locale: PropTypes.string.isRequired,
         onHide: PropTypes.func.isRequired,
         actions: PropTypes.shape({
             getSessions: PropTypes.func.isRequired,
@@ -97,9 +99,11 @@ export default class ActivityLogModal extends React.Component {
         let deviceTypeId;
         let deviceTypeMessage;
         let devicePicture;
+        let deviceTitle;
 
         if (session.device_id.includes('apple')) {
             devicePicture = 'fa fa-apple';
+            deviceTitle = Utils.localizeMessage('device_icons.apple', 'Apple Icon');
             deviceTypeId = 'activity_log_modal.iphoneNativeClassicApp';
             deviceTypeMessage = 'iPhone Native Classic App';
 
@@ -109,6 +113,7 @@ export default class ActivityLogModal extends React.Component {
             }
         } else if (session.device_id.includes('android')) {
             devicePicture = 'fa fa-android';
+            deviceTitle = Utils.localizeMessage('device_icons.android', 'Android Icon');
             deviceTypeId = 'activity_log_modal.androidNativeClassicApp';
             deviceTypeMessage = 'Android Native Classic App';
 
@@ -120,6 +125,7 @@ export default class ActivityLogModal extends React.Component {
 
         return {
             devicePicture,
+            deviceTitle,
             devicePlatform: (
                 <FormattedMessage
                     id={deviceTypeId}
@@ -138,6 +144,7 @@ export default class ActivityLogModal extends React.Component {
             const firstAccessTime = new Date(currentSession.create_at);
             let devicePlatform = currentSession.props.platform;
             let devicePicture = '';
+            let deviceTitle = '';
 
             if (currentSession.props.type === 'UserAccessToken') {
                 continue;
@@ -145,6 +152,7 @@ export default class ActivityLogModal extends React.Component {
 
             if (currentSession.props.platform === 'Windows') {
                 devicePicture = 'fa fa-windows';
+                deviceTitle = Utils.localizeMessage('device_icons.windows', 'Windows Icon');
             } else if (this.isMobileSession(currentSession)) {
                 const sessionInfo = this.mobileSessionInfo(currentSession);
 
@@ -153,6 +161,7 @@ export default class ActivityLogModal extends React.Component {
             } else if (currentSession.props.platform === 'Macintosh' ||
                 currentSession.props.platform === 'iPhone') {
                 devicePicture = 'fa fa-apple';
+                deviceTitle = Utils.localizeMessage('device_icons.apple', 'Apple Icon');
             } else if (currentSession.props.platform === 'Linux') {
                 if (currentSession.props.os.indexOf('Android') >= 0) {
                     devicePlatform = (
@@ -162,11 +171,14 @@ export default class ActivityLogModal extends React.Component {
                         />
                     );
                     devicePicture = 'fa fa-android';
+                    deviceTitle = Utils.localizeMessage('device_icons.android', 'Android Icon');
                 } else {
                     devicePicture = 'fa fa-linux';
+                    deviceTitle = Utils.localizeMessage('device_icons.linux', 'Linux Icon');
                 }
             } else if (currentSession.props.os.indexOf('Linux') !== -1) {
                 devicePicture = 'fa fa-linux';
+                deviceTitle = Utils.localizeMessage('device_icons.linux', 'Linux Icon');
             }
 
             if (currentSession.props.browser.indexOf('Desktop App') !== -1) {
@@ -191,7 +203,7 @@ export default class ActivityLogModal extends React.Component {
                                         <FormattedDate
                                             value={firstAccessTime}
                                             day='2-digit'
-                                            month='long'
+                                            month={getMonthLong(this.props.locale)}
                                             year='numeric'
                                         />
                                     ),
@@ -255,7 +267,12 @@ export default class ActivityLogModal extends React.Component {
                     className='activity-log__table'
                 >
                     <div className='activity-log__report'>
-                        <div className='report__platform'><i className={devicePicture}/>{devicePlatform}</div>
+                        <div className='report__platform'>
+                            <i
+                                className={devicePicture}
+                                title={deviceTitle}
+                            />{devicePlatform}
+                        </div>
                         <div className='report__info'>
                             <div>
                                 <FormattedMessage
@@ -266,7 +283,7 @@ export default class ActivityLogModal extends React.Component {
                                             <FormattedDate
                                                 value={lastAccessTime}
                                                 day='2-digit'
-                                                month='long'
+                                                month={getMonthLong(this.props.locale)}
                                                 year='numeric'
                                             />
                                         ),

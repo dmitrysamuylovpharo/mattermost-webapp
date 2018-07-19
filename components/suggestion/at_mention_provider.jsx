@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
@@ -30,7 +30,12 @@ class AtMentionSuggestion extends Suggestion {
                     defaultMessage='CAUTION: This mentions everyone in channel'
                 />
             );
-            icon = <i className='mention__image fa fa-users fa-2x'/>;
+            icon = (
+                <i
+                    className='mention__image fa fa-users fa-2x'
+                    title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                />
+            );
         } else if (user.username === 'channel') {
             username = 'channel';
             description = (
@@ -39,7 +44,12 @@ class AtMentionSuggestion extends Suggestion {
                     defaultMessage='Notifies everyone in the channel'
                 />
             );
-            icon = <i className='mention__image fa fa-users fa-2x'/>;
+            icon = (
+                <i
+                    className='mention__image fa fa-users fa-2x'
+                    title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                />
+            );
         } else if (user.username === 'here') {
             username = 'here';
             description = (
@@ -48,7 +58,12 @@ class AtMentionSuggestion extends Suggestion {
                     defaultMessage='Notifies everyone in the channel and online'
                 />
             );
-            icon = <i className='mention__image fa fa-users fa-2x'/>;
+            icon = (
+                <i
+                    className='mention__image fa fa-users fa-2x'
+                    title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                />
+            );
         } else if (user.username === 'pharo-pms') {
             username = 'pharo-pms';
             description = (
@@ -57,16 +72,26 @@ class AtMentionSuggestion extends Suggestion {
                     defaultMessage='Notifies all Pharo PMs in this channel'
                 />
             );
-            icon = <i className='mention__image fa fa-users fa-2x'/>;
+            icon = (
+                <i
+                    className='mention__image fa fa-users fa-2x'
+                    title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                />
+            );
         } else if (user.username === 'pharo-traders') {
             username = 'pharo-traders';
             description = (
                 <FormattedMessage
                     id='suggestion.mention.pharo-traders'
                     defaultMessage='Notifies all Pharo Traders in this channel'
+				/>
+			);
+            icon = (
+                <i
+                    className='mention__image fa fa-users fa-2x'
+                    title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
                 />
             );
-            icon = <i className='mention__image fa fa-users fa-2x'/>;
         } else if (user.username === 'pharo-research') {
             username = 'pharo-research';
             description = (
@@ -75,7 +100,12 @@ class AtMentionSuggestion extends Suggestion {
                     defaultMessage='Notifies everyone in Pharo Research Team in this channel'
                 />
             );
-            icon = <i className='mention__image fa fa-users fa-2x'/>;                        
+            icon = (
+                <i
+                    className='mention__image fa fa-users fa-2x'
+                    title={Utils.localizeMessage('generic_icons.member', 'Member Icon')}
+                />
+            );
         } else {
             username = user.username;
 

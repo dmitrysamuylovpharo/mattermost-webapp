@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -8,6 +8,7 @@ import throttle from 'lodash/throttle';
 import EmojiStore from 'stores/emoji_store.jsx';
 import * as Emoji from 'utils/emoji.jsx';
 import * as Utils from 'utils/utils.jsx';
+import imgTrans from 'images/img_trans.gif';
 
 import EmojiPickerCategory from './components/emoji_picker_category';
 import EmojiPickerItem from './components/emoji_picker_item';
@@ -16,7 +17,7 @@ import EmojiPickerPreview from './components/emoji_picker_preview';
 
 const CATEGORY_SEARCH_RESULTS = 'searchResults';
 const EMOJI_HEIGHT = 27;
-const EMOJI_CONTAINER_HEIGHT = 300;
+const EMOJI_CONTAINER_HEIGHT = 290;
 const EMOJI_CONTAINER_STYLE = {
     height: EMOJI_CONTAINER_HEIGHT,
 };
@@ -111,6 +112,7 @@ export default class EmojiPicker extends React.PureComponent {
         style: PropTypes.object,
         rightOffset: PropTypes.number,
         topOffset: PropTypes.number,
+        listHeight: PropTypes.number,
         placement: PropTypes.oneOf(['top', 'bottom', 'left']),
         onEmojiClick: PropTypes.func.isRequired,
         customEmojisEnabled: PropTypes.bool,
@@ -124,6 +126,7 @@ export default class EmojiPicker extends React.PureComponent {
     };
 
     static defaultProps = {
+        listHeight: 245,
         rightOffset: 0,
         topOffset: 0,
         customEmojiPage: 0,
@@ -155,7 +158,7 @@ export default class EmojiPicker extends React.PureComponent {
         };
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() { // eslint-disable-line camelcase
         if (this.props.customEmojiPage === 0) {
             this.loadMoreCustomEmojis();
         }
@@ -166,12 +169,14 @@ export default class EmojiPicker extends React.PureComponent {
         // Delay taking focus because this briefly renders offscreen when using an Overlay
         // so focusing it immediately on mount can cause weird scrolling
         requestAnimationFrame(() => {
-            this.searchInput.focus();
+            if (this.searchInput) {
+                this.searchInput.focus();
+            }
         });
         this.divHeight = this.emojiPickerContainer.offsetHeight;
     }
 
-    componentWillUpdate(nextProps, nextState) {
+    UNSAFE_componentWillUpdate(nextProps, nextState) { // eslint-disable-line camelcase
         if (this.state.divTopOffset === nextState.divTopOffset) {
             return;
         }
@@ -196,7 +201,7 @@ export default class EmojiPicker extends React.PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
         if (this.props.emojiMap !== nextProps.emojiMap) {
             this.getEmojis(nextProps);
         }
@@ -528,7 +533,7 @@ export default class EmojiPicker extends React.PureComponent {
                         ref={ref}
                     >
                         <img
-                            src='/static/images/img_trans.gif'
+                            src={imgTrans}
                             className='emojisprite'
                         />
                     </div>
@@ -585,11 +590,10 @@ export default class EmojiPicker extends React.PureComponent {
         }
         return (
             <div
-                className='emoji-picker'
                 style={pickerStyle}
             >
-                {this.emojiCategories()}
                 {this.emojiSearch()}
+                {this.emojiCategories()}
                 {this.emojiCurrentResults()}
                 <EmojiPickerPreview emoji={this.getCurrentEmojiByCursor(this.state.cursor)}/>
             </div>

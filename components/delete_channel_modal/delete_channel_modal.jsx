@@ -1,5 +1,5 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -69,7 +69,7 @@ export default class DeleteChannelModal extends React.PureComponent {
                     <h4 className='modal-title'>
                         <FormattedMessage
                             id='delete_channel.confirm'
-                            defaultMessage='Confirm DELETE Channel'
+                            defaultMessage='Confirm ARCHIVE Channel'
                         />
                     </h4>
                 </Modal.Header>
@@ -77,7 +77,7 @@ export default class DeleteChannelModal extends React.PureComponent {
                     <div className='alert alert-danger'>
                         <FormattedHTMLMessage
                             id='delete_channel.question'
-                            defaultMessage='This will delete the channel from the team and make its contents inaccessible for all users. <br /><br />Are you sure you wish to delete the <strong>{display_name}</strong> channel?'
+                            defaultMessage='This will archive the channel from the team and make its contents inaccessible for all users. <br /><br />Are you sure you wish to archive the <strong>{display_name}</strong> channel?'
                             values={{
                                 display_name: this.props.channel.display_name,
                             }}
@@ -104,7 +104,7 @@ export default class DeleteChannelModal extends React.PureComponent {
                     >
                         <FormattedMessage
                             id='delete_channel.del'
-                            defaultMessage='Delete'
+                            defaultMessage='Archive'
                         />
                     </button>
                 </Modal.Footer>

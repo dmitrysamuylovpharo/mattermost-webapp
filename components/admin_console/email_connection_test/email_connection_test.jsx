@@ -1,5 +1,5 @@
-// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -67,7 +67,10 @@ export default class EmailConnectionTestButton extends React.Component {
         if (this.state.success) {
             testMessage = (
                 <div className='alert alert-success'>
-                    <i className='fa fa-check'/>
+                    <i
+                        className='fa fa-check'
+                        title={Utils.localizeMessage('generic_icons.success', 'Success Icon')}
+                    />
                     <FormattedMessage
                         id='admin.email.emailSuccess'
                         defaultMessage='No errors were reported while sending an email.  Please check your inbox to make sure.'
@@ -77,14 +80,11 @@ export default class EmailConnectionTestButton extends React.Component {
         } else if (this.state.fail) {
             testMessage = (
                 <div className='alert alert-warning'>
-                    <i className='fa fa-warning'/>
-                    <FormattedMessage
-                        id='admin.email.emailFail'
-                        defaultMessage='Connection unsuccessful: {error}'
-                        values={{
-                            error: this.state.fail,
-                        }}
+                    <i
+                        className='fa fa-warning'
+                        title={Utils.localizeMessage('generic_icons.warning', 'Warning Icon')}
                     />
+                    {this.state.fail}
                 </div>
             );
         }
@@ -93,7 +93,10 @@ export default class EmailConnectionTestButton extends React.Component {
         if (this.state.testing) {
             contents = (
                 <span>
-                    <span className='fa fa-refresh icon--rotate'/>
+                    <span
+                        className='fa fa-refresh icon--rotate'
+                        title={Utils.localizeMessage('generic_icons.testing', 'Testing Icon')}
+                    />
                     {Utils.localizeMessage('admin.email.testing', 'Testing...')}
                 </span>
             );
@@ -117,7 +120,9 @@ export default class EmailConnectionTestButton extends React.Component {
                         >
                             {contents}
                         </button>
-                        {testMessage}
+                        <div>
+                            {testMessage}
+                        </div>
                     </div>
                 </div>
             </div>

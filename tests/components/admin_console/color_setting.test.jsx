@@ -1,5 +1,5 @@
-// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
-// See License.txt for license information.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
 
 import React from 'react';
 import {shallow} from 'enzyme';
@@ -50,6 +50,23 @@ describe('components/ColorSetting', () => {
                 disabled={true}
             />
         );
+        expect(wrapper).toMatchSnapshot();
+    });
+
+    test('should match snapshot, clicked on color setting', () => {
+        function emptyFunction() {} //eslint-disable-line no-empty-function
+
+        const wrapper = shallow(
+            <ColorSetting
+                id='id'
+                label='label'
+                helpText='helptext'
+                value='#fff'
+                onChange={emptyFunction}
+                disabled={false}
+            />
+        );
+        wrapper.find('.picker-id').first().simulate('click');
         expect(wrapper).toMatchSnapshot();
     });
 });
