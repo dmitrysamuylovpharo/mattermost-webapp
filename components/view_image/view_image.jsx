@@ -303,7 +303,7 @@ export default class ViewImageModal extends React.PureComponent {
                 dialogClassName='modal-image'
             >
                 <Modal.Body
-                    modalClassName='modal-image__body'
+                    modalclassname='modal-image__body'
                     onClick={this.props.onModalDismissed}
                 >
                     <div

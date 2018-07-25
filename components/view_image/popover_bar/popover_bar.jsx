@@ -91,7 +91,7 @@ export default class PopoverBar extends React.PureComponent {
         }
 
         let downloadLinksWithOpen = null;
-        if (FileUtils.canDownloadFiles()) {
+        if (this.props.canDownloadFiles) {
             downloadLinksWithOpen = (
                 <div className='image-links'>
                     {publicLink}

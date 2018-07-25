@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {FormattedMessage} from 'react-intl';
 import * as Utils from 'utils/utils.jsx';
+import {Constants} from 'utils/constants.jsx';
 
 import * as UserAgent from 'utils/user_agent.jsx';
 import deferComponentRender from 'components/deferComponentRender';
@@ -98,7 +99,9 @@ export default class ChannelView extends React.PureComponent {
         // pharo custom ui injection on channel change
         if(checkProps.location !== undefined && checkProps.location.pathname !== undefined)
         {
-            if(checkProps.location.pathname.indexOf('market-commentary') > -1)
+            const isPrivate = (this.props.channel.type === Constants.PRIVATE_CHANNEL);
+
+            if(checkProps.location.pathname.indexOf('market-commentary') > -1 || (checkProps.location.pathname.search("/research/channels/") == 0 && !isPrivate))
             {
                 this.isPharoPostUI = true;
             }

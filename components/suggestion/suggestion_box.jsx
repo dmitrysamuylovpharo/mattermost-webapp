@@ -109,9 +109,9 @@ export default class SuggestionBox extends React.Component {
         completeOnTab: true,
         isRHS: false,
         requiredCharacters: 1,
-        openOnFocus: false,
-        isTweetAdmin: false
+        openOnFocus: false,        
         openWhenEmpty: false,
+        isTweetAdmin: false,        
     }
 
     constructor(props) {
