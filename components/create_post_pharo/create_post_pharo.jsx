@@ -232,7 +232,8 @@ export default class CreatePostPharo extends React.Component {
             topicSelectedRelatedOtherTagsList: [],
             sourceSelectedRelatedOtherTagsList: [],
             otherSelectedTagsList: [],
-            nextPostCritical: false              
+            nextPostCritical: false,
+            nextPostDualPublish: false,
         };
 
         this.lastBlurAt = 0;
@@ -479,6 +480,10 @@ export default class CreatePostPharo extends React.Component {
         if(this.state.nextPostCritical)
             post.message = post.message + " #important @channel";
 
+        // if next post dual publish
+        if(this.state.nextPostDualPublish)
+            post.message = post.message + " #dualpublish";            
+
         if (this.state.postError) {
             this.setState({errorClass: 'animation--highlight'});
             setTimeout(() => {
@@ -531,7 +536,8 @@ export default class CreatePostPharo extends React.Component {
             source: '',
             other: [],
             subject: '',
-            nextPostCritical: false            
+            nextPostCritical: false,
+            nextPostDualPublish: false,
         });
 
         this.props.actions.setDraft(StoragePrefixes.DRAFT + channelId, null);
@@ -1084,6 +1090,10 @@ export default class CreatePostPharo extends React.Component {
         this.setState({nextPostCritical: val});
     }
 
+    nextPostDualPublish(val) {
+        this.setState({nextPostDualPublish: val});
+    }
+    
     render() {
         const {
             currentChannel,
@@ -1191,6 +1201,10 @@ export default class CreatePostPharo extends React.Component {
             this.nextPostCritical(e.target.checked);
         };
 
+        const handleNextPostDualPublish = (e) => {
+            this.nextPostDualPublish(e.target.checked);
+        };
+
         let emojiPicker = null;
         if (this.props.enableEmojiPicker && !readOnlyChannel) {
             emojiPicker = (
@@ -1223,6 +1237,45 @@ export default class CreatePostPharo extends React.Component {
                 />
             </Tooltip>
         );
+
+        let dualPublishCheckbox;
+        if(this.props.currentChannel.name != "market-commentary")
+        {
+            const dualPublishTooltip = (
+                <Tooltip id='dualPublishPostTooltip'>
+                    <FormattedMessage
+                        id='create_post_pharo.dualPublishPosts'
+                        defaultMessage='Dual Publish (+1 Market Commentary)'
+                    />
+                </Tooltip>
+            );
+
+            dualPublishCheckbox = (
+                <div key='dualPublishOption' id='dualPublishOption'>
+                    <div className='checkbox'>                                        
+                        <OverlayTrigger
+                            trigger={['hover', 'focus']}
+                            delayShow={Constants.OVERLAY_TIME_DELAY}
+                            placement='top'
+                            overlay={dualPublishTooltip}
+                        >                                            
+                            <label>
+                                <FormattedMessage
+                                    id='pharo.post.dualpublish'
+                                    defaultMessage='Y'
+                                />                                            
+                                <input
+                                    id='dualPublishCheckbox'
+                                    type='checkbox'
+                                    checked={this.state.nextPostDualPublish}
+                                    onChange={handleNextPostDualPublish}
+                                />
+                            </label>
+                        </OverlayTrigger>
+                    </div>
+                </div>
+            );
+        }
 
         let createMessage;
         if (readOnlyChannel) {
@@ -1279,6 +1332,7 @@ export default class CreatePostPharo extends React.Component {
                                     onChange={this.handleSubjectChange} 
                                     style={this.state.subjectValidationBorder} 
                                 />
+                                {dualPublishCheckbox}
                                 <div key='criticalPostOption' id='criticalPostOption'>
                                     <div className='checkbox'>                                        
                                         <OverlayTrigger
