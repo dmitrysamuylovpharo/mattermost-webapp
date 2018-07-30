@@ -154,7 +154,7 @@ export default class AboutBuildModal extends React.PureComponent {
             mmversion = 'ci';
         }
 
-        let pharoVersion = "1.21";
+        let pharoVersion = "1.22";
 
         return (
             <Modal
