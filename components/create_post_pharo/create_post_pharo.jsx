@@ -234,6 +234,7 @@ export default class CreatePostPharo extends React.Component {
             otherSelectedTagsList: [],
             nextPostCritical: false,
             nextPostDualPublish: false,
+            showSourceHashtag: false,
         };
 
         this.lastBlurAt = 0;
@@ -318,7 +319,8 @@ export default class CreatePostPharo extends React.Component {
                 sourceLabel: '',
                 sourceValidationBorder: { border:'solid 1px #ccc' },
                 sourceSelectedRelatedOtherTagsList: this.getSourceOtherTags(),
-                otherSelectedTagsList: this.getOtherTags()
+                otherSelectedTagsList: this.getOtherTags(),
+                showSourceHashtag: this.getSourceShowHashtag(),
             });
             
             return;
@@ -328,7 +330,8 @@ export default class CreatePostPharo extends React.Component {
             source: event.value,
             sourceLabel: event.label,
             sourceSelectedRelatedOtherTagsList: this.getSourceOtherTags(event.value),            
-            otherSelectedTagsList: this.getOtherTags(null,event.value)
+            otherSelectedTagsList: this.getOtherTags(null,event.value),
+            showSourceHashtag: this.getSourceShowHashtag(event.value),
         });
 
         if(event.value === undefined || event.value.trim().length === 0)
@@ -443,6 +446,10 @@ export default class CreatePostPharo extends React.Component {
         // append our tags to the message
         if(this.state.topic.toLocaleLowerCase().length > 0)
             post.message = post.message + " #" + this.state.topic.toLocaleLowerCase();
+
+        // append our source tag to the message is showSourceHashtag flag is enabled for this tag
+        if(this.state.source.toLocaleLowerCase().length > 0 && this.state.showSourceHashtag)
+            post.message = post.message + " #" + this.state.source.toLocaleLowerCase();
 
         // if topic tag has a region set add that as a tag as well
         if(selectedTopicTag && selectedTopicTag.region)
@@ -895,6 +902,22 @@ export default class CreatePostPharo extends React.Component {
 
         return otherTags;
     } 
+
+    getSourceShowHashtag(selectedSourceTag) {
+        let showHashtag = false;
+
+        // if we have source selected get only tags related to the selected source
+        if(selectedSourceTag !== null && selectedSourceTag !== undefined)
+        {
+            let sourceTag = this.state.tags.sourceTags.find(x => x.tag == selectedSourceTag); 
+            if(sourceTag.showHashtag !== undefined && sourceTag.showHashtag == "true")
+            {
+                showHashtag = true;
+            }
+        }
+
+        return showHashtag;
+    }     
 
     getAllTopicTags(tags)
     {
